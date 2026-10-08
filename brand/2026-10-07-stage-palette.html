@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Afterglow stage palette, three candidate ramps</title>
+<title>Afterglow stage palette, flat chroma, three hue arcs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600&family=Azeret+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -61,12 +61,18 @@
 <body>
 
 <header class="top pad">
-  <p class="kicker">Afterglow &middot; working artifact &middot; 7 October 2026</p>
-  <h1>Three candidate ramps for the four stages</h1>
-  <p class="lede">All three share one lightness schedule, falling in even steps of 0.16 in OKLCH,
-    and one hue schedule rotating a single direction along the sundown arc. Chroma shaping is the
-    only variable, so what you are comparing is how saturated the middle of a sunset should be and
-    whether violet holds its colour as it darkens.</p>
+  <p class="kicker">Afterglow &middot; working artifact &middot; second pass &middot; 7 October 2026</p>
+  <h1>Flat chroma, three ways through the arc</h1>
+  <p class="lede">Chroma is now held flat at 0.110 across all four stages, which is where ramp C
+    started and the paleness you picked. Lightness still falls in even steps of 0.16. Stage 1 is
+    held at the same hue in all three, so every one of them opens on exactly the gold you chose,
+    <span class="mono">#D8B260</span>, and the only thing moving is where the arc travels after it.</p>
+  <p class="lede"><strong style="font-weight:400;color:var(--text)">What flat and pale costs, stated
+    plainly.</strong> At 0.110 the middle of the ramp goes dusty. Rose is no longer the clear
+    crimson it was at 0.170; it lands nearer a dried brick or a mauve depending on the arc. That is
+    not a fault in any of these three, it is what holding chroma down does to the stages that were
+    carrying the most of it. If the rose below reads too drab, the fix is chroma, not hue, and we
+    go back a step.</p>
   <p class="lede">Every ratio on this page is computed from the hex beside it. Stage 1 has to clear
     4.5:1 on the void to be usable as text and stage 2 has to clear 3:1 for large text. Stages 3
     and 4 cannot clear either and are not meant to; they are grounds, and the number is printed so
@@ -76,228 +82,10 @@
 
 <section class="ramp">
   <div class="rhead">
-    <p class="kicker">Ramp A</p>
-    <h2>Rose at the peak</h2>
-    <p class="lede">Chroma builds to rose and falls back for violet. The spec's reading of a sunset: most saturated in the middle.</p>
-    <p class="sched">L 0.78 &rarr; 0.62 &rarr; 0.46 &rarr; 0.30 &nbsp;&middot;&nbsp; C 0.130 &rarr; 0.150 &rarr; 0.170 &rarr; 0.120</p>
-  </div>
-  
-  <div class="stage">
-    <div class="fill" style="background:#DDB049;color:#080808">
-      <span class="fname">Gold of last light</span>
-      <span class="fmeas">#080808 on this fill &middot; 9.90:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#DDB049">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#DDB049"></span>
-          <span class="mlabel">24px mark on void &middot; 9.90:1 &middot; clears 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 9.90:1 &middot; clears 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>1</dd>
-        <dt>Hex</dt><dd>#DDB049</dd>
-        <dt>OKLCH</dt><dd>0.779 &nbsp;0.130 &nbsp;85.0</dd>
-        <dt>On #080808</dt><dd>9.90:1</dd>
-        <dt>On #141414</dt><dd>9.11:1</dd>
-        <dt>On #2B2B2B</dt><dd>7.00:1</dd>
-        <dt>Text on it</dt><dd>1.72:1</dd>
-      </dl>
-    </div>
-  </div>
-  <div class="stage">
-    <div class="fill" style="background:#CA6719;color:#080808">
-      <span class="fname">Stage two</span>
-      <span class="fmeas">#080808 on this fill &middot; 5.21:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#CA6719">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#CA6719"></span>
-          <span class="mlabel">24px mark on void &middot; 5.21:1 &middot; clears 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 5.21:1 &middot; clears 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>2</dd>
-        <dt>Hex</dt><dd>#CA6719</dd>
-        <dt>OKLCH</dt><dd>0.620 &nbsp;0.150 &nbsp;52.1</dd>
-        <dt>On #080808</dt><dd>5.21:1</dd>
-        <dt>On #141414</dt><dd>4.79:1</dd>
-        <dt>On #2B2B2B</dt><dd>3.69:1</dd>
-        <dt>Text on it</dt><dd>3.26:1</dd>
-      </dl>
-    </div>
-  </div>
-  <div class="stage">
-    <div class="fill" style="background:#A0163E;color:#EEECEA">
-      <span class="fname">Rose</span>
-      <span class="fmeas">#EEECEA on this fill &middot; 6.65:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#A0163E">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#A0163E"></span>
-          <span class="mlabel">24px mark on void &middot; 2.55:1 &middot; fails 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 2.55:1 &middot; fails 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>3</dd>
-        <dt>Hex</dt><dd>#A0163E</dd>
-        <dt>OKLCH</dt><dd>0.460 &nbsp;0.170 &nbsp;12.0</dd>
-        <dt>On #080808</dt><dd>2.55:1</dd>
-        <dt>On #141414</dt><dd>2.35:1</dd>
-        <dt>On #2B2B2B</dt><dd>1.81:1</dd>
-        <dt>Text on it</dt><dd>6.65:1</dd>
-      </dl>
-    </div>
-  </div>
-  <div class="stage">
-    <div class="fill" style="background:#3B175E;color:#EEECEA">
-      <span class="fname">Deep violet</span>
-      <span class="fmeas">#EEECEA on this fill &middot; 12.12:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#3B175E">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#3B175E"></span>
-          <span class="mlabel">24px mark on void &middot; 1.40:1 &middot; fails 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 1.40:1 &middot; fails 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>4</dd>
-        <dt>Hex</dt><dd>#3B175E</dd>
-        <dt>OKLCH</dt><dd>0.301 &nbsp;0.120 &nbsp;302.9</dd>
-        <dt>On #080808</dt><dd>1.40:1</dd>
-        <dt>On #141414</dt><dd>1.29:1</dd>
-        <dt>On #2B2B2B</dt><dd>1.01:1</dd>
-        <dt>Text on it</dt><dd>12.12:1</dd>
-      </dl>
-    </div>
-  </div>
-</section>
-<section class="ramp">
-  <div class="rhead">
-    <p class="kicker">Ramp B</p>
-    <h2>Flat chroma</h2>
-    <p class="lede">Chroma held constant. Only lightness and hue move, so the ramp is the deepening rule and nothing else.</p>
-    <p class="sched">L 0.78 &rarr; 0.62 &rarr; 0.46 &rarr; 0.30 &nbsp;&middot;&nbsp; C 0.145 &rarr; 0.145 &rarr; 0.145 &rarr; 0.144</p>
-  </div>
-  
-  <div class="stage">
-    <div class="fill" style="background:#E2AF32;color:#080808">
-      <span class="fname">Gold of last light</span>
-      <span class="fmeas">#080808 on this fill &middot; 9.93:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#E2AF32">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#E2AF32"></span>
-          <span class="mlabel">24px mark on void &middot; 9.93:1 &middot; clears 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 9.93:1 &middot; clears 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>1</dd>
-        <dt>Hex</dt><dd>#E2AF32</dd>
-        <dt>OKLCH</dt><dd>0.781 &nbsp;0.145 &nbsp;84.9</dd>
-        <dt>On #080808</dt><dd>9.93:1</dd>
-        <dt>On #141414</dt><dd>9.13:1</dd>
-        <dt>On #2B2B2B</dt><dd>7.02:1</dd>
-        <dt>Text on it</dt><dd>1.71:1</dd>
-      </dl>
-    </div>
-  </div>
-  <div class="stage">
-    <div class="fill" style="background:#C86921;color:#080808">
-      <span class="fname">Stage two</span>
-      <span class="fmeas">#080808 on this fill &middot; 5.24:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#C86921">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#C86921"></span>
-          <span class="mlabel">24px mark on void &middot; 5.24:1 &middot; clears 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 5.24:1 &middot; clears 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>2</dd>
-        <dt>Hex</dt><dd>#C86921</dd>
-        <dt>OKLCH</dt><dd>0.620 &nbsp;0.145 &nbsp;52.4</dd>
-        <dt>On #080808</dt><dd>5.24:1</dd>
-        <dt>On #141414</dt><dd>4.82:1</dd>
-        <dt>On #2B2B2B</dt><dd>3.71:1</dd>
-        <dt>Text on it</dt><dd>3.24:1</dd>
-      </dl>
-    </div>
-  </div>
-  <div class="stage">
-    <div class="fill" style="background:#972942;color:#EEECEA">
-      <span class="fname">Rose</span>
-      <span class="fmeas">#EEECEA on this fill &middot; 6.57:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#972942">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#972942"></span>
-          <span class="mlabel">24px mark on void &middot; 2.59:1 &middot; fails 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 2.59:1 &middot; fails 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>3</dd>
-        <dt>Hex</dt><dd>#972942</dd>
-        <dt>OKLCH</dt><dd>0.459 &nbsp;0.145 &nbsp;11.8</dd>
-        <dt>On #080808</dt><dd>2.59:1</dd>
-        <dt>On #141414</dt><dd>2.38:1</dd>
-        <dt>On #2B2B2B</dt><dd>1.83:1</dd>
-        <dt>Text on it</dt><dd>6.57:1</dd>
-      </dl>
-    </div>
-  </div>
-  <div class="stage">
-    <div class="fill" style="background:#3E0A67;color:#EEECEA">
-      <span class="fname">Deep violet</span>
-      <span class="fmeas">#EEECEA on this fill &middot; 12.34:1</span>
-    </div>
-    <div class="under">
-      <div class="samples">
-        <p class="big" style="color:#3E0A67">Last light</p>
-        <div class="markrow">
-          <span class="mark" style="background:#3E0A67"></span>
-          <span class="mlabel">24px mark on void &middot; 1.38:1 &middot; fails 4.5:1</span>
-        </div>
-        <p class="blabel">48px text on void &middot; 1.38:1 &middot; fails 3:1</p>
-      </div>
-      <dl class="data">
-        <dt>Stage</dt><dd>4</dd>
-        <dt>Hex</dt><dd>#3E0A67</dd>
-        <dt>OKLCH</dt><dd>0.300 &nbsp;0.144 &nbsp;303.2</dd>
-        <dt>On #080808</dt><dd>1.38:1</dd>
-        <dt>On #141414</dt><dd>1.27:1</dd>
-        <dt>On #2B2B2B</dt><dd>1.03:1</dd>
-        <dt>Text on it</dt><dd>12.34:1</dd>
-      </dl>
-    </div>
-  </div>
-</section>
-<section class="ramp">
-  <div class="rhead">
-    <p class="kicker">Ramp C</p>
-    <h2>Held to the end</h2>
-    <p class="lede">Chroma rises and stays high through violet, so the last stage reads deep rather than grey as its lightness falls.</p>
-    <p class="sched">L 0.78 &rarr; 0.62 &rarr; 0.46 &rarr; 0.30 &nbsp;&middot;&nbsp; C 0.110 &rarr; 0.140 &rarr; 0.170 &rarr; 0.157</p>
+    <p class="kicker">Ramp D</p>
+    <h2>The long arc</h2>
+    <p class="lede">The arc as it stood: gold through amber into rose, then a long step across to violet.</p>
+    <p class="sched">L 0.78 &rarr; 0.62 &rarr; 0.46 &rarr; 0.30 &nbsp;&middot;&nbsp; C 0.110 &rarr; 0.110 &rarr; 0.110 &rarr; 0.110</p>
   </div>
   
   <div class="stage">
@@ -326,77 +114,295 @@
     </div>
   </div>
   <div class="stage">
-    <div class="fill" style="background:#C66A28;color:#080808">
+    <div class="fill" style="background:#BA7244;color:#080808">
       <span class="fname">Stage two</span>
-      <span class="fmeas">#080808 on this fill &middot; 5.24:1</span>
+      <span class="fmeas">#080808 on this fill &middot; 5.32:1</span>
     </div>
     <div class="under">
       <div class="samples">
-        <p class="big" style="color:#C66A28">Last light</p>
+        <p class="big" style="color:#BA7244">Last light</p>
         <div class="markrow">
-          <span class="mark" style="background:#C66A28"></span>
-          <span class="mlabel">24px mark on void &middot; 5.24:1 &middot; clears 4.5:1</span>
+          <span class="mark" style="background:#BA7244"></span>
+          <span class="mlabel">24px mark on void &middot; 5.32:1 &middot; clears 4.5:1</span>
         </div>
-        <p class="blabel">48px text on void &middot; 5.24:1 &middot; clears 3:1</p>
+        <p class="blabel">48px text on void &middot; 5.32:1 &middot; clears 3:1</p>
       </div>
       <dl class="data">
         <dt>Stage</dt><dd>2</dd>
-        <dt>Hex</dt><dd>#C66A28</dd>
-        <dt>OKLCH</dt><dd>0.620 &nbsp;0.140 &nbsp;52.0</dd>
-        <dt>On #080808</dt><dd>5.24:1</dd>
-        <dt>On #141414</dt><dd>4.82:1</dd>
-        <dt>On #2B2B2B</dt><dd>3.70:1</dd>
-        <dt>Text on it</dt><dd>3.24:1</dd>
+        <dt>Hex</dt><dd>#BA7244</dd>
+        <dt>OKLCH</dt><dd>0.621 &nbsp;0.110 &nbsp;52.0</dd>
+        <dt>On #080808</dt><dd>5.32:1</dd>
+        <dt>On #141414</dt><dd>4.89:1</dd>
+        <dt>On #2B2B2B</dt><dd>3.76:1</dd>
+        <dt>Text on it</dt><dd>3.19:1</dd>
       </dl>
     </div>
   </div>
   <div class="stage">
-    <div class="fill" style="background:#A0163E;color:#EEECEA">
+    <div class="fill" style="background:#8A3A47;color:#EEECEA">
       <span class="fname">Rose</span>
-      <span class="fmeas">#EEECEA on this fill &middot; 6.65:1</span>
+      <span class="fmeas">#EEECEA on this fill &middot; 6.42:1</span>
     </div>
     <div class="under">
       <div class="samples">
-        <p class="big" style="color:#A0163E">Last light</p>
+        <p class="big" style="color:#8A3A47">Last light</p>
         <div class="markrow">
-          <span class="mark" style="background:#A0163E"></span>
-          <span class="mlabel">24px mark on void &middot; 2.55:1 &middot; fails 4.5:1</span>
+          <span class="mark" style="background:#8A3A47"></span>
+          <span class="mlabel">24px mark on void &middot; 2.65:1 &middot; fails 4.5:1</span>
         </div>
-        <p class="blabel">48px text on void &middot; 2.55:1 &middot; fails 3:1</p>
+        <p class="blabel">48px text on void &middot; 2.65:1 &middot; fails 3:1</p>
       </div>
       <dl class="data">
         <dt>Stage</dt><dd>3</dd>
-        <dt>Hex</dt><dd>#A0163E</dd>
-        <dt>OKLCH</dt><dd>0.460 &nbsp;0.170 &nbsp;12.0</dd>
-        <dt>On #080808</dt><dd>2.55:1</dd>
-        <dt>On #141414</dt><dd>2.35:1</dd>
-        <dt>On #2B2B2B</dt><dd>1.81:1</dd>
-        <dt>Text on it</dt><dd>6.65:1</dd>
+        <dt>Hex</dt><dd>#8A3A47</dd>
+        <dt>OKLCH</dt><dd>0.460 &nbsp;0.110 &nbsp;12.4</dd>
+        <dt>On #080808</dt><dd>2.65:1</dd>
+        <dt>On #141414</dt><dd>2.44:1</dd>
+        <dt>On #2B2B2B</dt><dd>1.87:1</dd>
+        <dt>Text on it</dt><dd>6.42:1</dd>
       </dl>
     </div>
   </div>
   <div class="stage">
-    <div class="fill" style="background:#3F006C;color:#EEECEA">
+    <div class="fill" style="background:#3A1A5A;color:#EEECEA">
       <span class="fname">Deep violet</span>
-      <span class="fmeas">#EEECEA on this fill &middot; 12.48:1</span>
+      <span class="fmeas">#EEECEA on this fill &middot; 12.08:1</span>
     </div>
     <div class="under">
       <div class="samples">
-        <p class="big" style="color:#3F006C">Last light</p>
+        <p class="big" style="color:#3A1A5A">Last light</p>
         <div class="markrow">
-          <span class="mark" style="background:#3F006C"></span>
-          <span class="mlabel">24px mark on void &middot; 1.36:1 &middot; fails 4.5:1</span>
+          <span class="mark" style="background:#3A1A5A"></span>
+          <span class="mlabel">24px mark on void &middot; 1.41:1 &middot; fails 4.5:1</span>
         </div>
-        <p class="blabel">48px text on void &middot; 1.36:1 &middot; fails 3:1</p>
+        <p class="blabel">48px text on void &middot; 1.41:1 &middot; fails 3:1</p>
       </div>
       <dl class="data">
         <dt>Stage</dt><dd>4</dd>
-        <dt>Hex</dt><dd>#3F006C</dd>
-        <dt>OKLCH</dt><dd>0.299 &nbsp;0.157 &nbsp;302.8</dd>
-        <dt>On #080808</dt><dd>1.36:1</dd>
-        <dt>On #141414</dt><dd>1.25:1</dd>
-        <dt>On #2B2B2B</dt><dd>1.04:1</dd>
-        <dt>Text on it</dt><dd>12.48:1</dd>
+        <dt>Hex</dt><dd>#3A1A5A</dd>
+        <dt>OKLCH</dt><dd>0.300 &nbsp;0.110 &nbsp;303.3</dd>
+        <dt>On #080808</dt><dd>1.41:1</dd>
+        <dt>On #141414</dt><dd>1.29:1</dd>
+        <dt>On #2B2B2B</dt><dd>1.01:1</dd>
+        <dt>Text on it</dt><dd>12.08:1</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+<section class="ramp">
+  <div class="rhead">
+    <p class="kicker">Ramp E</p>
+    <h2>Further into violet</h2>
+    <p class="lede">Rose pushed past red toward the cool side and violet taken deeper into blue. The coldest end of the three.</p>
+    <p class="sched">L 0.78 &rarr; 0.62 &rarr; 0.46 &rarr; 0.30 &nbsp;&middot;&nbsp; C 0.110 &rarr; 0.110 &rarr; 0.110 &rarr; 0.110</p>
+  </div>
+  
+  <div class="stage">
+    <div class="fill" style="background:#D8B260;color:#080808">
+      <span class="fname">Gold of last light</span>
+      <span class="fmeas">#080808 on this fill &middot; 9.97:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#D8B260">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#D8B260"></span>
+          <span class="mlabel">24px mark on void &middot; 9.97:1 &middot; clears 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 9.97:1 &middot; clears 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>1</dd>
+        <dt>Hex</dt><dd>#D8B260</dd>
+        <dt>OKLCH</dt><dd>0.781 &nbsp;0.110 &nbsp;84.9</dd>
+        <dt>On #080808</dt><dd>9.97:1</dd>
+        <dt>On #141414</dt><dd>9.17:1</dd>
+        <dt>On #2B2B2B</dt><dd>7.05:1</dd>
+        <dt>Text on it</dt><dd>1.70:1</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="fill" style="background:#BC6F4C;color:#080808">
+      <span class="fname">Stage two</span>
+      <span class="fmeas">#080808 on this fill &middot; 5.26:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#BC6F4C">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#BC6F4C"></span>
+          <span class="mlabel">24px mark on void &middot; 5.26:1 &middot; clears 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 5.26:1 &middot; clears 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>2</dd>
+        <dt>Hex</dt><dd>#BC6F4C</dd>
+        <dt>OKLCH</dt><dd>0.619 &nbsp;0.110 &nbsp;44.7</dd>
+        <dt>On #080808</dt><dd>5.26:1</dd>
+        <dt>On #141414</dt><dd>4.84:1</dd>
+        <dt>On #2B2B2B</dt><dd>3.72:1</dd>
+        <dt>Text on it</dt><dd>3.23:1</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="fill" style="background:#893A50;color:#EEECEA">
+      <span class="fname">Rose</span>
+      <span class="fmeas">#EEECEA on this fill &middot; 6.40:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#893A50">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#893A50"></span>
+          <span class="mlabel">24px mark on void &middot; 2.66:1 &middot; fails 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 2.66:1 &middot; fails 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>3</dd>
+        <dt>Hex</dt><dd>#893A50</dd>
+        <dt>OKLCH</dt><dd>0.461 &nbsp;0.110 &nbsp;5.0</dd>
+        <dt>On #080808</dt><dd>2.66:1</dd>
+        <dt>On #141414</dt><dd>2.44:1</dd>
+        <dt>On #2B2B2B</dt><dd>1.88:1</dd>
+        <dt>Text on it</dt><dd>6.40:1</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="fill" style="background:#341D5E;color:#EEECEA">
+      <span class="fname">Deep violet</span>
+      <span class="fmeas">#EEECEA on this fill &middot; 12.01:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#341D5E">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#341D5E"></span>
+          <span class="mlabel">24px mark on void &middot; 1.41:1 &middot; fails 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 1.41:1 &middot; fails 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>4</dd>
+        <dt>Hex</dt><dd>#341D5E</dd>
+        <dt>OKLCH</dt><dd>0.301 &nbsp;0.110 &nbsp;295.2</dd>
+        <dt>On #080808</dt><dd>1.41:1</dd>
+        <dt>On #141414</dt><dd>1.30:1</dd>
+        <dt>On #2B2B2B</dt><dd>1.00:1</dd>
+        <dt>Text on it</dt><dd>12.01:1</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+<section class="ramp">
+  <div class="rhead">
+    <p class="kicker">Ramp F</p>
+    <h2>Held warm</h2>
+    <p class="lede">The arc travels less. Amber stays golden, rose keeps its red, and violet leans toward magenta rather than blue.</p>
+    <p class="sched">L 0.78 &rarr; 0.62 &rarr; 0.46 &rarr; 0.30 &nbsp;&middot;&nbsp; C 0.110 &rarr; 0.110 &rarr; 0.110 &rarr; 0.111</p>
+  </div>
+  
+  <div class="stage">
+    <div class="fill" style="background:#D8B260;color:#080808">
+      <span class="fname">Gold of last light</span>
+      <span class="fmeas">#080808 on this fill &middot; 9.97:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#D8B260">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#D8B260"></span>
+          <span class="mlabel">24px mark on void &middot; 9.97:1 &middot; clears 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 9.97:1 &middot; clears 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>1</dd>
+        <dt>Hex</dt><dd>#D8B260</dd>
+        <dt>OKLCH</dt><dd>0.781 &nbsp;0.110 &nbsp;84.9</dd>
+        <dt>On #080808</dt><dd>9.97:1</dd>
+        <dt>On #141414</dt><dd>9.17:1</dd>
+        <dt>On #2B2B2B</dt><dd>7.05:1</dd>
+        <dt>Text on it</dt><dd>1.70:1</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="fill" style="background:#B6753B;color:#080808">
+      <span class="fname">Stage two</span>
+      <span class="fmeas">#080808 on this fill &middot; 5.34:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#B6753B">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#B6753B"></span>
+          <span class="mlabel">24px mark on void &middot; 5.34:1 &middot; clears 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 5.34:1 &middot; clears 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>2</dd>
+        <dt>Hex</dt><dd>#B6753B</dd>
+        <dt>OKLCH</dt><dd>0.620 &nbsp;0.110 &nbsp;60.2</dd>
+        <dt>On #080808</dt><dd>5.34:1</dd>
+        <dt>On #141414</dt><dd>4.91:1</dd>
+        <dt>On #2B2B2B</dt><dd>3.77:1</dd>
+        <dt>Text on it</dt><dd>3.18:1</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="fill" style="background:#8B3B38;color:#EEECEA">
+      <span class="fname">Rose</span>
+      <span class="fmeas">#EEECEA on this fill &middot; 6.41:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#8B3B38">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#8B3B38"></span>
+          <span class="mlabel">24px mark on void &middot; 2.65:1 &middot; fails 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 2.65:1 &middot; fails 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>3</dd>
+        <dt>Hex</dt><dd>#8B3B38</dd>
+        <dt>OKLCH</dt><dd>0.460 &nbsp;0.110 &nbsp;24.5</dd>
+        <dt>On #080808</dt><dd>2.65:1</dd>
+        <dt>On #141414</dt><dd>2.44:1</dd>
+        <dt>On #2B2B2B</dt><dd>1.87:1</dd>
+        <dt>Text on it</dt><dd>6.41:1</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="fill" style="background:#421653;color:#EEECEA">
+      <span class="fname">Deep violet</span>
+      <span class="fmeas">#EEECEA on this fill &middot; 12.11:1</span>
+    </div>
+    <div class="under">
+      <div class="samples">
+        <p class="big" style="color:#421653">Last light</p>
+        <div class="markrow">
+          <span class="mark" style="background:#421653"></span>
+          <span class="mlabel">24px mark on void &middot; 1.40:1 &middot; fails 4.5:1</span>
+        </div>
+        <p class="blabel">48px text on void &middot; 1.40:1 &middot; fails 3:1</p>
+      </div>
+      <dl class="data">
+        <dt>Stage</dt><dd>4</dd>
+        <dt>Hex</dt><dd>#421653</dd>
+        <dt>OKLCH</dt><dd>0.301 &nbsp;0.111 &nbsp;315.0</dd>
+        <dt>On #080808</dt><dd>1.40:1</dd>
+        <dt>On #141414</dt><dd>1.29:1</dd>
+        <dt>On #2B2B2B</dt><dd>1.01:1</dd>
+        <dt>Text on it</dt><dd>12.11:1</dd>
       </dl>
     </div>
   </div>
