@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Type Round Two</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&family=Martian+Mono:wght@300;400&family=Chivo:wght@400;500;800&family=Chivo+Mono:wght@400&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,800&family=Spline+Sans+Mono:wght@400;500&family=Familjen+Grotesk:wght@400;500;700&family=Sometype+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#F0F0EE; --surface:#FFFFFF; --ink:#161614; --ink2:#6B6B66; --line:#D8D8D4;
+    --cy:#90e0ef; --cy-dark:#137586;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--ground);color:var(--ink);font-family:'Schibsted Grotesk',system-ui,sans-serif;
+       font-weight:400;-webkit-font-smoothing:antialiased;line-height:1.65}
+  .wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(20px,5vw,64px)}
+
+  .pagehead{padding-block:clamp(48px,8vh,92px) clamp(28px,4vh,44px)}
+  .pk{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--ink2);margin-bottom:22px}
+  .pagehead h1{font-weight:700;font-size:clamp(32px,5.4vw,56px);letter-spacing:-.04em;
+               line-height:1.02;margin-bottom:18px}
+  .pagehead p{max-width:62ch;font-size:16px;color:var(--ink2)}
+  .cybar{height:6px;background:var(--cy);margin-top:34px;border-radius:1px}
+
+  .dir{padding-block:clamp(38px,6vh,68px);border-top:1px solid var(--line)}
+  .dir.ref{opacity:.86}
+  .dirhead{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+           flex-wrap:wrap;margin-bottom:34px}
+  .dirname{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--ink2)}
+  .dirname .badge{background:var(--cy);color:var(--ink);padding:3px 8px;border-radius:2px;margin-left:8px}
+  .dirstack{font-family:'Martian Mono',monospace;font-size:10px;color:var(--ink2);letter-spacing:.02em}
+  .dirstack b{color:var(--ink);font-weight:400}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:2px;
+         padding:clamp(24px,4vw,50px)}
+  .eyebrow{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:24px}
+  .hero{font-size:clamp(32px,5.6vw,64px);line-height:1.03;letter-spacing:-.042em;margin-bottom:22px}
+  .hero mark{background:var(--cy);color:var(--ink);padding:0 8px;border-radius:2px;
+             box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .lede{max-width:56ch;font-size:clamp(15.5px,1.3vw,18px);line-height:1.6;color:var(--ink2);margin-bottom:40px}
+  .rule{height:1px;background:var(--line);margin-bottom:36px}
+  .sub{font-size:clamp(19px,2.3vw,28px);letter-spacing:-.03em;line-height:1.15;margin-bottom:13px}
+  .body{max-width:64ch;font-size:15.5px;line-height:1.72;color:var(--ink2);margin-bottom:34px}
+  .specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+         gap:0 34px;margin-bottom:34px;border-top:1px solid var(--line)}
+  .spec{display:flex;justify-content:space-between;gap:14px;padding:11px 0;
+        border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.02em}
+  .spec .k{color:var(--ink2)} .spec .v{color:var(--ink);font-variant-numeric:tabular-nums}
+  .btnrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .btn{display:inline-flex;background:var(--ink);color:var(--ground);padding:13px 26px;
+       border-radius:2px;font-size:14px;font-weight:500;text-decoration:none;letter-spacing:-.01em}
+  .btn.cy{background:var(--cy);color:var(--ink)}
+  .btnnote{font-size:10.5px;line-height:1.7;color:var(--ink2)}
+
+  /* 03 reference — Schibsted + Martian */
+  .r3 .eyebrow,.r3 .spec,.r3 .btnnote{font-family:'Martian Mono',monospace}
+  .r3 .hero,.r3 .sub{font-family:'Schibsted Grotesk';font-weight:700}
+  .r3 .lede,.r3 .body,.r3 .btn{font-family:'Schibsted Grotesk';font-weight:400}
+
+  /* 04 — Chivo superfamily */
+  .d4 .eyebrow,.d4 .spec,.d4 .btnnote{font-family:'Chivo Mono',monospace;letter-spacing:.05em}
+  .d4 .spec{font-size:12px}
+  .d4 .hero,.d4 .sub{font-family:'Chivo';font-weight:800;letter-spacing:-.038em}
+  .d4 .lede,.d4 .body,.d4 .btn{font-family:'Chivo';font-weight:400}
+
+  /* 05 — Bricolage + Spline Sans Mono */
+  .d5 .eyebrow,.d5 .spec,.d5 .btnnote{font-family:'Spline Sans Mono',monospace;letter-spacing:.05em}
+  .d5 .spec{font-size:12px}
+  .d5 .hero,.d5 .sub{font-family:'Bricolage Grotesque';font-weight:800;letter-spacing:-.035em}
+  .d5 .lede,.d5 .body,.d5 .btn{font-family:'Bricolage Grotesque';font-weight:400}
+
+  /* 06 — Familjen + Sometype Mono */
+  .d6 .eyebrow,.d6 .spec,.d6 .btnnote{font-family:'Sometype Mono',monospace;letter-spacing:.05em}
+  .d6 .spec{font-size:12px}
+  .d6 .hero,.d6 .sub{font-family:'Familjen Grotesk';font-weight:700;letter-spacing:-.035em}
+  .d6 .lede,.d6 .body,.d6 .btn{font-family:'Familjen Grotesk';font-weight:400}
+
+  footer{padding-block:28px 64px;border-top:1px solid var(--line);
+         font-family:'Martian Mono',monospace;font-size:10px;color:var(--ink2);
+         letter-spacing:.05em;line-height:2.1}
+  @media(max-width:640px){ .dirhead{flex-direction:column;gap:6px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="pagehead">
+    <div class="pk">Container type · round two · contemporary grotesque</div>
+    <h1>Three more in the direction you picked.</h1>
+    <p>Direction 03 is at the top unchanged, so you are comparing against it rather than from memory. Each new option keeps the same shape: a heavy grotesque carrying display and body, with a distinctive mono holding the labels and the spec row.</p>
+    <div class="cybar"></div>
+  </header>
+
+  <section class="dir ref r3">
+    <div class="dirhead">
+      <div class="dirname">Direction 03 <span class="badge">Reference</span></div>
+      <div class="dirstack"><b>Schibsted Grotesk</b> 700 / 400 &nbsp;·&nbsp; <b>Martian Mono</b> 400</div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow">Web design and build · Philadelphia</div>
+      <h2 class="hero">Websites for brands that <mark>launch things</mark>.</h2>
+      <p class="lede">One person designs and builds it, so the site that ships is the site you approved. Nothing is lost in a handoff, because there is no handoff.</p>
+      <div class="rule"></div>
+      <h3 class="sub">Launch site</h3>
+      <p class="body">One product, one moment, live on your date. A preloader that belongs to the piece, a hero that carries the object, and a material story that earns its weight.</p>
+      <div class="specs">
+        <div class="spec"><span class="k">Timeline</span><span class="v">3–4 weeks</span></div>
+        <div class="spec"><span class="k">From</span><span class="v">$18,000</span></div>
+        <div class="spec"><span class="k">Pages</span><span class="v">1</span></div>
+        <div class="spec"><span class="k">Lighthouse</span><span class="v">95+</span></div>
+      </div>
+      <div class="btnrow">
+        <a class="btn" href="#">Start a project</a>
+        <a class="btn cy" href="#">See the work</a>
+        <span class="btnnote">A short intake.<br>No commitment to start.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="dir d4">
+    <div class="dirhead">
+      <div class="dirname">Direction 04 · Superfamily</div>
+      <div class="dirstack"><b>Chivo</b> 800 / 400 &nbsp;·&nbsp; <b>Chivo Mono</b> 400</div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow">Web design and build · Philadelphia</div>
+      <h2 class="hero">Websites for brands that <mark>launch things</mark>.</h2>
+      <p class="lede">One person designs and builds it, so the site that ships is the site you approved. Nothing is lost in a handoff, because there is no handoff.</p>
+      <div class="rule"></div>
+      <h3 class="sub">Launch site</h3>
+      <p class="body">One product, one moment, live on your date. A preloader that belongs to the piece, a hero that carries the object, and a material story that earns its weight.</p>
+      <div class="specs">
+        <div class="spec"><span class="k">Timeline</span><span class="v">3–4 weeks</span></div>
+        <div class="spec"><span class="k">From</span><span class="v">$18,000</span></div>
+        <div class="spec"><span class="k">Pages</span><span class="v">1</span></div>
+        <div class="spec"><span class="k">Lighthouse</span><span class="v">95+</span></div>
+      </div>
+      <div class="btnrow">
+        <a class="btn" href="#">Start a project</a>
+        <a class="btn cy" href="#">See the work</a>
+        <span class="btnnote">A short intake.<br>No commitment to start.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="dir d5">
+    <div class="dirhead">
+      <div class="dirname">Direction 05 · Character</div>
+      <div class="dirstack"><b>Bricolage Grotesque</b> 800 / 400 &nbsp;·&nbsp; <b>Spline Sans Mono</b> 400</div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow">Web design and build · Philadelphia</div>
+      <h2 class="hero">Websites for brands that <mark>launch things</mark>.</h2>
+      <p class="lede">One person designs and builds it, so the site that ships is the site you approved. Nothing is lost in a handoff, because there is no handoff.</p>
+      <div class="rule"></div>
+      <h3 class="sub">Launch site</h3>
+      <p class="body">One product, one moment, live on your date. A preloader that belongs to the piece, a hero that carries the object, and a material story that earns its weight.</p>
+      <div class="specs">
+        <div class="spec"><span class="k">Timeline</span><span class="v">3–4 weeks</span></div>
+        <div class="spec"><span class="k">From</span><span class="v">$18,000</span></div>
+        <div class="spec"><span class="k">Pages</span><span class="v">1</span></div>
+        <div class="spec"><span class="k">Lighthouse</span><span class="v">95+</span></div>
+      </div>
+      <div class="btnrow">
+        <a class="btn" href="#">Start a project</a>
+        <a class="btn cy" href="#">See the work</a>
+        <span class="btnnote">A short intake.<br>No commitment to start.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="dir d6">
+    <div class="dirhead">
+      <div class="dirname">Direction 06 · Quiet quirk</div>
+      <div class="dirstack"><b>Familjen Grotesk</b> 700 / 400 &nbsp;·&nbsp; <b>Sometype Mono</b> 400</div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow">Web design and build · Philadelphia</div>
+      <h2 class="hero">Websites for brands that <mark>launch things</mark>.</h2>
+      <p class="lede">One person designs and builds it, so the site that ships is the site you approved. Nothing is lost in a handoff, because there is no handoff.</p>
+      <div class="rule"></div>
+      <h3 class="sub">Launch site</h3>
+      <p class="body">One product, one moment, live on your date. A preloader that belongs to the piece, a hero that carries the object, and a material story that earns its weight.</p>
+      <div class="specs">
+        <div class="spec"><span class="k">Timeline</span><span class="v">3–4 weeks</span></div>
+        <div class="spec"><span class="k">From</span><span class="v">$18,000</span></div>
+        <div class="spec"><span class="k">Pages</span><span class="v">1</span></div>
+        <div class="spec"><span class="k">Lighthouse</span><span class="v">95+</span></div>
+      </div>
+      <div class="btnrow">
+        <a class="btn" href="#">Start a project</a>
+        <a class="btn cy" href="#">See the work</a>
+        <span class="btnnote">A short intake.<br>No commitment to start.</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    TYPE ROUND TWO · 2026-09-21 · PALETTE LOCKED, TYPE OPEN<br>
+    ALL FOUR RUN THE SAME COPY IN THE SAME TOKENS · HIGHLIGHT NOW USES BOX-DECORATION-BREAK SO WRAPPED RUNS KEEP THE FILL
+  </footer>
+
+</div>
+</body>
+</html>

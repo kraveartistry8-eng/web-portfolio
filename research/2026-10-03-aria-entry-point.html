@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lowest Paid Rung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px; --warn:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3,h4{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.8vw,56px);letter-spacing:-.042em;line-height:.99}
+h2{font-size:clamp(22px,2.7vw,30px)}
+h3{font-size:19px}
+h4{font-size:15px;letter-spacing:-.01em}
+p{margin:0;max-width:68ch}
+a{color:var(--accent)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:22px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:16px;letter-spacing:-.02em}
+.mast a{text-decoration:none}
+.hero{padding-block:62px 44px}
+.hero .label{margin-bottom:16px}
+.hero h1{max-width:16ch;margin-bottom:24px}
+.hero .lead{font-size:clamp(18px,2vw,23px);line-height:1.4;letter-spacing:-.014em;max-width:58ch}
+.band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-top:38px}
+.band div{background:var(--surface);padding:22px 20px 24px}
+.band .k{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:10px}
+.band .v{font-size:clamp(20px,2.2vw,27px);font-weight:700;letter-spacing:-.03em;line-height:1.05;display:block}
+.band .n{font-size:13px;color:var(--ink-2);line-height:1.45;margin-top:8px;display:block}
+section.sec{border-top:1px solid var(--accent);padding-block:36px 56px}
+.sec__h{display:flex;gap:16px;align-items:baseline;margin-bottom:22px;flex-wrap:wrap}
+.sec__h .num{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:4px 9px;border-radius:2px}
+.sec p + p{margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:18px}
+th,td{text-align:left;vertical-align:top;padding:11px 16px 11px 0;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:400;border-bottom:1px solid var(--ink)}
+td:first-child{font-weight:700;padding-right:24px}
+.flag{border-left:2px solid var(--warn);padding:4px 0 4px 18px;margin-top:20px}
+.flag h4{color:var(--warn);margin-bottom:7px}
+.flag p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.flag p + p{margin-top:10px}
+.flag.ok{border-left-color:var(--accent)}
+.flag.ok h4{color:var(--accent)}
+ol.devil{counter-reset:d;list-style:none;padding:0;margin:20px 0 0}
+ol.devil li{counter-increment:d;border-top:1px solid var(--line);padding:18px 0 20px;
+  display:grid;grid-template-columns:38px 1fr;gap:16px}
+ol.devil li::before{content:counter(d,decimal-leading-zero);font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;color:var(--accent);padding-top:3px}
+ol.devil h4{margin-bottom:6px}
+ol.devil p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+ol.devil p + p{margin-top:9px}
+ul.plain{padding-left:19px;max-width:66ch}
+ul.plain li{margin-bottom:9px}
+.verdict{background:var(--surface);border:1px solid var(--accent);padding:30px 32px 34px;margin-top:8px}
+.verdict h3{margin-bottom:13px;max-width:40ch}
+.verdict p + p{margin-top:12px}
+.src{font-size:13.5px;line-height:1.6;padding-left:19px}
+.src li{margin-bottom:7px;color:var(--ink-2)}
+.nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;padding-block:30px 60px}
+.nav a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
+.nav a:hover{color:var(--accent);border-color:var(--accent)}
+@media (max-width:860px){.band{grid-template-columns:1fr}}
+@media (max-width:620px){:root{--gutter:16px}table{font-size:13.5px}th,td{padding-right:10px}}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>ARIA &middot; Entry point analysis</strong>
+  <p class="label">3 Oct 2026 &middot; S.C.O.P.E.</p>
+</div></div>
+
+<div class="page">
+
+  <header class="hero">
+    <p class="label">The lowest rung that pays</p>
+    <h1>Sell the number, not the opinion.</h1>
+    <p class="lead">The audit is the most commoditized product in this market. The speed fix
+      is the same amount of work, carries a before and after a client can verify,
+      and is already priced at $2,000 by the marketplace you are competing with.</p>
+    <div class="band">
+      <div><span class="k">Commodity floor, observed</span><span class="v">$49</span>
+        <span class="n">Lowest listed start for theme customization on Shopify&rsquo;s own Partners directory. Fiverr CRO audits start at $45.</span></div>
+      <div><span class="k">Lowest defensible rung</span><span class="v">$2,000</span>
+        <span class="n">Live productized price for both &ldquo;Site Speed Optimization&rdquo; and &ldquo;New PDP Layout&rdquo; on Storetasker.</span></div>
+      <div><span class="k">Projects over $10k</span><span class="v">2.4%</span>
+        <span class="n">Of 208 surveyed web designers. Directional only, self-selected sample. Your $15k band is thin air up there.</span></div>
+    </div>
+  </header>
+
+  <section class="sec" id="s1">
+    <div class="sec__h"><span class="num">01</span><h2>Executive summary</h2></div>
+    <p>The question was the lowest entry point that still pays on the way to a design-led studio.
+      The research moved the answer. I had put a paid audit at the bottom rung. The market data
+      says the audit is the wrong bottom rung, and that a <strong>performance fix sold on a measured
+      before and after</strong> is a better one at three times the price.</p>
+    <p>Three findings carry the decision.</p>
+    <ul class="plain">
+      <li><strong>Anything describable as &ldquo;audit&rdquo; or &ldquo;theme customization&rdquo; is already sold at $45 to $300.</strong>
+        This is observable, not estimated. Shopify&rsquo;s own Partners directory lists theme customization
+        starting at $49, $50, $85, $100, $150, $200, $249. You cannot win that category and you should
+        not enter it.</li>
+      <li><strong>The productized middle is visible and priced.</strong> Storetasker publishes live starting
+        prices: Landing Page Customization $400, Theme Edits $475, <strong>New PDP Layout $2,000 over two weeks</strong>,
+        <strong>Site Speed Optimization $2,000 over one month</strong>. These are the real rungs, and two of them
+        map onto weeks already in your curriculum.</li>
+      <li><strong>The speed fix needs no case study.</strong> Every other entry offer requires proof you will not
+        have until mid-November. A performance engagement proves itself inside the engagement, because
+        the deliverable is a number the client can check in the same tool you used.</li>
+    </ul>
+    <div class="flag ok">
+      <h4>What changed from the first answer</h4>
+      <p>I said $750 for thinking, $2,000 for building. The building floor survived contact with the
+        data and is now market-confirmed at $2,000. The $750 audit did not survive. Audits clear
+        anywhere from $45 to $5,000 with nothing defensible in the middle, and $750 lands exactly in
+        the dead zone: too expensive to buy on impulse, too cheap to read as expertise.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s2">
+    <div class="sec__h"><span class="num">02</span><h2>The rungs, priced and dated</h2></div>
+    <table>
+      <thead><tr><th>Rung</th><th>Offer</th><th>Price</th><th>Clock</th><th>Sellable from</th><th>Basis</th></tr></thead>
+      <tbody>
+        <tr><td>Lead</td><td>Performance and INP fix, reported as before and after</td><td>$1,500&ndash;$2,500</td><td>2&ndash;3 weekends</td><td>~14 Nov, after W6</td><td>$2,000 observed, Storetasker</td></tr>
+        <tr><td>Twin</td><td>One page rebuilt properly, PDP or landing</td><td>$2,000&ndash;$3,500</td><td>2 weekends</td><td>~14 Nov, after W5</td><td>$2,000 observed, Storetasker</td></tr>
+        <tr><td>Door opener</td><td>Paid teardown, warm list only, never cold</td><td>$500 flat</td><td>1 week</td><td>Now, from 9 Oct</td><td>My assertion. See 03.</td></tr>
+        <tr><td>Later</td><td>Agency subcontract, day rate</td><td>$900/day</td><td>By sprint</td><td>Dec, after the artifact exists</td><td>Vendor tier. See flag.</td></tr>
+        <tr><td>Never</td><td>Theme customization gigs, tweak work</td><td>$49&ndash;$300</td><td class="muted">n/a</td><td class="muted">n/a</td><td>Shopify Partners directory</td></tr>
+        <tr><td>Park</td><td>A theme sold on the Theme Store</td><td>85% of sales</td><td>Unknown</td><td class="muted">n/a</td><td>shopify.dev. See 04.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:18px">The shape of it: from 9 October to mid-November the only thing you can honestly sell
+      is the teardown, and only to people who already know your name. From roughly 14 November two real
+      offers open at once, and both of them are weeks you were already going to do. That is the whole
+      sequencing answer.</p>
+    <div class="flag">
+      <h4>Your assumed day rate is half right</h4>
+      <p>The roadmap assumes agency subcontract at $900 to $1,600 a day. Across every source found,
+        freelance Shopify developers run $30 to $285 an hour, with mid-level clustering near $78 and
+        senior near $133. Eight hours at $900 is $112 an hour, which sits at the top of the freelance
+        band and is defensible for a specialist with proof. Eight hours at $1,600 is $200 an hour,
+        which is above every freelance figure found and inside boutique-agency territory at $90 to
+        $175. Plan on $900. Treat $1,600 as a ceiling you may never touch as a subcontractor.</p>
+      <p>Confidence 6/10. Every rate source here is vendor tier, meaning a company publishing numbers
+        about its own users or its own hiring. No independent survey of Shopify subcontract rates was found.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3">
+    <div class="sec__h"><span class="num">03</span><h2>The devil&rsquo;s advocate</h2></div>
+    <ol class="devil">
+      <li><div>
+        <h4>The case against the audit is stronger than the case for it</h4>
+        <p>A great deal of writing argues that cheap front-end offers attract buyers who will never
+          purchase the expensive thing. All of it that I found is folklore tier: no study, no sample,
+          and almost every piece written by someone selling high-ticket coaching. Discount the argument.</p>
+        <p>The observable pricing points the same way without needing the argument. The audit&rsquo;s problem
+          is not that it is cheap. Its problem is that at a glance it is <em>indistinguishable</em> from a $45
+          Fiverr gig, because the deliverable is a document and nobody can see a document before they buy it.
+          A rebuilt page can be looked at. That is the whole difference.</p>
+      </div></li>
+      <li><div>
+        <h4>So the teardown is not a product. It is a conversation with an invoice attached.</h4>
+        <p>Which changes where it belongs. It works sold to someone who already knows your name and is
+          already half-persuaded, so it goes to the warm 30 to 50 and nowhere else. Sold to a stranger it
+          competes on price and loses. Keep it off the cold list entirely, and keep it at $500 flat so it
+          reads as a deliberate first step rather than a quote.</p>
+      </div></li>
+      <li><div>
+        <h4>The survey says almost nobody charges what your roadmap charges</h4>
+        <p>Of 208 web designers surveyed in 2025, 57% priced projects between $2,500 and $9,999, and only
+          <strong>2.4% exceeded $10,000 a project</strong>. 66% earned under $50,000 for the year. Your $15k to $40k band
+          sits in the top two percent of that distribution.</p>
+        <p>Two readings and both are true. The sample is self-selected, recruited from one academy&rsquo;s own
+          audience, 60% US, and its authors call it directional rather than representative. It is also
+          almost certainly measuring a mostly-small-business, mostly-not-Shopify population, and the
+          Shopify-specific figures put mid-tier agency projects at $15,000 to $35,000. The band holds.
+          What the survey should do is kill any assumption that this is a crowded, obvious move. Almost
+          nobody is up there, which is the opportunity and the reason it will feel lonely and slow.</p>
+      </div></li>
+      <li><div>
+        <h4>The paid-discovery evidence is weaker than it sounds</h4>
+        <p>The same survey reports that only 15% charge for discovery upfront, and that those who do are
+          twice as likely to land $5,000-plus projects. That is correlational, n=208, self-reported. It
+          cannot carry a causal sentence. The likeliest explanation is that charging for discovery is a
+          marker of the positioning and nerve that also produce bigger projects, not a cause of them.
+          Use the direction. Do not quote the figure, and do not expect charging $500 to raise your prices by itself.</p>
+      </div></li>
+      <li><div>
+        <h4>The finding I underweighted the first time</h4>
+        <p>Site Speed Optimization, $2,000, one month, live on a marketplace of vetted Shopify freelancers.
+          Core Web Vitals and a sub-200ms INP are already week 6 of your plan. This offer is sellable with
+          no portfolio, because the proof is generated during delivery and the client can verify it in
+          PageSpeed Insights themselves. Your own document already makes this argument: a number the client
+          can check is worth more than an adjective. The research says that number is also the easiest
+          thing you own to sell first.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="s4">
+    <div class="sec__h"><span class="num">04</span><h2>The product route, and why it is parked</h2></div>
+    <p>A theme sold on the Shopify Theme Store is the only entry point here that pays without a client,
+      and on paper it is the best long-term fit for a design-led studio of one. The mechanics, from
+      shopify.dev directly: no fee to submit, a 15% revenue share so you keep 85%, plus a 2.9% processing
+      fee charged separately since 1 August 2021. You need a Partner Dashboard account and a demo store.</p>
+    <p>Three things disqualify it as the <em>first</em> paid thing. There is no published review timeline anywhere
+      in the documentation. Once the review team starts, you cannot touch the theme until they finish.
+      And themes are rejected on design sophistication and uniqueness, which is a subjective bar you
+      cannot engineer against in advance.</p>
+    <div class="flag">
+      <h4>Insufficient data available for Theme Store earnings</h4>
+      <p>No source found, primary or otherwise, for what a published theme actually earns or for the
+        distribution of earnings across themes. Shopify publishes the revenue share and not the revenue.
+        Anyone quoting you a figure for this is guessing. Do not plan around it.</p>
+    </div>
+    <p style="margin-top:20px">Park it. Revisit it in April, once there is a real storefront behind you and
+      the question is how to earn while asleep rather than how to earn at all.</p>
+  </section>
+
+  <section class="sec" id="s5">
+    <div class="sec__h"><span class="num">05</span><h2>Data table</h2></div>
+    <table>
+      <thead><tr><th>Variable</th><th>Value</th><th>Source tier</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td>Theme Store revenue share</td><td>15% to Shopify, 85% to developer, plus 2.9% processing</td><td>Primary, shopify.dev</td><td>10/10</td></tr>
+        <tr><td>Theme customization floor, Shopify directory</td><td>$49 lowest listed start, 11 of 16 listings show a price</td><td>Primary, observed listings</td><td>9/10</td></tr>
+        <tr><td>New PDP Layout, productized</td><td>$2,000, two weeks</td><td>Primary, live marketplace price</td><td>8/10</td></tr>
+        <tr><td>Site Speed Optimization, productized</td><td>$2,000, one month</td><td>Primary, live marketplace price</td><td>8/10</td></tr>
+        <tr><td>Landing page work, productized</td><td>$400 customization, $500 design</td><td>Primary, live marketplace price</td><td>8/10</td></tr>
+        <tr><td>Projects over $10k among surveyed designers</td><td>2.4%</td><td>Directional, n=208 self-selected</td><td>5/10</td></tr>
+        <tr><td>Designers charging for discovery</td><td>15%, correlated with 2&times; odds of $5k+ projects</td><td>Directional, correlational</td><td>4/10</td></tr>
+        <tr><td>Freelance Shopify developer hourly band</td><td>$30&ndash;$285, mid ~$78, senior ~$133</td><td>Vendor</td><td>5/10</td></tr>
+        <tr><td>Boutique to mid agency hourly</td><td>$90&ndash;$175</td><td>Vendor</td><td>4/10</td></tr>
+        <tr><td>Standalone CRO audit range</td><td>$45 to $5,000, no defensible middle</td><td>Vendor plus observed Fiverr</td><td>5/10</td></tr>
+        <tr><td>Theme Store review timeline</td><td>Not published</td><td>Gap</td><td class="muted">n/a</td></tr>
+        <tr><td>Theme Store earnings per theme</td><td>Insufficient data available</td><td>Gap</td><td class="muted">n/a</td></tr>
+        <tr><td>Audit-to-build conversion rate</td><td>Insufficient data available</td><td>Gap</td><td class="muted">n/a</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="sec" id="s6">
+    <div class="sec__h"><span class="num">06</span><h2>The verdict and the test</h2></div>
+    <div class="verdict">
+      <h3>Lead with the performance fix at $2,000. Use the $500 teardown only on people who already know you.</h3>
+      <p>The lowest entry point that still builds toward a design-led studio is not the cheapest thing
+        you can sell. It is the cheapest thing you can sell <em>whose proof is generated during delivery</em>.
+        That is the performance engagement, and it is $2,000, not $750.</p>
+      <p>Everything below $1,500 in this market is a race against agencies listing from $49 on Shopify&rsquo;s
+        own directory. You will not win it, and every weekend spent in it is a weekend taken out of the
+        twenty-seven.</p>
+    </div>
+    <p style="margin-top:28px"><strong>The test, and the date it resolves.</strong></p>
+    <ul class="plain">
+      <li><strong>Batch:</strong> the warm 30 to 50, across the Friday sends from 9 Oct. One offer in the email,
+        the $500 teardown, with a named deliverable and a one-week clock.</li>
+      <li><strong>Window:</strong> closes 13 Nov, which is the send before the storefront is finished.</li>
+      <li><strong>Deciding metric:</strong> paid teardowns, not replies. Replies are not conversations and
+        conversations are not invoices.</li>
+      <li><strong>Kill criteria:</strong> zero paid teardowns by 13 Nov means the offer is wrong, not the volume.
+        Do not send more. Switch on 14 Nov to leading with the performance fix at a flat $2,000, which is
+        the week the number becomes yours to show.</li>
+      <li><strong>Floor rule:</strong> nothing free, nothing open-ended, half up front, and no engagement
+        under $500 for any reason including the first one.</li>
+    </ul>
+  </section>
+
+  <section class="sec" id="s7">
+    <div class="sec__h"><span class="num">07</span><h2>Sources and gap analysis</h2></div>
+    <p><strong>Primary.</strong></p>
+    <ol class="src">
+      <li>Revenue share for Shopify Theme Store developers <span class="mono">shopify.dev/docs/storefronts/themes/store/revenue-share</span></li>
+      <li>Shopify Theme Store, requirements and review process <span class="mono">shopify.dev/docs/storefronts/themes/store</span></li>
+      <li>Submitting a theme to the Shopify Theme Store <span class="mono">shopify.dev/docs/storefronts/themes/store/review-process/submit-theme</span></li>
+      <li>Shopify Partners directory, theme customization listings and stated starting prices <span class="mono">shopify.com/partners/directory/services/store-setup/customize-theme</span></li>
+      <li>Storetasker, live productized service prices and timelines <span class="mono">storetasker.com</span></li>
+      <li>Fiverr, Shopify CRO audit listings from $45 <span class="mono">fiverr.com/gigs/shopify-cro-audit</span></li>
+    </ol>
+    <p style="margin-top:18px"><strong>Directional.</strong></p>
+    <ol class="src" start="7">
+      <li>State of Web Designer Pricing 2025, Web Designer Academy. n=208, collected 2 Mar to 4 Apr 2025,
+        recruited from the academy&rsquo;s own audience of women web designers and summit attendees, 60% US,
+        self-reported non-probability sample, labelled directional by its own authors.</li>
+    </ol>
+    <p style="margin-top:18px"><strong>Vendor.</strong> Used as planning input only, never as fact.</p>
+    <ol class="src" start="8">
+      <li>Storetasker blog, Shopify developer rates 2025. Author&rsquo;s own estimates and case studies, explicitly
+        not platform transaction data.</li>
+      <li>goLance, Shopify and web designer hourly rate guides.</li>
+      <li>shopexperts, webulux, folio3, abbacus, thunderpagespeed, boldmatch. Agency and tool pricing pages with
+        no stated method or sample.</li>
+    </ol>
+    <p style="margin-top:18px"><strong>Folklore. Named and discarded.</strong></p>
+    <ol class="src" start="11">
+      <li>The body of writing arguing that low-ticket offers structurally fail to convert to high-ticket work.
+        No study, no sample, no method found in any instance. Predominantly authored by sellers of high-ticket
+        coaching, which is the conflict of interest that gives the claim its shape. The conclusion in this report
+        rests on observed marketplace pricing instead.</li>
+    </ol>
+    <p style="margin-top:22px"><strong>Unresolved questions.</strong></p>
+    <ul class="plain">
+      <li>What a published Shopify theme actually earns. No figure found anywhere. Insufficient data available.</li>
+      <li>The Theme Store review timeline. Not published by Shopify.</li>
+      <li>Conversion rate from a paid audit or teardown to a full build, in any market. The 2&times; correlation
+        above is the closest thing found and it is not an answer.</li>
+      <li>What share of Shopify freelance jobs are small versus large. No marketplace publishes this.
+        Insufficient data available.</li>
+      <li>Independent, non-vendor survey data on Shopify subcontract day rates. None found. The $900 figure
+        is a floor inferred from vendor hourly bands, not a measured rate.</li>
+    </ul>
+  </section>
+
+  <nav class="nav">
+    <a href="../2026-10-02-shopify-roadmap.html">The roadmap</a>
+    <a href="2026-10-02-aria-shopify-market.html">Market report</a>
+    <a href="2026-10-03-aria-shopify-skills.html">Skill stack</a>
+    <a href="2026-10-03-aria-skills/01-liquid-front-end.html">Per-skill reports</a>
+  </nav>
+
+</div>
+</body>
+</html>

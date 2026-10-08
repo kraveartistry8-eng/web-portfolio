@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design Psychology Evidence Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF; --ink:#161614; --ink2:#6B6B66; --line:#D8D8D4;
+  --a:#185F6B; --cy:#90e0ef;
+  --solid:#185F6B; --soft:#8A6A2A; --myth:#9C3B2B;
+  --sans:'Epilogue',system-ui,sans-serif; --mono:'Fragment Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+     -webkit-font-smoothing:antialiased;line-height:1.5}
+.page{max-width:1080px;margin:0 auto;padding:64px 28px 130px}
+
+/* masthead */
+.mast{border-bottom:2px solid var(--ink);padding-bottom:20px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--a);margin:0 0 16px}
+h1{font-weight:700;font-size:clamp(36px,6.2vw,74px);line-height:.95;letter-spacing:-.04em;
+   margin:0;max-width:16ch;text-wrap:balance}
+.mast p{font-size:18px;color:var(--ink2);max-width:60ch;margin:22px 0 0;line-height:1.55}
+.runline{display:flex;flex-wrap:wrap;gap:6px 24px;font-family:var(--mono);font-size:11px;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);
+         padding:14px 0 0;margin-bottom:84px}
+
+/* section furniture */
+section{margin-bottom:88px}
+.shead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--ink);
+       padding-bottom:11px;margin-bottom:30px}
+.shead .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink2);flex:none}
+.shead h2{font-weight:700;font-size:clamp(23px,3vw,34px);letter-spacing:-.025em;margin:0;line-height:1.1}
+.lede{font-size:17px;line-height:1.6;color:var(--ink2);max-width:66ch;margin:0 0 36px}
+
+/* exec summary */
+.keys{display:grid;gap:2px;background:var(--line);border:1px solid var(--line)}
+.key{background:var(--surface);padding:28px 30px;display:grid;
+     grid-template-columns:44px 1fr;gap:22px;align-items:start}
+.key .k{font-family:var(--mono);font-size:12px;color:var(--a);padding-top:4px}
+.key h3{font-weight:700;font-size:19px;letter-spacing:-.015em;margin:0 0 8px;line-height:1.25}
+.key p{margin:0;font-size:16px;line-height:1.6;color:var(--ink2);max-width:72ch}
+.key p b{color:var(--ink);font-weight:400;background:var(--cy);padding:0 5px;
+         box-decoration-break:clone;-webkit-box-decoration-break:clone}
+
+/* tier blocks */
+.tier{margin-bottom:46px}
+.tlabel{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.dot{width:11px;height:11px;flex:none}
+.tlabel span{font-family:var(--mono);font-size:12px;letter-spacing:.11em;text-transform:uppercase}
+.tlabel em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--ink2);
+           letter-spacing:.06em}
+.claim{border-top:1px solid var(--line);padding:22px 0 20px;
+       display:grid;grid-template-columns:1fr 132px;gap:20px 30px;align-items:start}
+.claim:last-child{border-bottom:1px solid var(--line)}
+.claim h4{font-weight:700;font-size:18px;letter-spacing:-.015em;margin:0 0 7px;line-height:1.3}
+.claim p{margin:0 0 9px;font-size:15.5px;line-height:1.6;color:var(--ink2);max-width:70ch}
+.claim p:last-child{margin-bottom:0}
+.src{font-family:var(--mono);font-size:11.5px;color:var(--ink);line-height:1.7}
+.src a{color:var(--a);text-decoration:none;border-bottom:1px solid rgba(24,95,107,.35)}
+.conf{text-align:right;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink2)}
+.conf b{display:block;font-weight:400;font-size:27px;letter-spacing:-.02em;line-height:1.15;
+        color:var(--ink);margin-bottom:2px}
+.bar{height:3px;background:var(--line);margin-top:9px}
+.bar i{display:block;height:3px}
+
+/* devil */
+.devil{background:var(--surface);border-left:3px solid var(--myth);padding:30px 32px 26px;
+       margin-bottom:2px}
+.devil h4{font-weight:700;font-size:18px;margin:0 0 9px;letter-spacing:-.015em}
+.devil p{margin:0;font-size:16px;line-height:1.6;color:var(--ink2);max-width:74ch}
+.devil p + p{margin-top:10px}
+
+/* table */
+.wrap{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:660px}
+th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+   color:var(--ink2);font-weight:400;border-bottom:1px solid var(--ink)}
+td{font-size:14.5px;line-height:1.5}
+td.v{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums lining-nums;
+     white-space:nowrap}
+td.c{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap;
+     font-variant-numeric:tabular-nums lining-nums}
+tr:last-child td{border-bottom:none}
+
+/* gaps */
+.gap{border-top:1px solid var(--line);padding:18px 0}
+.gap:last-child{border-bottom:1px solid var(--line)}
+.gap h4{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+        margin:0 0 7px;color:var(--myth);font-weight:400}
+.gap p{margin:0;font-size:15.5px;line-height:1.6;color:var(--ink2);max-width:74ch}
+
+/* apply */
+.apply{background:var(--surface);padding:44px 40px 38px;border:1px solid var(--line)}
+.apply ol{margin:0;padding:0;list-style:none;counter-reset:a}
+.apply li{counter-increment:a;border-top:1px solid var(--line);padding:22px 0 20px;
+          display:grid;grid-template-columns:36px 1fr;gap:18px}
+.apply li:first-child{border-top:none;padding-top:0}
+.apply li::before{content:counter(a,decimal-leading-zero);font-family:var(--mono);font-size:12px;
+                  color:var(--a);padding-top:5px}
+.apply strong{display:block;font-weight:700;font-size:18px;letter-spacing:-.015em;margin-bottom:7px}
+.apply p{margin:0;font-size:16px;line-height:1.6;color:var(--ink2);max-width:70ch}
+
+.foot{font-family:var(--mono);font-size:11.5px;color:var(--ink2);line-height:1.9;
+      border-top:1px solid var(--ink);padding-top:18px;margin-top:70px}
+.foot a{color:var(--a);text-decoration:none;border-bottom:1px solid rgba(24,95,107,.3)}
+
+@media(max-width:620px){
+  .claim{grid-template-columns:1fr}
+  .conf{text-align:left}
+  .key{grid-template-columns:1fr;gap:10px}
+  .apply{padding:30px 22px 26px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="mast">
+  <p class="eyebrow">ARIA &#183; S.C.O.P.E. protocol &#183; intelligence report</p>
+  <h1>What design psychology actually holds up</h1>
+  <p>An evidence audit of the psychological claims web designers use to justify their work, sorted by whether the research survives contact with replication. Scoped to visual and interaction design for consumer brands.</p>
+</div>
+<div class="runline">
+  <span>2026&#8202;/&#8202;09&#8202;/&#8202;23</span>
+  <span>7 branch searches &#183; 11 primary sources</span>
+  <span>Red-team pass complete</span>
+</div>
+
+<!-- 01 -->
+<section>
+  <div class="shead"><span class="n">01</span><h2>Executive summary</h2></div>
+  <p class="lede">Four findings change how you should talk about your work. The first two are assets. The third is a liability you are probably carrying without knowing it. The fourth is the one that decides your pricing argument.</p>
+
+  <div class="keys">
+    <div class="key">
+      <span class="k">A</span>
+      <div>
+        <h3>Visual design is the single largest driver of perceived credibility, and it is measured</h3>
+        <p>In the Stanford Web Credibility study (n&#8202;=&#8202;2,684), <b>46.1% of the reasons people gave for trusting or distrusting a site referenced visual design</b> &#8212; layout, typography, color, spacing. No other factor came close. This is the strongest empirical ground your offer stands on, and it is about trust, not conversion.</p>
+      </div>
+    </div>
+    <div class="key">
+      <span class="k">B</span>
+      <div>
+        <h3>The aesthetic judgment is finished before the page finishes loading</h3>
+        <p>Lindgaard (2006) found visual appeal ratings at <b>50ms are almost perfectly correlated with ratings at 500ms</b>, and stable across repeat exposures. The first painted frame is the product. What it does not show is trust or intent &#8212; that is a distortion added later by marketing blogs.</p>
+      </div>
+    </div>
+    <div class="key">
+      <span class="k">C</span>
+      <div>
+        <h3>Most color psychology in circulation is folklore, and it is traceable</h3>
+        <p>The &#8220;color increases brand recognition by 80%&#8221; line that appears in thousands of design decks traces back to <b>a Xerox marketing leaflet</b> and a 1990 study about color in graphs and printed documents, not branding. Repeating it in front of a sophisticated client is a credibility risk, not a credibility asset.</p>
+      </div>
+    </div>
+    <div class="key">
+      <span class="k">D</span>
+      <div>
+        <h3>Whitespace and typeface have direct experimental support for perceived value</h3>
+        <p>A 2025 study in the Journal of Sensory Studies found <b>large white space raised perceived luxury and luxurious typefaces raised perceived quality</b> in package design. This is the mechanism behind premium pricing, and it is the one place where the restraint you already practice has published support behind it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section>
+  <div class="shead"><span class="n">02</span><h2>The evidence, sorted</h2></div>
+  <p class="lede">Three tiers. Solid means replicated or based on large primary samples. Directional means the effect is probably real but the number attached to it is not trustworthy. Folklore means the citation chain breaks when you follow it.</p>
+
+  <!-- TIER 1 -->
+  <div class="tier">
+    <div class="tlabel"><span class="dot" style="background:#185F6B"></span>
+      <span style="color:#185F6B">Solid</span><em>replicated, or large primary sample</em></div>
+
+    <div class="claim">
+      <div>
+        <h4>The aesthetic-usability effect</h4>
+        <p>People rate attractive interfaces as more usable regardless of actual usability. Kurosu &amp; Kashimura (1995) found it with ATM layouts in Japan. Tractinsky re-ran it in Hebrew with tightened controls and not only replicated it, the correlation came out <em>stronger</em>. Tractinsky, Katz &amp; Ikar (2000) then showed aesthetics affected post-use perceptions of both aesthetics and usability, while actual usability affected neither.</p>
+        <p>Later work qualifies the direction: Tuch et al. (2012) found the reverse also runs, what is usable comes to be seen as beautiful. The effect is real; the arrow points both ways.</p>
+        <p class="src">Tractinsky et al., <em>Interacting with Computers</em> 13(2) &#183; <a href="https://www.sciencedirect.com/science/article/abs/pii/S095354380000031X">sciencedirect.com</a><br>Tuch et al. 2012 &#183; <a href="https://cpb-us-e1.wpmucdn.com/wp.wwu.edu/dist/8/2868/files/2018/04/Tuch-et-al-2012-Is-Beautiful-Usable-2don1em.pdf">wwu.edu (PDF)</a></p>
+      </div>
+      <div class="conf"><b>9</b>confidence<div class="bar"><i style="width:90%;background:#185F6B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Visual design dominates credibility judgments</h4>
+        <p>Stanford Web Credibility Project, Fogg et al. (2002). 2,684 participants evaluated live sites and explained their reasoning in free text. Design look was mentioned in 46.1% of comments, more than any other single factor, ahead of information structure, company motive and content accuracy.</p>
+        <p>Fogg's own reading: the average consumer paid far more attention to surface visual cues than to content.</p>
+        <p class="src">Fogg et al., Stanford Persuasive Technology Lab &#183; <a href="https://dl.acm.org/doi/10.1145/997078.997097">ACM DUX 2003</a><br>Project overview &#183; <a href="https://credibility.stanford.edu/guidelines">credibility.stanford.edu</a></p>
+      </div>
+      <div class="conf"><b>8</b>confidence<div class="bar"><i style="width:80%;background:#185F6B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Appeal is decided in 50 milliseconds and does not move</h4>
+        <p>Lindgaard et al. (2006), three studies. Participants rated homepages shown for 500ms, then the design was replicated with a 50ms condition on the same stimuli. Ratings correlated highly between the two exposure lengths and across phases.</p>
+        <p>The narrow claim is solid. The widespread rephrasing &#8212; &#8220;users form an opinion of your site in 0.05 seconds&#8221; &#8212; is not what was measured. The study measured <em>visual appeal only</em>, not trust, usability or purchase intent.</p>
+        <p class="src">Lindgaard, Fernandes, Dudek &amp; Brown, <em>Behaviour &amp; Information Technology</em> 25(2), 115&#8211;126 &#183; <a href="https://www.tandfonline.com/doi/abs/10.1080/01449290500330448">tandfonline.com</a></p>
+      </div>
+      <div class="conf"><b>9</b>confidence<div class="bar"><i style="width:90%;background:#185F6B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Visual complexity and prototypicality predict appeal, and they pull against each other</h4>
+        <p>Reinecke &amp; Gajos (CHI 2013) collected appeal, complexity and colorfulness ratings for 450 websites from 548 people. Computational models of perceived complexity and colorfulness, combined with demographics, explained roughly half the variance in appeal ratings after a 500ms exposure.</p>
+        <p>Lower visual complexity rates higher. So does prototypicality: looking like what people already expect that kind of site to look like.</p>
+        <p class="src">Reinecke &amp; Gajos, CHI 2013 &#183; <a href="https://dl.acm.org/doi/10.1145/2470654.2481281">ACM</a><br>Complexity &amp; prototypicality &#183; <a href="https://storage.googleapis.com/gweb-research2023-media/pubtools/pdf/38315.pdf">Google Research (PDF)</a></p>
+      </div>
+      <div class="conf"><b>8</b>confidence<div class="bar"><i style="width:80%;background:#185F6B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>White space raises perceived luxury; typeface raises perceived quality</h4>
+        <p>Iseki et al. (2025), <em>Journal of Sensory Studies</em>, tested white space, typeface and visual texture in package design. Large white space raised perceived luxury. Luxurious typefaces raised perceived product quality. Related work on logos found spacious marks increased feelings of relaxation and shifted products toward being seen as hedonic rather than utilitarian.</p>
+        <p>[Low Confidence on effect size] The publisher blocked automated retrieval, so the abstract-level finding is verified but the statistics are not.</p>
+        <p class="src">Iseki et al., <em>J. Sensory Studies</em> 2025 &#183; <a href="https://onlinelibrary.wiley.com/doi/10.1111/joss.70026">Wiley (paywalled)</a><br>Logo spacing &#183; <a href="https://www.sciencedirect.com/science/article/pii/S0148296325001183">J. Business Research 2025</a></p>
+      </div>
+      <div class="conf"><b>7</b>confidence<div class="bar"><i style="width:70%;background:#185F6B"></i></div></div>
+    </div>
+  </div>
+
+  <!-- TIER 2 -->
+  <div class="tier">
+    <div class="tlabel"><span class="dot" style="background:#8A6A2A"></span>
+      <span style="color:#8A6A2A">Directional</span><em>effect likely real, attached number is not</em></div>
+
+    <div class="claim">
+      <div>
+        <h4>Load time and conversion</h4>
+        <p>Deloitte and Google, &#8220;Milliseconds Make Millions&#8221; (2020). 37 European and American brand sites, 30 million sessions, hour-by-hour mobile load monitoring over 30 days with no redesigns during the window. A 0.1s improvement was associated with 8.4% higher retail conversion and 9.2% higher average order value; travel 10.1% and 1.9%.</p>
+        <p>Two limits the report states itself. It is <em>correlational</em>, observing naturally occurring speed variation rather than manipulating load time experimentally, so confounds are not ruled out. And it is mobile only: the researchers examined desktop, found contradicting parameters, and excluded it.</p>
+        <p class="src">Deloitte &amp; Google, 2020 &#183; <a href="https://www.thinkwithgoogle.com/_qs/documents/9757/Milliseconds_Make_Millions_report_hQYAbZJ.pdf">Think with Google (PDF)</a> &#183; <a href="https://www.deloitte.com/ie/en/services/consulting/research/milliseconds-make-millions.html">Deloitte</a></p>
+      </div>
+      <div class="conf"><b>6</b>direction<div class="bar"><i style="width:60%;background:#8A6A2A"></i></div>
+      <b style="font-size:20px;margin-top:11px">3</b>the number<div class="bar"><i style="width:30%;background:#9C3B2B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Above the fold</h4>
+        <p>Nielsen Norman's original eyetracking put 80.3% of viewing time above the fold. That study used 21 users across 541 pages at 1,024&#215;768 &#8212; a resolution nobody has used in fifteen years, and Nielsen flags in the article that a larger monitor would change the number. Their 2018 follow-up reported 57% above the fold, with 74% in the first two screenfuls.</p>
+        <p>The &#8220;roughly 40% by 2025&#8221; figure circulating in design blogs is an extrapolation by third parties, not an NN/g measurement. Do not cite it.</p>
+        <p class="src">NN/g original research &#183; <a href="https://www.nngroup.com/articles/scrolling-and-attention-original-research/">nngroup.com</a><br>2018 update &#183; <a href="https://www.nngroup.com/articles/scrolling-and-attention/">Scrolling and Attention</a></p>
+      </div>
+      <div class="conf"><b>6</b>confidence<div class="bar"><i style="width:60%;background:#8A6A2A"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Motion, parallax and vestibular discomfort</h4>
+        <p>The mechanism is established and is in the WCAG 2.2 standard: Success Criterion 2.3.3 covers animation triggered by interaction, and parallax creates a mismatch between visual motion and inner-ear signal that can trigger dizziness and nausea. A Purdue study found parallax improved some aspects of experience without improving overall experience.</p>
+        <p>[Low Confidence] Specific thresholds circulating in design guidance &#8212; &#8220;0.5&#215; is the maximum comfortable rate differential,&#8221; &#8220;35% of adults over 40&#8221; &#8212; appear only on secondary sites with no traceable primary study. Treat them as invented until someone produces the paper.</p>
+        <p class="src">W3C WCAG 2.2 SC 2.3.3 &#183; <a href="https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html">w3.org</a><br>WebKit, Responsive Design for Motion &#183; <a href="https://webkit.org/blog/7551/responsive-design-for-motion/">webkit.org</a></p>
+      </div>
+      <div class="conf"><b>7</b>mechanism<div class="bar"><i style="width:70%;background:#8A6A2A"></i></div>
+      <b style="font-size:20px;margin-top:11px">2</b>thresholds<div class="bar"><i style="width:20%;background:#9C3B2B"></i></div></div>
+    </div>
+  </div>
+
+  <!-- TIER 3 -->
+  <div class="tier">
+    <div class="tlabel"><span class="dot" style="background:#9C3B2B"></span>
+      <span style="color:#9C3B2B">Folklore</span><em>citation chain breaks when followed</em></div>
+
+    <div class="claim">
+      <div>
+        <h4>&#8220;Color increases brand recognition by 80%&#8221;</h4>
+        <p>Attributed to Dr. Ellen Hoadley of Loyola University Maryland. The actual 1990 research was about how color improves the processing of information in <em>graphs and printed text</em>, conducted when color printing was still expensive and rare. It was not about branding. The oldest located instance of the 80% branding claim is a Xerox marketing leaflet titled &#8220;20 Ways to Share the Color Knowledge.&#8221;</p>
+        <p>The companion claim, that 62&#8211;90% of a snap product judgment comes from color, traces to Singh (2006) &#8212; a literature review, not a controlled buying experiment.</p>
+        <p class="src">Origin traced &#183; <a href="https://www.insights4print.ceo/2019/02/color-increases-brand-recognition-by-80-the-real-contents-of-the-loyola-study-revealed/">insights4print.ceo</a> &#183; <a href="https://www.brandingbullshit.com/p/branding-myths-color-psychology">Branding Myths</a></p>
+      </div>
+      <div class="conf"><b>9</b>misattributed<div class="bar"><i style="width:90%;background:#9C3B2B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Hard-to-read fonts improve memory and comprehension</h4>
+        <p>Diemand-Yauman et al. (2011) reported that disfluent typefaces improved retention in lab and classroom settings. It became a design-school staple. It has repeatedly failed to replicate. Sans Forgetica, a typeface engineered specifically on this premise, produces the feeling of disfluency without any memory benefit over ordinary fonts, across multiple independent studies.</p>
+        <p class="src">Taylor et al., <em>Memory</em> 28(7) &#183; <a href="https://www.tandfonline.com/doi/full/10.1080/09658211.2020.1758726">tandfonline.com</a><br>Wetzler, Pyke &amp; Werner (2021) &#183; <a href="https://journals.sagepub.com/doi/full/10.1177/21582440211056624">SAGE Open</a><br>DRM paradigm test &#183; <a href="https://link.springer.com/article/10.1186/s41235-022-00448-9">Cognitive Research 2022</a></p>
+      </div>
+      <div class="conf"><b>9</b>failed to replicate<div class="bar"><i style="width:90%;background:#9C3B2B"></i></div></div>
+    </div>
+
+    <div class="claim">
+      <div>
+        <h4>Behavioral priming</h4>
+        <p>The family of effects behind a great deal of &#8220;subconscious design influence&#8221; writing. A 2024 review of 70 close replications found 94% reported smaller effect sizes than the original, and only 17% found a statistically significant effect in the original direction. Research output has collapsed while citations to the original work continue.</p>
+        <p>Anchoring is the notable survivor: it has replicated across cultures, age groups and decades.</p>
+        <p class="src">Replicability-Index &#183; <a href="https://replicationindex.com/2025/05/08/priming-research-past-its-prime/">replicationindex.com</a><br>Evaluating replicability of social priming &#183; <a href="https://www.researchgate.net/publication/385740170_Evaluating_the_Replicability_of_Social_Priming_Studies">ResearchGate</a></p>
+      </div>
+      <div class="conf"><b>9</b>largely failed<div class="bar"><i style="width:90%;background:#9C3B2B"></i></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 -->
+<section>
+  <div class="shead"><span class="n">03</span><h2>The devil's advocate</h2></div>
+  <p class="lede">Mandatory red-team pass. Four of these cut against the case a designer would want to make from this evidence, and the fourth is the one worth sitting with.</p>
+
+  <div class="devil">
+    <h4>The aesthetic-usability effect works against you during testing</h4>
+    <p>If beauty raises perceived usability independently of real usability, then your own work will test better than it is. NN/g documents a participant on the FitBit site who hit serious navigation flaws, struggled through the task, and then rated ease of use very highly. Your visual standard is actively suppressing the signal you would need to catch problems.</p>
+  </div>
+
+  <div class="devil">
+    <h4>Almost none of this literature measures money</h4>
+    <p>The strong findings are about <em>perceived</em> usability, <em>perceived</em> credibility, <em>perceived</em> luxury. The studies that measure revenue are correlational and run by parties selling performance optimization. There is no credible causal experiment linking visual design quality to revenue for a consumer brand. Any pitch built on &#8220;good design increases sales by X%&#8221; is standing on the weakest part of the evidence base.</p>
+  </div>
+
+  <div class="devil">
+    <h4>Prototypicality argues against distinctive design</h4>
+    <p>Reinecke &amp; Gajos found that looking like what people expect predicts higher appeal ratings, and lower visual complexity does too. Read literally, that is an argument for conventional, simple, familiar sites. A portfolio built on distinctive visual work is in tension with its own best evidence, and the honest resolution is that these studies measure snap ratings from strangers, not the considered response of a target customer to a brand they are choosing between.</p>
+  </div>
+
+  <div class="devil">
+    <h4>HCI aesthetics research has never been through a replication audit</h4>
+    <p>Social psychology got one, and priming did not survive it. The aesthetic-usability literature has not faced an equivalent coordinated effort. The absence of failed replications is not evidence of robustness; it is evidence that nobody organized the attempt. The Tier 1 findings above should be read as the best available evidence, not as settled fact.</p>
+  </div>
+</section>
+
+<!-- 04 -->
+<section>
+  <div class="shead"><span class="n">04</span><h2>Metrics</h2></div>
+  <div class="wrap">
+  <table>
+    <thead><tr><th>Variable</th><th>Value</th><th>Source &amp; sample</th><th>Conf.</th></tr></thead>
+    <tbody>
+      <tr><td>Credibility comments citing visual design</td><td class="v">46.1%</td><td>Fogg / Stanford, n=2,684</td><td class="c">8</td></tr>
+      <tr><td>Exposure needed for a stable appeal judgment</td><td class="v">50 ms</td><td>Lindgaard 2006, 3 studies</td><td class="c">9</td></tr>
+      <tr><td>Appeal variance explained by complexity + colorfulness + demographics</td><td class="v">~50%</td><td>Reinecke &amp; Gajos, 450 sites / 548 raters</td><td class="c">8</td></tr>
+      <tr><td>Retail conversion change per 0.1s mobile speed gain</td><td class="v">+8.4%</td><td>Deloitte/Google, 37 brands, correlational</td><td class="c">3</td></tr>
+      <tr><td>Viewing time above the fold, 2010</td><td class="v">80.3%</td><td>NN/g, n=21, 1024&#215;768</td><td class="c">5</td></tr>
+      <tr><td>Viewing time above the fold, 2018</td><td class="v">57%</td><td>NN/g follow-up</td><td class="c">6</td></tr>
+      <tr><td>Priming replications significant in original direction</td><td class="v">17%</td><td>Review of 70 close replications</td><td class="c">8</td></tr>
+      <tr><td>Priming replications with smaller effect than original</td><td class="v">94%</td><td>Same review</td><td class="c">8</td></tr>
+      <tr><td>Origin of &#8220;color &#8594; 80% brand recognition&#8221;</td><td class="v">Xerox leaflet</td><td>Traced; 1990 study was about graphs</td><td class="c">9</td></tr>
+      <tr><td>Memory benefit of disfluent typefaces</td><td class="v">None</td><td>Multiple independent replication failures</td><td class="c">9</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- 05 -->
+<section>
+  <div class="shead"><span class="n">05</span><h2>What this changes for you</h2></div>
+  <div class="apply">
+    <ol>
+      <li><div><strong>Sell credibility, not conversion</strong>
+        <p>The credibility evidence is strong, large-sample and specific to visual design. The conversion evidence is correlational and comes from vendors. Build the argument on the first and you are on defensible ground; build it on the second and a sharp client can dismantle it.</p></div></li>
+      <li><div><strong>The first painted frame is the deliverable</strong>
+        <p>Appeal is fixed at 50ms and does not revise. That is an argument for resolving the hero at rest rather than animating it in, and it is a technical argument for the stack you already chose: nothing that matters should arrive after the first paint.</p></div></li>
+      <li><div><strong>Whitespace and typeface are the premium-price levers with actual support</strong>
+        <p>This is the one place the research names the mechanism behind charging more. Space and type raise perceived luxury and quality directly. That is your pricing argument, and it is already how you work.</p></div></li>
+      <li><div><strong>Strike color psychology from the pitch</strong>
+        <p>You have no need for it. The palette work you have done is justified by contrast measurement and legibility, which is verifiable. Swapping verifiable reasoning for folklore trades your strongest ground for your weakest.</p></div></li>
+      <li><div><strong>Treat prototypicality as the constraint, not the goal</strong>
+        <p>Distinctive inside a recognizable structure. People need to know what kind of site they are on within the first frame; everything after that is where the distinction lives. This is a usable design rule, not a compromise.</p></div></li>
+      <li><div><strong>Get someone else to test your builds</strong>
+        <p>Your own visual standard suppresses the usability signal. You cannot evaluate your own work for friction, because the effect that makes your work valuable is the same effect that blinds you to its flaws.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 06 -->
+<section>
+  <div class="shead"><span class="n">06</span><h2>Gap analysis</h2></div>
+  <div class="gap"><h4>Insufficient data available</h4>
+    <p>No credible causal experiment links visual design quality to revenue for a consumer brand. Everything in that direction is correlational, vendor-produced, or both.</p></div>
+  <div class="gap"><h4>Unretrieved primary</h4>
+    <p>The Iseki 2025 white space study returned HTTP 403 to automated retrieval. Findings are confirmed at abstract level across two sources; effect sizes and sample size are unverified.</p></div>
+  <div class="gap"><h4>Unresolved</h4>
+    <p>Whether the aesthetic-usability effect holds for repeat visitors and known brands, or only for first encounters with unfamiliar sites. The literature is built almost entirely on first impressions of sites participants had never seen.</p></div>
+  <div class="gap"><h4>Untraceable claims in circulation</h4>
+    <p>Parallax comfort thresholds (&#8220;0.5&#215; differential,&#8221; &#8220;35% of adults over 40&#8221;) appear repeatedly in design guidance with no primary source behind them.</p></div>
+</section>
+
+<p class="foot">
+  ARIA S.C.O.P.E. &#183; scan, collect, optimize, verify, evaluate &#183; devil's advocate pass complete<br>
+  Confidence scores are 1&#8211;10. Claims below 8 carry a stated reason. Claims marked [Low Confidence] are flagged inline.<br>
+  Set in Epilogue and Fragment Mono on the confirmed container palette.
+</p>
+
+</div>
+</body>
+</html>

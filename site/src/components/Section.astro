@@ -1,0 +1,21 @@
+---
+interface Props { id: string; index: string; title: string; span?: string; }
+const { id, index, title, span = "1 / 8" } = Astro.props;
+---
+<section class="section" id={id}>
+  <div class="page">
+    <div class="section-head">
+      <p class="label">{index}</p>
+      <h2>{title}</h2>
+    </div>
+    <div class="section-body" style={`--span:${span}`}>
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-head { border-bottom: 1px solid var(--ink); padding-bottom: 10px; }
+  .section-head .label { margin-bottom: 8px; }
+  .section-body { max-width: var(--measure); }
+</style>

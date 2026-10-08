@@ -1,0 +1,99 @@
+/* ============================================================
+   Base — reset, element defaults, grid.
+   Depends on tokens.css. Never redefines a token.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  font-size: var(--size-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, video, svg { max-width: 100%; height: auto; display: block; }
+
+h1, h2, h3 {
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-heading);
+  margin: 0;
+  text-wrap: balance;
+}
+h1 { font-size: var(--size-display); line-height: var(--leading-display); letter-spacing: var(--tracking-display); }
+h2 { font-size: var(--size-h2); }
+h3 { font-size: var(--size-h3); }
+p  { margin: 0; max-width: var(--measure); }
+
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* --- Layout ---------------------------------------------- */
+
+.page {
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* The 12-column grid. Children place themselves with --span. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+/* Vertical rhythm. One of four intervals, never an arbitrary value. */
+.section { padding-block: var(--space-10); }
+.section > * + * { margin-top: var(--space-6); }
+.section-head { margin-bottom: var(--space-8); }
+
+/* --- Type utilities --------------------------------------- */
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.lead { font-size: var(--size-lead); line-height: 1.35; letter-spacing: -0.012em; }
+.muted { color: var(--ink-2); }
+
+/* --- Components ------------------------------------------- */
+
+.btn {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  padding: 17px 30px;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.btn:hover { opacity: 0.88; }
+
+/* Panels are ruled, never filled. See tokens.css rule 2. */
+.panel {
+  border-block: 1px solid var(--accent);
+  padding-block: var(--space-5);
+}
+
+@media (max-width: 1080px) { .grid { gap: 20px; } }
+@media (max-width: 820px)  { :root { --gutter: 20px; } }
+@media (max-width: 620px)  {
+  :root { --gutter: 16px; }
+  .grid { grid-template-columns: 1fr; gap: var(--space-5); }
+  .section { padding-block: var(--space-8); }
+}

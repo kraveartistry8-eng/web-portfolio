@@ -1,0 +1,141 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Clay Saturation</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap">
+<style>
+:root{--ground:#F0F0EE;--surface:#FFF;--ink:#161614;--ink2:#6B6B66;--line:#D8D8D4;
+--sans:'Epilogue',system-ui,sans-serif;--mono:'Fragment Mono',ui-monospace,monospace}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+.page{max-width:1080px;margin:0 auto;padding:56px 28px 110px}
+.mast{border-bottom:2px solid var(--ink);padding-bottom:18px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#5A2D5C;margin:0 0 14px}
+h1.t{font-weight:700;font-size:clamp(32px,5.2vw,58px);line-height:.98;letter-spacing:-.04em;margin:0;max-width:18ch}
+.meta{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);padding-top:14px;margin-bottom:26px}
+.intro{border-left:2px solid #5A2D5C;padding:3px 0 3px 20px;font-size:16px;line-height:1.6;color:var(--ink2);max-width:76ch;margin:0 0 30px}
+.intro b{color:var(--ink)}
+.ramp{display:flex;border:1px solid var(--line);margin:0 0 60px}
+.ramp div{flex:1;height:52px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+font-family:var(--mono);font-size:10px;color:#161614}
+.v{margin-bottom:76px}
+.vh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--ink);padding-bottom:10px;margin-bottom:20px}
+.vn{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink2)}
+.vh h2{font-weight:700;font-size:25px;letter-spacing:-.025em;margin:0}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);border:1px solid var(--line);padding:3px 8px}
+.hex{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-left:auto;text-transform:uppercase}
+.hero{background:var(--surface);border:1px solid var(--line)}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:18px 34px;border-bottom:1px solid var(--line)}
+.mark{font-weight:700;font-size:15px;letter-spacing:-.02em}
+.nl{display:flex;gap:20px;font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+.stage{padding:52px 34px 54px}
+.hero h1{font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1;letter-spacing:-.04em;margin:0 0 24px;max-width:15ch}
+.hero h1 span{display:block}
+.hero h1 em{font-style:normal;background:var(--cy);padding:0 9px;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sub{font-size:18px;line-height:1.35;letter-spacing:-.01em;margin:0 0 28px;color:var(--ink)}
+.btn{background:var(--a);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+padding:14px 24px;text-decoration:none;display:inline-block;margin-bottom:34px}
+.panel{background:var(--cy);border:1px solid var(--a);padding:20px 22px}
+.panel .pm{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink);opacity:.68;margin:0 0 7px}
+.panel p{margin:0;color:var(--ink);font-size:15px;line-height:1.5;max-width:58ch}
+.nums{display:flex;flex-wrap:wrap;gap:8px 30px;font-family:var(--mono);font-size:11.5px;color:var(--ink2);
+border-bottom:1px solid var(--line);padding:14px 0}
+.nums b{font-weight:400;color:var(--ink)}
+.note{font-size:15.5px;line-height:1.6;color:var(--ink2);max-width:78ch;margin:16px 0 0}
+@media(max-width:620px){.hex{margin-left:0;width:100%}}
+</style></head><body><div class="page">
+<div class="mast"><p class="eyebrow">Phase 0 &#183; accent, round four</p>
+<h1 class="t">The clay, turned up</h1></div>
+<div class="meta">2026 / 09 / 24 &#183; accent locked at #5A2D5C &#183; only the fill moves</div>
+<p class="intro"><b>The accent does not change.</b> #5A2D5C stays exactly where it is at 9.37:1 on the ground. The only variable below is the fill's chroma, which is what &#8220;muted&#8221; was describing &#8212; the current clay sits at 26% saturation.</p>
+<div class="ramp">
+  <div style="background:#EDC3B0">26%</div><div style="background:#F2BBA4">32%</div>
+  <div style="background:#F7B49A">38%</div><div style="background:#FFBFA0">37%</div>
+  <div style="background:#FFB088">47%</div><div style="background:#FFAE94">42%</div>
+  <div style="background:#FF9F85;color:#fff">48% &#10007;</div>
+</div>
+
+<section class="v">
+  <div class="vh"><span class="vn">01</span><h2>Clay</h2><span class="hex">#EDC3B0 &#183; 26% sat</span></div>
+  <div class="hero" style="--a:#5A2D5C;--cy:#EDC3B0">
+    <div class="nav"><span class="mark">Aaron Streets</span>
+      <div class="nl"><span>Work</span><span>Services</span><span>Process</span><span>Pricing</span></div></div>
+    <div class="stage">
+      <h1><span>Your brand is original.</span><span>Your website is <em>stock</em>.</span></h1>
+      <p class="sub">Made, not bought. Main sites, launch sites, product pages.</p>
+      <a class="btn" href="#">Start a project</a>
+      <div class="panel"><p class="pm">Panel, on the ground</p>
+        <p>Ink reads 11.25:1 here. The fill clears the page by 1.41:1.</p></div>
+    </div>
+  </div>
+  <div class="nums"><span><b>26%</b> saturation</span><span><b>11.25:1</b> ink on fill</span>
+    <span><b>1.41:1</b> fill vs ground</span><span><b>9.37:1</b> accent on ground</span></div>
+  <p class="note">Where you are now. The muted one.</p>
+</section>
+<section class="v">
+  <div class="vh"><span class="vn">02</span><h2>Clay, warmer</h2><span class="tag">+46% chroma</span><span class="hex">#F7B49A &#183; 38% sat</span></div>
+  <div class="hero" style="--a:#5A2D5C;--cy:#F7B49A">
+    <div class="nav"><span class="mark">Aaron Streets</span>
+      <div class="nl"><span>Work</span><span>Services</span><span>Process</span><span>Pricing</span></div></div>
+    <div class="stage">
+      <h1><span>Your brand is original.</span><span>Your website is <em>stock</em>.</span></h1>
+      <p class="sub">Made, not bought. Main sites, launch sites, product pages.</p>
+      <a class="btn" href="#">Start a project</a>
+      <div class="panel"><p class="pm">Panel, on the ground</p>
+        <p>Ink reads 10.31:1 here. The fill clears the page by 1.54:1.</p></div>
+    </div>
+  </div>
+  <div class="nums"><span><b>38%</b> saturation</span><span><b>10.31:1</b> ink on fill</span>
+    <span><b>1.54:1</b> fill vs ground</span><span><b>9.37:1</b> accent on ground</span></div>
+  <p class="note">Same hue, chroma up by half. Still recognisably the clay, just no longer apologising for itself.</p>
+</section>
+<section class="v">
+  <div class="vh"><span class="vn">03</span><h2>Apricot coral</h2><span class="tag">Best contrast</span><span class="hex">#FFBFA0 &#183; 37% sat</span></div>
+  <div class="hero" style="--a:#5A2D5C;--cy:#FFBFA0">
+    <div class="nav"><span class="mark">Aaron Streets</span>
+      <div class="nl"><span>Work</span><span>Services</span><span>Process</span><span>Pricing</span></div></div>
+    <div class="stage">
+      <h1><span>Your brand is original.</span><span>Your website is <em>stock</em>.</span></h1>
+      <p class="sub">Made, not bought. Main sites, launch sites, product pages.</p>
+      <a class="btn" href="#">Start a project</a>
+      <div class="panel"><p class="pm">Panel, on the ground</p>
+        <p>Ink reads 11.40:1 here. The fill clears the page by 1.39:1.</p></div>
+    </div>
+  </div>
+  <div class="nums"><span><b>37%</b> saturation</span><span><b>11.40:1</b> ink on fill</span>
+    <span><b>1.39:1</b> fill vs ground</span><span><b>9.37:1</b> accent on ground</span></div>
+  <p class="note">Brighter and higher in value, so it gains saturation without losing ink contrast. Best numbers of the vivid options.</p>
+</section>
+<section class="v">
+  <div class="vh"><span class="vn">04</span><h2>Coral</h2><span class="tag">Ceiling</span><span class="hex">#FFB088 &#183; 47% sat</span></div>
+  <div class="hero" style="--a:#5A2D5C;--cy:#FFB088">
+    <div class="nav"><span class="mark">Aaron Streets</span>
+      <div class="nl"><span>Work</span><span>Services</span><span>Process</span><span>Pricing</span></div></div>
+    <div class="stage">
+      <h1><span>Your brand is original.</span><span>Your website is <em>stock</em>.</span></h1>
+      <p class="sub">Made, not bought. Main sites, launch sites, product pages.</p>
+      <a class="btn" href="#">Start a project</a>
+      <div class="panel"><p class="pm">Panel, on the ground</p>
+        <p>Ink reads 10.20:1 here. The fill clears the page by 1.56:1.</p></div>
+    </div>
+  </div>
+  <div class="nums"><span><b>47%</b> saturation</span><span><b>10.20:1</b> ink on fill</span>
+    <span><b>1.56:1</b> fill vs ground</span><span><b>9.37:1</b> accent on ground</span></div>
+  <p class="note">Nearly double the original chroma. The most colour you can put here before ink drops under 10:1.</p>
+</section>
+<section class="v">
+  <div class="vh"><span class="vn">05</span><h2>Blush coral</h2><span class="tag">Pinker</span><span class="hex">#FFB3A7 &#183; 35% sat</span></div>
+  <div class="hero" style="--a:#5A2D5C;--cy:#FFB3A7">
+    <div class="nav"><span class="mark">Aaron Streets</span>
+      <div class="nl"><span>Work</span><span>Services</span><span>Process</span><span>Pricing</span></div></div>
+    <div class="stage">
+      <h1><span>Your brand is original.</span><span>Your website is <em>stock</em>.</span></h1>
+      <p class="sub">Made, not bought. Main sites, launch sites, product pages.</p>
+      <a class="btn" href="#">Start a project</a>
+      <div class="panel"><p class="pm">Panel, on the ground</p>
+        <p>Ink reads 10.58:1 here. The fill clears the page by 1.50:1.</p></div>
+    </div>
+  </div>
+  <div class="nums"><span><b>35%</b> saturation</span><span><b>10.58:1</b> ink on fill</span>
+    <span><b>1.50:1</b> fill vs ground</span><span><b>9.37:1</b> accent on ground</span></div>
+  <p class="note">If the problem is the hue rather than the chroma. Pulled toward pink, which shares more red with the violet.</p>
+</section></div></body></html>

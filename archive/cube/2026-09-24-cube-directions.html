@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4;
+  --accent:#575260; --on-accent:#FFFFFF;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --label:11px; --track:0.11em;
+  --gutter:28px; --max:1080px;
+
+  /* Placeholder demo palettes. None of these sites exist yet.
+     Stated as placeholders so nothing here reads as a real screenshot. */
+  --demo-1:#C4511F;  /* helmet, industrial */
+  --demo-2:#E3D5BE;  /* fragrance, warm */
+  --demo-3:#A82A20;  /* editorial story */
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3{font-weight:700;margin:0;letter-spacing:-0.025em;line-height:1.1}
+h1{font-size:clamp(34px,5vw,58px);letter-spacing:-0.042em;line-height:0.99}
+h2{font-size:clamp(23px,3vw,32px)}
+h3{font-size:15px;letter-spacing:0.01em}
+p{margin:0;max-width:62ch}
+.label{font-family:var(--mono);font-size:var(--label);letter-spacing:var(--track);
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.lead{font-size:clamp(18px,2vw,23px);line-height:1.38;letter-spacing:-0.012em}
+.muted{color:var(--ink-2)}
+
+/* ---------- masthead ---------- */
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-0.02em}
+
+.intro{padding-block:72px 56px}
+.intro h1{max-width:16ch;margin-bottom:28px}
+.intro .lead{margin-bottom:30px}
+.brief{border-top:1px solid var(--ink);padding-top:18px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.brief div p+p{margin-top:7px}
+
+/* ---------- direction block ---------- */
+.dir{border-top:1px solid var(--accent);padding-block:56px}
+.dir__grid{display:grid;grid-template-columns:400px 1fr;gap:56px;align-items:start}
+.dir__head{margin-bottom:22px}
+.dir__head .label{margin-bottom:9px}
+.dir__prem{font-size:19px;line-height:1.4;letter-spacing:-0.012em;margin-bottom:26px;max-width:46ch}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;
+  border-top:1px solid var(--line);padding-top:20px}
+.notes h3{margin-bottom:6px}
+.notes p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.flagged h3{color:var(--accent)}
+
+/* ---------- the stage ---------- */
+.stage{
+  background:var(--surface);border:1px solid var(--line);
+  height:378px;display:grid;place-items:center;
+  perspective:1100px;position:relative;overflow:hidden;
+}
+.stage__tag{position:absolute;left:14px;bottom:12px;z-index:3}
+.cube{
+  width:186px;height:186px;position:relative;
+  transform-style:preserve-3d;
+  animation:tumble 27s cubic-bezier(.62,.02,.28,1) infinite;
+}
+.stage:hover .cube{animation-play-state:paused}
+.face{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:16px;
+}
+.f-front {transform:rotateY(0deg)    translateZ(93px)}
+.f-right {transform:rotateY(90deg)   translateZ(93px)}
+.f-back  {transform:rotateY(180deg)  translateZ(93px)}
+.f-left  {transform:rotateY(-90deg)  translateZ(93px)}
+.f-top   {transform:rotateX(90deg)   translateZ(93px)}
+.f-bottom{transform:rotateX(-90deg)  translateZ(93px)}
+
+@keyframes tumble{
+  0%,10%       {transform:rotateX(0deg)    rotateY(0deg)}
+  16.6%,26.6%  {transform:rotateX(0deg)    rotateY(-90deg)}
+  33.3%,43.3%  {transform:rotateX(0deg)    rotateY(-180deg)}
+  50%,60%      {transform:rotateX(0deg)    rotateY(-270deg)}
+  66.6%,76.6%  {transform:rotateX(-90deg)  rotateY(-360deg)}
+  83.3%,93.3%  {transform:rotateX(-270deg) rotateY(-360deg)}
+  100%         {transform:rotateX(-360deg) rotateY(-360deg)}
+}
+
+/* face type, shared */
+.f__n{font-family:var(--mono);font-size:10px;letter-spacing:var(--track);text-transform:uppercase}
+.f__t{font-size:15px;font-weight:700;letter-spacing:-0.02em;line-height:1.15}
+.f__k{font-family:var(--mono);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;opacity:.72}
+
+/* ===== A. THE SOLID ===== */
+.a .face{background:var(--surface);border:1px solid var(--line);
+  backface-visibility:hidden}
+.a .svc .f__n{color:var(--accent)}
+.a .wrk{border:none;color:#fff;justify-content:flex-end}
+.a .w1{background:var(--demo-1)}
+.a .w2{background:var(--demo-2);color:var(--ink)}
+.a .w3{background:var(--demo-3)}
+
+/* ===== B. THE FRAME ===== */
+.b .cube{width:186px;height:186px}
+.b .face{
+  background:rgba(255,255,255,0.10);
+  border:1px solid var(--accent);
+  backface-visibility:visible;
+}
+.b .svc .f__t{font-size:13px}
+.b .wrk{display:grid;place-items:center;padding:0}
+.b .plate{width:64px;height:64px;border-radius:3px}
+.b .w1 .plate{background:var(--demo-1)}
+.b .w2 .plate{background:var(--demo-2)}
+.b .w3 .plate{background:var(--demo-3)}
+
+/* ===== C. THE NET ===== */
+.c-stage{
+  background:var(--surface);border:1px solid var(--line);
+  height:378px;display:grid;place-items:center;position:relative;overflow:hidden;
+}
+.net{
+  display:grid;
+  grid-template-columns:repeat(4,86px);
+  grid-template-rows:repeat(3,86px);
+  gap:2px;
+}
+.net div{
+  border:1px solid var(--line);background:var(--surface);
+  display:flex;flex-direction:column;justify-content:space-between;padding:9px;
+}
+.net .n1{grid-column:2;grid-row:1}
+.net .n2{grid-column:1;grid-row:2}
+.net .n3{grid-column:2;grid-row:2}
+.net .n4{grid-column:3;grid-row:2}
+.net .n5{grid-column:4;grid-row:2}
+.net .n6{grid-column:2;grid-row:3}
+.net .wk{border:none;color:#fff}
+.net .k1{background:var(--demo-1)}
+.net .k2{background:var(--demo-2);color:var(--ink)}
+.net .k3{background:var(--demo-3)}
+.net .f__n{color:var(--accent)}
+.net .wk .f__n{color:inherit}
+.net .f__t{font-size:11.5px;line-height:1.12;letter-spacing:-0.01em}
+
+/* ===== D. THE PLATE ===== */
+.d .face{background:var(--surface);border:1px solid var(--line);
+  align-items:stretch;backface-visibility:hidden}
+.d .glyph{flex:1;display:grid;place-items:center}
+.d .glyph svg{width:52px;height:52px}
+.d .f__n{color:var(--accent)}
+
+/* ---------- close ---------- */
+.close{border-top:1px solid var(--accent);padding-block:52px 84px}
+.close h2{margin-bottom:20px;max-width:20ch}
+.close ol{margin:0;padding-left:20px;max-width:62ch}
+.close li{margin-bottom:9px}
+
+@media (max-width:900px){
+  .dir__grid{grid-template-columns:1fr;gap:30px}
+  .brief{grid-template-columns:1fr;gap:16px}
+  .notes{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  :root{--gutter:16px}
+  .net{grid-template-columns:repeat(4,64px);grid-template-rows:repeat(3,64px)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  /* Dogfooding the rule this feature has to honour: no idle motion,
+     and the cube still has to be legible at rest. Corner-on shows three. */
+  .cube{animation:none;transform:rotateX(-22deg) rotateY(-34deg)}
+}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">Feature design &middot; Step 3 &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+
+  <section class="intro">
+    <p class="label" style="margin-bottom:14px">The services section</p>
+    <h1>Four ways to build the cube.</h1>
+    <p class="lead">Three faces are services, three are work, and opposite faces pair a service
+      with the piece that proves it. At rest the cube turns slowly enough to read, holding
+      about four seconds on each face. Hover any stage below to stop it.</p>
+    <div class="brief">
+      <div>
+        <p class="label">Fixed</p>
+        <p class="muted">Six faces, alternating. Slow resting rotation. Click a face to open an
+          overlay, never a new page. Service copy repeats in the hero.</p>
+      </div>
+      <div>
+        <p class="label">Open</p>
+        <p class="muted">What a face is made of. Each direction answers &ldquo;preview as an
+          icon&rdquo; differently, so picking one settles it.</p>
+      </div>
+      <div>
+        <p class="label">Not real yet</p>
+        <p class="muted">No demo exists. Every coloured plate here is a placeholder standing in
+          for a palette, not a screenshot.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ A ============ -->
+  <section class="dir"><div class="dir__grid">
+    <div class="stage a">
+      <div class="cube">
+        <div class="face svc f-front"><p class="f__n">01</p><p class="f__t">A brand&rsquo;s main site</p></div>
+        <div class="face wrk w1 f-back"><p class="f__k">Demo 01 &middot; helmet</p></div>
+        <div class="face svc f-right"><p class="f__n">02</p><p class="f__t">A launch site with a date on it</p></div>
+        <div class="face wrk w2 f-left"><p class="f__k">Demo 02 &middot; fragrance</p></div>
+        <div class="face svc f-top"><p class="f__n">03</p><p class="f__t">A page that tells one story</p></div>
+        <div class="face wrk w3 f-bottom"><p class="f__k">Demo 03 &middot; story</p></div>
+      </div>
+      <p class="label stage__tag">A</p>
+    </div>
+    <div>
+      <div class="dir__head">
+        <p class="label">Direction A</p>
+        <h2>The Solid</h2>
+      </div>
+      <p class="dir__prem">An opaque die. Work faces are full-bleed in the demo&rsquo;s own colour,
+        service faces are white with mono type. The cube visibly alternates hot and cold as it turns.</p>
+      <div class="notes">
+        <div><h3>What makes it interesting</h3><p>Token rule 4 becomes an object. Colour arrives
+          only from the work, and the alternation is the design system rotating in place. It is
+          also the only direction that reads as a real physical thing, so a kick reads as physics
+          rather than as a screensaver.</p></div>
+        <div><h3>Hierarchy</h3><p>The face pointed at you wins outright, which is what you want
+          when a click has to be unambiguous. No competing focal point.</p></div>
+        <div class="flagged"><h3>What it costs</h3><p>It is the direction most dependent on the
+          demos existing. Until one ships, half the cube is a flat colour swatch with a label on
+          it, and that reads as unfinished rather than as restraint.</p></div>
+        <div><h3>Preview means</h3><p>A full-bleed screenshot, cropped to the face.</p></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============ B ============ -->
+  <section class="dir"><div class="dir__grid">
+    <div class="stage b">
+      <div class="cube">
+        <div class="face svc f-front"><p class="f__n">01</p><p class="f__t">A brand&rsquo;s main site</p></div>
+        <div class="face wrk w1 f-back"><span class="plate"></span></div>
+        <div class="face svc f-right"><p class="f__n">02</p><p class="f__t">A launch site with a date on it</p></div>
+        <div class="face wrk w2 f-left"><span class="plate"></span></div>
+        <div class="face svc f-top"><p class="f__n">03</p><p class="f__t">A page that tells one story</p></div>
+        <div class="face wrk w3 f-bottom"><span class="plate"></span></div>
+      </div>
+      <p class="label stage__tag">B</p>
+    </div>
+    <div>
+      <div class="dir__head">
+        <p class="label">Direction B</p>
+        <h2>The Frame</h2>
+      </div>
+      <p class="dir__prem">Edges only. Six hairline planes in accent, faces near-transparent, each
+        work carried by a small plate floating on its plane. You see through the cube to the faces
+        behind it.</p>
+      <div class="notes">
+        <div><h3>What makes it interesting</h3><p>It is the page&rsquo;s one repeated gesture, the
+          1px rule, turned into an object. Nothing else on the site would have to change for this
+          to belong. It looks considered before a single demo exists.</p></div>
+        <div><h3>Hierarchy</h3><p>Weakest of the four. Every face is partly visible at all times,
+          so nothing dominates, and the graphic-design rule that equal weight is not a design
+          applies directly.</p></div>
+        <div class="flagged"><h3>What it costs</h3><p>Seeing work through other work, reversed, is
+          noise. And a click target you can see through is a click target you can misjudge, which
+          is the single riskiest thing in a feature whose whole point is clicking a face.</p></div>
+        <div><h3>Preview means</h3><p>A small plate or mark, never a screenshot.</p></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============ C ============ -->
+  <section class="dir"><div class="dir__grid">
+    <div class="c-stage">
+      <div class="net">
+        <div class="n1"><p class="f__n">03</p><p class="f__t">One story</p></div>
+        <div class="n2 wk k1"><p class="f__n">Demo 01</p><p class="f__t">Helmet</p></div>
+        <div class="n3"><p class="f__n">01</p><p class="f__t">Main site</p></div>
+        <div class="n4 wk k2"><p class="f__n">Demo 02</p><p class="f__t">Fragrance</p></div>
+        <div class="n5"><p class="f__n">02</p><p class="f__t">Launch site</p></div>
+        <div class="n6 wk k3"><p class="f__n">Demo 03</p><p class="f__t">Story</p></div>
+      </div>
+      <p class="label stage__tag">C</p>
+    </div>
+    <div>
+      <div class="dir__head">
+        <p class="label">Direction C</p>
+        <h2>The Net</h2>
+      </div>
+      <p class="dir__prem">At rest it is not a cube. It is the cube unfolded flat, all six faces
+        readable at once. Grab it and it folds up, becomes solid, and becomes kickable. Let go and
+        it unfolds again.</p>
+      <div class="notes">
+        <div><h3>What makes it interesting</h3><p>The fold is the most memorable single gesture
+          available in this feature, and it is one nobody expects. Everything is legible instantly
+          with no waiting for a rotation, and the toy becomes opt-in rather than compulsory.</p></div>
+        <div><h3>Hierarchy</h3><p>Flat and even at rest, which suits six items that genuinely rank
+          the same. The fold supplies the drama instead of the layout.</p></div>
+        <div class="flagged"><h3>What it costs</h3><p>It breaks the resting rotation you asked for,
+          deliberately, and it is by some distance the most build. Six faces folding along five
+          hinges without tearing is the hardest thing on the page.</p></div>
+        <div><h3>Preview means</h3><p>Either. The net can hold screenshots or marks.</p></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============ D ============ -->
+  <section class="dir"><div class="dir__grid">
+    <div class="stage d">
+      <div class="cube">
+        <div class="face f-front"><p class="f__n">01</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#575260" stroke-width="1.5">
+            <rect x="6" y="9" width="36" height="30"/><path d="M6 17h36"/><path d="M15 25h18M15 31h12"/></svg></span>
+          <p class="f__t">Main site</p></div>
+        <div class="face f-back"><p class="f__n">Demo 01</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#C4511F" stroke-width="1.5">
+            <path d="M24 7c9 0 15 6 15 15v9H9v-9C9 13 15 7 24 7Z"/><path d="M9 26h30"/><circle cx="24" cy="19" r="5"/></svg></span>
+          <p class="f__t">Helmet</p></div>
+        <div class="face f-right"><p class="f__n">02</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#575260" stroke-width="1.5">
+            <rect x="8" y="11" width="32" height="30"/><path d="M8 19h32M17 7v8M31 7v8"/><rect x="20" y="26" width="8" height="8"/></svg></span>
+          <p class="f__t">Launch site</p></div>
+        <div class="face f-left"><p class="f__n">Demo 02</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#A98A55" stroke-width="1.5">
+            <path d="M19 6h10v6h-10z"/><path d="M15 18c0-3 3-6 6-6h6c3 0 6 3 6 6v20a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4Z"/><path d="M15 26h18"/></svg></span>
+          <p class="f__t">Fragrance</p></div>
+        <div class="face f-top"><p class="f__n">03</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#575260" stroke-width="1.5">
+            <path d="M11 8h26v32H11z"/><path d="M17 16h14M17 23h14M17 30h8"/></svg></span>
+          <p class="f__t">One story</p></div>
+        <div class="face f-bottom"><p class="f__n">Demo 03</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#A82A20" stroke-width="1.5">
+            <path d="M8 12h14v28H8zM26 12h14v28H26z"/><path d="M8 12c0-3 6-5 14-4M40 12c0-3-6-5-14-4"/></svg></span>
+          <p class="f__t">Story</p></div>
+      </div>
+      <p class="label stage__tag">D</p>
+    </div>
+    <div>
+      <div class="dir__head">
+        <p class="label">Direction D</p>
+        <h2>The Plate</h2>
+      </div>
+      <p class="dir__prem">Every face is neutral. A drawn mark in line weight, a mono index above,
+        a name below. No screenshots anywhere on the cube. The work&rsquo;s own colour arrives only
+        when the overlay opens.</p>
+      <div class="notes">
+        <div><h3>What makes it interesting</h3><p>It ships today. Nothing on this cube waits for a
+          demo, so the section is finished before the work is. Space, type and restraint are also
+          the three levers that actually have evidence behind reading as expensive.</p></div>
+        <div><h3>Hierarchy</h3><p>Even by construction, and the click opens the colour, which makes
+          the overlay feel like a reward rather than a page change.</p></div>
+        <div class="flagged"><h3>What it costs</h3><p>It is quiet. Six line drawings turning slowly
+          may not earn the attention a cube demands, and a set of icons this uniform risks reading
+          as a settings menu rather than as work.</p></div>
+        <div><h3>Preview means</h3><p>A drawn mark, made by you, one per demo.</p></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="close">
+    <p class="label" style="margin-bottom:12px">Next</p>
+    <h2>Pick one, or take pieces from two.</h2>
+    <ol>
+      <li>Your pick is Step 5. Nothing gets built on it until Step 6 is written and you approve it.</li>
+      <li>Step 6 has to solve the thing none of these solve yet: a face that is moving is a face
+        that is hard to click, and on a phone the gesture that spins it is the gesture that taps it.</li>
+      <li>The layout architecture sheet still describes three equal service cells across twelve
+        columns. Whichever direction wins, that sheet needs amending.</li>
+    </ol>
+  </section>
+
+</div>
+</body>
+</html>

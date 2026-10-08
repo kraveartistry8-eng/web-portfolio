@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --demo-1:#C4511F; --demo-2:#E3D5BE; --demo-3:#A82A20;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.042em;line-height:.99}
+h2{font-size:clamp(23px,3vw,34px)}
+h3{font-size:21px}
+p{margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.intro{padding-block:60px 30px}
+.intro h1{max-width:18ch;margin-bottom:18px}
+.intro p{max-width:64ch;font-size:18px;line-height:1.45;letter-spacing:-.012em}
+
+.sec{padding-block:44px 96px}
+.split{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.copy{grid-column:1 / 7}
+.svc{border-top:1px solid var(--line);padding-block:20px 22px}
+.svc:first-child{border-top:1px solid var(--ink)}
+.svc .n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  color:var(--accent);display:block;margin-bottom:10px}
+.svc h3{margin-bottom:8px}
+.svc p{font-size:15px;line-height:1.55;color:var(--ink-2);max-width:40ch}
+
+.rig{grid-column:8 / 13;display:grid;place-items:center;min-height:560px;
+  perspective:820px;position:relative;touch-action:none;cursor:grab}
+.rig.dragging{cursor:grabbing}
+.cube{position:relative;transform-style:preserve-3d;will-change:transform}
+.face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;
+  display:grid;place-items:center;border:0;padding:0;font:inherit;color:inherit;
+  text-align:left;cursor:pointer}
+.pad{width:70.7%;height:70.7%;display:flex;flex-direction:column;
+  justify-content:space-between;align-items:flex-start}
+.svc-f .pad{justify-content:center;align-items:center}
+.wrk .pad{justify-content:flex-end}
+.f__n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase}
+.f__t{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.14;margin-top:8px}
+.big{font-family:var(--mono);font-size:104px;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.wrk{color:#fff}
+.w1{background:var(--demo-1)} .w2{background:var(--demo-2);color:var(--ink)} .w3{background:var(--demo-3)}
+.svc-f{background:var(--surface)}
+.svc-f .f__n{color:var(--accent)}
+
+.hint{position:absolute;bottom:14px;left:50%;translate:-50% 0;
+  transition:opacity 260ms var(--ease)}
+.rig[data-state="settled"] .hint{opacity:1}
+
+/* ---------- overlay ---------- */
+.ov{position:fixed;inset:0;z-index:50;display:none;background:rgba(240,240,238,.94);
+  -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.ov[open]{display:grid;place-items:center}
+.ov__card{background:var(--surface);border:1px solid var(--accent);
+  width:min(880px,calc(100vw - 2*var(--gutter)));max-height:86vh;overflow:auto}
+.ov__field{height:300px;display:grid;place-items:end start;padding:22px}
+.ov__body{padding:30px 34px 36px;display:grid;gap:14px}
+.ov__body h2{max-width:22ch}
+.ov__body p{max-width:60ch;color:var(--ink-2)}
+.ov__row{display:flex;gap:14px;align-items:center;margin-top:8px}
+.btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--mono);
+  font-size:11px;letter-spacing:.11em;text-transform:uppercase;padding:15px 26px;
+  text-decoration:none;border-radius:2px;border:0;cursor:pointer}
+.btn--q{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr;gap:30px}
+  .copy,.rig{grid-column:1}
+  .rig{min-height:400px;order:-1}
+}
+@media (max-width:620px){:root{--gutter:16px} .ov__field{height:200px}}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">Cube prototype &middot; B1 printed &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+  <section class="intro">
+    <h1>Drag it. Then click a face.</h1>
+    <p class="muted">Type is printed on the faces and rolls with them. Put the pointer on the cube
+      and it eases to a stop with the nearest face square on, which is the only moment anyone needs
+      the words level. Drag to kick it, let go and it keeps the spin, then settles back to a drift.
+      Click or tab to a face to open it.</p>
+  </section>
+
+  <section class="sec"><div class="split">
+    <div class="copy" data-cards></div>
+    <div class="rig" data-state="idle">
+      <div class="cube" data-faces></div>
+      <p class="label hint">Drag to spin &middot; click a face to open</p>
+    </div>
+  </div></section>
+</div>
+
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ovt">
+  <div class="ov__card">
+    <div class="ov__field" id="ovf"><p class="label" id="ovk"></p></div>
+    <div class="ov__body">
+      <p class="label" id="ovn"></p>
+      <h2 id="ovt"></h2>
+      <p id="ovb"></p>
+      <div class="ov__row">
+        <a class="btn" id="ovl" href="#">Open the live site</a>
+        <button class="btn btn--q" id="ovc">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* Opposite faces pair a service with the work that proves it, so either face of
+   a pair opens the same overlay. */
+const PAIRS = [
+  { n:"01", title:"A brand’s main site",
+    body:"The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.",
+    demo:"Demo 01", demoName:"Helmet", cls:"w1", tone:"#fff" },
+  { n:"02", title:"A launch site with a date on it",
+    body:"One product, one moment, one page that has to be live before the drop. Everything on it points at the date.",
+    demo:"Demo 02", demoName:"Fragrance", cls:"w2", tone:"#161614" },
+  { n:"03", title:"A page that tells one story",
+    body:"For the one thing that deserves more than a grid tile and three bullet points.",
+    demo:"Demo 03", demoName:"Story", cls:"w3", tone:"#fff" }
+];
+const FACES = [
+  { fx:0,   fy:0,   n:[0,0,1],  svc:true,  i:0 },
+  { fx:0,   fy:180, n:[0,0,-1], svc:false, i:0 },
+  { fx:0,   fy:90,  n:[1,0,0],  svc:true,  i:1 },
+  { fx:0,   fy:-90, n:[-1,0,0], svc:false, i:1 },
+  { fx:90,  fy:0,   n:[0,-1,0], svc:true,  i:2 },
+  { fx:-90, fy:0,   n:[0,1,0],  svc:false, i:2 }
+];
+const SIZE = 330, HALF = SIZE/2;
+const IDLE_RATE = 0.30;        // rad/s, the resting drift
+const DECAY = 1.35;            // how fast a kick bleeds back to the drift
+const SETTLE = 4.2;            // how hard the cube is pulled square-on when hovered
+
+// ---- quaternion helpers -------------------------------------------------
+const qn = q => { const m = Math.hypot(q[0],q[1],q[2],q[3]) || 1; return q.map(v=>v/m); };
+const qmul = (a,b) => [
+  a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
+  a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
+  a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
+  a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]
+];
+const qaxis = (ax, ang) => { const h=ang/2, s=Math.sin(h);
+  return [Math.cos(h), ax[0]*s, ax[1]*s, ax[2]*s]; };
+const qmat = ([w,x,y,z]) => [
+  [1-2*(y*y+z*z), 2*(x*y-w*z),   2*(x*z+w*y)  ],
+  [2*(x*y+w*z),   1-2*(x*x+z*z), 2*(y*z-w*x)  ],
+  [2*(x*z-w*y),   2*(y*z+w*x),   1-2*(x*x+y*y)]
+];
+const slerp = (a,b,t) => {
+  let d = a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3];
+  if (d < 0) { b = b.map(v=>-v); d = -d; }
+  if (d > 0.9995) return qn(a.map((v,i)=>v+(b[i]-v)*t));
+  const th = Math.acos(d), s = Math.sin(th);
+  const k0 = Math.sin((1-t)*th)/s, k1 = Math.sin(t*th)/s;
+  return a.map((v,i)=>v*k0+b[i]*k1);
+};
+/* The 24 orientations that put a face square on and its type level. Built as
+   every right-handed pairing of signed axes, which is exactly the rotation
+   group of a cube. */
+const CANON = (() => {
+  const AX=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const mq = M => {
+    const t=M[0][0]+M[1][1]+M[2][2];
+    if (t>0){const s=Math.sqrt(t+1)*2;
+      return qn([0.25*s,(M[2][1]-M[1][2])/s,(M[0][2]-M[2][0])/s,(M[1][0]-M[0][1])/s]);}
+    if (M[0][0]>M[1][1] && M[0][0]>M[2][2]){const s=Math.sqrt(1+M[0][0]-M[1][1]-M[2][2])*2;
+      return qn([(M[2][1]-M[1][2])/s,0.25*s,(M[0][1]+M[1][0])/s,(M[0][2]+M[2][0])/s]);}
+    if (M[1][1]>M[2][2]){const s=Math.sqrt(1+M[1][1]-M[0][0]-M[2][2])*2;
+      return qn([(M[0][2]-M[2][0])/s,(M[0][1]+M[1][0])/s,0.25*s,(M[1][2]+M[2][1])/s]);}
+    const s=Math.sqrt(1+M[2][2]-M[0][0]-M[1][1])*2;
+    return qn([(M[1][0]-M[0][1])/s,(M[0][2]+M[2][0])/s,(M[1][2]+M[2][1])/s,0.25*s]);
+  };
+  const out=[];
+  for (const x of AX) for (const y of AX) {
+    if (Math.abs(dot(x,y)) > 1e-9) continue;
+    const z = cross(x,y);
+    out.push(mq([[x[0],y[0],z[0]],[x[1],y[1],z[1]],[x[2],y[2],z[2]]]));
+  }
+  return out;
+})();
+const nearestCanon = q => {
+  let best = CANON[0], bd = -1;
+  for (const c of CANON) {
+    const d = Math.abs(q[0]*c[0]+q[1]*c[1]+q[2]*c[2]+q[3]*c[3]);
+    if (d > bd) { bd = d; best = c; }
+  }
+  return best;
+};
+
+// ---- build --------------------------------------------------------------
+document.querySelector("[data-cards]").innerHTML = PAIRS.map(p =>
+  `<div class="svc"><span class="n">${p.n}</span><h3>${p.title}</h3><p>${p.body}</p></div>`).join("");
+
+const rig  = document.querySelector(".rig");
+const cube = document.querySelector("[data-faces]");
+cube.style.width = cube.style.height = SIZE + "px";
+
+const faces = FACES.map(f => {
+  const p = PAIRS[f.i];
+  const el = document.createElement("button");
+  el.type = "button";
+  el.className = "face " + (f.svc ? "svc-f" : "wrk " + p.cls);
+  el.style.transform = `rotateX(${f.fx}deg) rotateY(${f.fy}deg) translateZ(${HALF}px)`;
+  el.innerHTML = `<span class="pad">` + (f.svc
+    ? `<span class="big">${p.n}</span>`
+    : `<span class="f__n">${p.demo}</span><span class="f__t">${p.demoName}</span>`) + `</span>`;
+  el.setAttribute("aria-label", `${p.n}. ${p.title}. Opens ${p.demoName}.`);
+  el.addEventListener("focus", () => { focused = true; });
+  el.addEventListener("blur",  () => { focused = false; });
+  el.addEventListener("click", e => { e.preventDefault(); if (!suppressClick) open(f.i); });
+  cube.appendChild(el);
+  return { el, n:f.n, i:f.i };
+});
+
+// ---- state --------------------------------------------------------------
+let q = qn([1, 0.25, 0.4, 0.15]);   // current orientation
+let vel = [0,0,0];                  // extra angular velocity from a kick, rad/s
+let hovered = false, focused = false, dragging = false, suppressClick = false;
+let t = 0;
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const setState = s => rig.dataset.state = s;
+
+const apply = () => {
+  const M = qmat(q);
+  cube.style.transform =
+    `matrix3d(${M[0][0]},${M[1][0]},${M[2][0]},0,` +
+             `${M[0][1]},${M[1][1]},${M[2][1]},0,` +
+             `${M[0][2]},${M[1][2]},${M[2][2]},0,0,0,0,1)`;
+};
+
+/* Which face is pointing at the viewer. Used so a click anywhere on the rig,
+   and every keyboard entry, resolves to the face actually being looked at. */
+const frontFace = () => {
+  const M = qmat(q);
+  let best = faces[0], bz = -2;
+  for (const f of faces) {
+    const z = M[2][0]*f.n[0] + M[2][1]*f.n[1] + M[2][2]*f.n[2];
+    if (z > bz) { bz = z; best = f; }
+  }
+  return best;
+};
+
+// ---- overlay ------------------------------------------------------------
+const ov = document.getElementById("ov");
+let lastFocus = null;
+function open(i){
+  const p = PAIRS[i];
+  document.getElementById("ovf").style.background = `var(--${p.cls==="w1"?"demo-1":p.cls==="w2"?"demo-2":"demo-3"})`;
+  document.getElementById("ovk").textContent = `${p.demo} · ${p.demoName} · placeholder, not built yet`;
+  document.getElementById("ovk").style.color = p.tone;
+  document.getElementById("ovn").textContent = p.n;
+  document.getElementById("ovt").textContent = p.title;
+  document.getElementById("ovb").textContent = p.body;
+  lastFocus = document.activeElement;
+  ov.setAttribute("open","");
+  document.getElementById("ovc").focus();
+}
+function close(){
+  ov.removeAttribute("open");
+  if (lastFocus) lastFocus.focus();
+}
+document.getElementById("ovc").addEventListener("click", close);
+ov.addEventListener("click", e => { if (e.target === ov) close(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && ov.hasAttribute("open")) close(); });
+
+// ---- pointer ------------------------------------------------------------
+let px=0, py=0, downAt=0, moved=0;
+rig.addEventListener("pointerenter", () => hovered = true);
+rig.addEventListener("pointerleave", () => { hovered = false; });
+rig.addEventListener("pointerdown", e => {
+  dragging = true; moved = 0; downAt = performance.now();
+  px = e.clientX; py = e.clientY;
+  rig.classList.add("dragging");
+  rig.setPointerCapture(e.pointerId);
+});
+rig.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  const dx = e.clientX - px, dy = e.clientY - py;
+  px = e.clientX; py = e.clientY;
+  moved += Math.hypot(dx, dy);
+  /* Drag maps to rotation about the screen axes, which is what makes it feel
+     like shoving a real object rather than scrubbing a slider. */
+  const k = 0.0075;
+  q = qn(qmul(qmul(qaxis([0,1,0], dx*k), qaxis([1,0,0], dy*k)), q));
+  vel = [dy*k*9, dx*k*9, 0];
+});
+const endDrag = () => {
+  if (!dragging) return;
+  dragging = false;
+  rig.classList.remove("dragging");
+  /* A short, still press is a click. Anything longer or further is a kick, and
+     the click that the browser fires afterwards has to be swallowed. */
+  const isClick = moved < 7 && performance.now() - downAt < 320;
+  if (!isClick) { suppressClick = true; setTimeout(() => suppressClick = false, 60); }
+};
+rig.addEventListener("pointerup", endDrag);
+rig.addEventListener("pointercancel", endDrag);
+
+// ---- loop ---------------------------------------------------------------
+if (reduce) {
+  q = nearestCanon(q); apply(); setState("settled");
+} else {
+  let last = performance.now();
+  const loop = now => {
+    const dt = Math.min((now - last)/1000, 0.05); last = now;
+    t += dt;
+
+    const settling = (hovered || focused) && !dragging;
+    setState(settling ? "settled" : dragging ? "dragging" : "idle");
+
+    if (!dragging) {
+      if (settling) {
+        /* Ease to the nearest square-on orientation. Framerate-independent, so
+           it lands in the same time on a 60Hz and a 120Hz screen. */
+        q = slerp(q, nearestCanon(q), 1 - Math.exp(-SETTLE*dt));
+        vel = vel.map(v => v * Math.exp(-6*dt));
+      } else {
+        // kick bleeds off, drift takes back over
+        vel = vel.map(v => v * Math.exp(-DECAY*dt));
+        const a = t * 0.15;
+        const ax = [Math.sin(a)*0.5, 0.82, Math.cos(a)*0.45];
+        const m = Math.hypot(...ax);
+        const w = [ ax[0]/m*IDLE_RATE + vel[0],
+                    ax[1]/m*IDLE_RATE + vel[1],
+                    ax[2]/m*IDLE_RATE + vel[2] ];
+        const sp = Math.hypot(...w);
+        if (sp > 1e-6) q = qn(qmul(qaxis([w[0]/sp,w[1]/sp,w[2]/sp], sp*dt), q));
+      }
+    }
+    apply();
+    requestAnimationFrame(loop);
+  };
+  apply();
+  requestAnimationFrame(loop);
+}
+
+/* A click that lands on the rig but between faces still opens the face being
+   looked at, so there is no dead space inside the object's footprint. */
+rig.addEventListener("click", e => {
+  if (suppressClick || e.target.closest(".face")) return;
+  open(frontFace().i);
+});
+})();
+</script>
+</body>
+</html>

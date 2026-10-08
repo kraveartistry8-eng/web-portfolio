@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afterglow guideline, three directions</title>
+<style>
+  /* Provisional ramp, resolved from oklch and measured. Real values, not placeholders.
+     gold  #DDB049  9.90 on void   text on it 1.72
+     two   #CA6719  5.21 on void   text on it 3.26
+     rose  #A31B41  2.66 on void   text on it 6.39
+     violet#3D1A61  1.45 on void   text on it 11.73
+     The ramp crosses over: early stages are marks ON void, late stages are grounds that CARRY text. */
+  :root{
+    --void:#080808; --deep:#141414; --surface:#2B2B2B;
+    --text:#EEECEA; --muted:#C0C0C0; --rule:rgba(192,192,192,.22);
+    --s1:#DDB049; --s2:#CA6719; --s3:#A31B41; --s4:#3D1A61;
+    --gut:clamp(18px,4vw,56px);
+    --ease:cubic-bezier(.2,0,.2,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--void);color:var(--text);
+    font:400 16px/1.65 "Helvetica Neue",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 var(--gut)}
+  h1,h2,h3{font-weight:700;letter-spacing:-.025em;margin:0}
+  p{margin:0}
+  .sm{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+  header.top{padding:112px 0 64px;border-bottom:1px solid var(--rule)}
+  h1{font-size:clamp(32px,5.6vw,66px);line-height:1.04;max-width:17ch;margin:18px 0 0}
+  .lede{color:var(--muted);max-width:60ch;margin:26px 0 0}
+
+  .dir{padding:76px 0;border-bottom:1px solid var(--rule)}
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,27ch);gap:var(--gut);align-items:start}
+  .aside h3{font-size:17px;margin:0 0 10px}
+  .aside p{font-size:14px;color:var(--muted);margin:0 0 14px}
+  .aside p:last-child{margin:0}
+  .dirname{margin:0 0 26px}
+  .dirname h2{font-size:clamp(22px,3vw,34px);margin:8px 0 0}
+
+  /* ---------- shared document chrome: this is what makes a spread a document ---------- */
+  /* One page shape. Pages of the same document cannot be three different rectangles. */
+  .spread{border:1px solid var(--rule);background:var(--void);overflow:hidden;
+    display:flex;flex-direction:column;height:630px}
+  .spread > :first-child{flex:1;min-height:0;overflow:hidden}
+  .folio{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:baseline;
+    padding:12px 22px;border-top:1px solid var(--rule);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
+  .folio span{white-space:nowrap}
+  .folio :nth-child(2){text-align:center}
+  .folio :nth-child(3){text-align:right}
+
+  /* ---------- A: the descent ---------- */
+  .descent{position:relative;padding:0}
+  .fall{background:linear-gradient(180deg,var(--s2) 0%,var(--s3) 52%,var(--s4) 100%);
+    padding:52px 80px 56px 22px;position:relative}
+  .fall .hdr{font-size:clamp(20px,3.4vw,34px);line-height:1.1;max-width:20ch;color:var(--void);font-weight:700;letter-spacing:-.02em}
+  .crossline{display:flex;align-items:center;gap:14px;margin:34px 0 26px}
+  .crossline span{flex:1;height:1px;background:rgba(238,236,234,.4)}
+  .crossline em{font-style:normal;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text);opacity:.9}
+  .fall .body{color:var(--text);max-width:54ch;font-size:15px;line-height:1.7}
+  .fall .body + .body{margin-top:14px}
+  .rail{position:absolute;top:0;bottom:0;right:0;width:58px;background:var(--void);
+    display:flex;flex-direction:column;justify-content:space-between;padding:14px 0;text-align:right}
+  .rail b{display:block;padding-right:12px;font-size:10px;letter-spacing:.1em;color:var(--text);
+    font-weight:400;font-variant-numeric:tabular-nums}
+  .rail b i{font-style:normal;display:block;font-size:8px;letter-spacing:.14em;color:var(--muted);margin-top:2px}
+
+  /* ---------- B: four rooms ---------- */
+  .seq{display:flex;flex-direction:column}
+  .corridor{padding:30px 22px;background:var(--void)}
+  .corridor .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .corridor .r{margin:10px 0 0;max-width:56ch;font-size:15px}
+  .roomfield{padding:40px 22px 44px;display:flex;flex-direction:column;gap:16px}
+  .roomfield.three{background:var(--s3)}
+  .roomfield .label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);opacity:.9}
+  .roomfield .demo{font-size:clamp(22px,3.6vw,38px);line-height:1.12;color:var(--text);max-width:18ch;font-weight:700;letter-spacing:-.02em}
+  .roomfield .meas{font-size:11px;color:var(--text);opacity:.85;letter-spacing:.02em}
+
+  /* ---------- C: specimen ---------- */
+  .spec{display:grid;grid-template-columns:1fr 1fr}
+  .cell{padding:26px 22px;display:flex;flex-direction:column;justify-content:space-between;gap:30px}
+  .cell.one{background:var(--s1)} .cell.four{background:var(--s4)}
+  .cell .mark{font-size:clamp(34px,5.4vw,60px);line-height:.95;letter-spacing:-.04em;font-weight:700}
+  .cell.one .mark{color:var(--void)} .cell.four .mark{color:var(--text)}
+  .cell dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:11px;line-height:1.5}
+  .cell dt{letter-spacing:.1em;text-transform:uppercase;opacity:.72}
+  .cell dd{margin:0;font-variant-numeric:tabular-nums}
+  .cell.one dl{color:var(--void)} .cell.four dl{color:var(--text)}
+
+  @media (max-width:760px){
+    .spread{height:auto}
+    .spread > :first-child{height:auto}
+    .folio{grid-template-columns:1fr;gap:5px;font-size:9px;letter-spacing:.1em}
+    .folio :nth-child(2),.folio :nth-child(3){text-align:left}
+    .split{grid-template-columns:1fr}
+    .spec{grid-template-columns:1fr}
+    .aside{border-top:1px solid var(--rule);padding-top:22px}
+  }
+  /* Deepens, never brightens. */
+  a{color:var(--s1);text-decoration:none;border-bottom:1px solid rgba(221,176,73,.35);transition:color .45s var(--ease),border-color .45s var(--ease)}
+  a:hover{color:#A8832F;border-color:rgba(168,131,47,.3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="sm">Afterglow &middot; guideline document &middot; directions, second pass</p>
+    <h1>Three ways the document could be built</h1>
+    <p class="lede">Each panel below is a spread from the document itself, at working scale, with real copy
+      and measured numbers. The commentary sits outside the spread, never inside it. Stage colours are
+      provisional and chosen only so the structures can be judged; the ramp is a separate decision.</p>
+  </header>
+
+  <!-- ============ A ============ -->
+  <section class="dir">
+    <div class="dirname"><p class="sm">Direction A</p><h2>The Descent</h2></div>
+    <div class="split">
+      <div class="spread">
+        <div class="fall">
+          <div class="rail">
+            <b>0.62<i>L</i></b><b>0.47<i>L</i></b><b>0.31<i>L</i></b>
+          </div>
+          <p class="hdr">The light only ever deepens.</p>
+          <div class="crossline"><em>Body copy may begin here</em><span></span><em>4.5:1</em></div>
+          <p class="body">Above this line the ground is too light to carry body copy, so only display sizes
+            are set. Below it, the fall has deepened far enough that running text clears the floor and holds
+            for the rest of the document. The line is not decoration. It is the measurement, drawn where it
+            falls.</p>
+          <p class="body">Nothing after this point returns to a lighter value. The document has one
+            direction, and a reader always knows how far through it they are by how dark the page has become.</p>
+        </div>
+        <div class="folio"><span>Foundations / Colour</span><span>Afterglow Brand Guidelines &middot; October 2026</span><span>07</span></div>
+      </div>
+      <div class="aside">
+        <h3>The page is the brand</h3>
+        <p>The ground deepens continuously across the whole document. Position is read as colour, and the
+          ramp doubles as the folio.</p>
+        <p>Neither reference does this. Frame.io holds a fixed near-black and paginates; Uber lets photography
+          carry the mood over white chrome.</p>
+        <p>The hard problem is text surviving the fall, so the spread shows it solved rather than claimed:
+          a measured crossover line, display type above it, body copy only below.</p>
+        <p><strong>Cost.</strong> Every section’s type colour depends on its scroll position, which is the
+          most fragile thing here.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ B ============ -->
+  <section class="dir">
+    <div class="dirname"><p class="sm">Direction B</p><h2>Four Rooms</h2></div>
+    <div class="split">
+      <div class="spread">
+        <div class="seq">
+          <div class="corridor">
+            <p class="k">Corridor &middot; before stage three</p>
+            <p class="r">Rose is a ground, never a letterform. At 2.66:1 on the void it fails as text at any
+              size. Set it as a field and put the words on top of it, where they measure 6.39:1.</p>
+          </div>
+          <div class="roomfield three">
+            <p class="label">Stage three &middot; rose &middot; #A31B41</p>
+            <p class="demo">Carried out on the skin, and in the memory.</p>
+            <p class="meas">Text on rose 6.39:1 &middot; rose on void 2.66:1 &middot; fill, ground, large shape</p>
+          </div>
+          <div class="corridor">
+            <p class="k">Corridor &middot; before stage four</p>
+            <p class="r">The corridor is bare void. It clears the eye between stages the way the neutral
+              corridor clears the nose between rooms.</p>
+          </div>
+        </div>
+        <div class="folio"><span>Foundations / Colour</span><span>Afterglow Brand Guidelines &middot; October 2026</span><span>11</span></div>
+      </div>
+      <div class="aside">
+        <h3>The structure quotes the brief</h3>
+        <p>Four chapters, one per stage, with a bare void corridor between each. Rules live in the corridors,
+          demonstrations live in the rooms.</p>
+        <p>The corridor is a full band, not a gutter, so the reset is felt rather than noticed. On a phone the
+          sequence stays vertical and in order, which is the one thing this direction cannot afford to lose.</p>
+        <p><strong>Cost.</strong> The quote only lands if the reader knows the launch night, and the event
+          rules were scoped out of the site.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ C ============ -->
+  <section class="dir">
+    <div class="dirname"><p class="sm">Direction C</p><h2>The Specimen Wall</h2></div>
+    <div class="split">
+      <div class="spread">
+        <div class="spec">
+          <div class="cell one">
+            <p class="mark">Gold of<br>last light</p>
+            <dl>
+              <dt>Hex</dt><dd>#DDB049</dd>
+              <dt>OKLCH</dt><dd>0.78 &nbsp;0.13 &nbsp;85</dd>
+              <dt>On void</dt><dd>9.90:1</dd>
+              <dt>Text on it</dt><dd>1.72:1</dd>
+              <dt>Role</dt><dd>Text, marks, rules</dd>
+            </dl>
+          </div>
+          <div class="cell four">
+            <p class="mark">Deep<br>violet</p>
+            <dl>
+              <dt>Hex</dt><dd>#3D1A61</dd>
+              <dt>OKLCH</dt><dd>0.31 &nbsp;0.12 &nbsp;303</dd>
+              <dt>On void</dt><dd>1.45:1</dd>
+              <dt>Text on it</dt><dd>11.73:1</dd>
+              <dt>Role</dt><dd>Ground only, never text</dd>
+            </dl>
+          </div>
+        </div>
+        <div class="folio"><span>Foundations / Colour</span><span>Afterglow Brand Guidelines &middot; October 2026</span><span>09</span></div>
+      </div>
+      <div class="aside">
+        <h3>The document proves itself</h3>
+        <p>A foundry specimen rather than a brand book. Each field is shown at working scale carrying its own
+          hex, OKLCH triple and both measured ratios, set on the colour being specified.</p>
+        <p>The two ends of the ramp sit side by side so the crossover is visible in one glance: gold is a mark
+          on the void, violet is a ground that carries text. Same rule, opposite directions.</p>
+        <p><strong>Cost.</strong> Densest of the three and the most likely to read as technical rather than
+          as the brand.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="folio" style="border-top:0;padding-left:0;padding-right:0">
+    <span>Afterglow / guideline / directions</span>
+    <span>Feature design step 3, second pass &middot; October 2026</span>
+    <span>Provisional ramp</span>
+  </div>
+</div>
+</body>
+</html>

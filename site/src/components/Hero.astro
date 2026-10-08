@@ -1,0 +1,27 @@
+<section class="hero" id="top">
+  <div class="page">
+    <h1 class="hero__title">
+      <span>Your brand is original.</span>
+      <span>Your website is <em class="mark">stock</em>.</span>
+    </h1>
+    <p class="hero__sub lead">Made, not bought. Main sites, launch sites, product pages.</p>
+    <a class="btn" href="#start">Start a project</a>
+  </div>
+</section>
+
+<style>
+  /* Nothing here starts hidden. The composition is correct at first
+     paint; any entrance motion added later must be a settle via
+     gsap.from(), never a construction. See tokens.css rule 1. */
+  .hero { background: var(--surface); padding-block: 104px 112px; }
+  /* 19ch keeps each span on two lines at the top of the clamp, so the
+     phrases break where they were designed to break. */
+  .hero__title { max-width: 19ch; margin-bottom: 40px; }
+  .hero__title span { display: block; }
+  .hero__sub { margin-bottom: 46px; }
+  @media (max-width: 620px) {
+    .hero { padding-block: 56px 64px; }
+    .hero__title { margin-bottom: var(--space-5); }
+    .hero__sub { margin-bottom: var(--space-6); }
+  }
+</style>

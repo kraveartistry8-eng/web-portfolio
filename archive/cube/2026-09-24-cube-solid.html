@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solid Cube</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --demo-1:#C4511F; --demo-2:#E3D5BE; --demo-3:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h3{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.042em;line-height:.99}
+h3{font-size:21px}
+p{margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.intro{padding-block:64px 44px}
+.intro h1{max-width:17ch;margin-bottom:20px}
+.intro p{max-width:62ch;font-size:19px;line-height:1.45;letter-spacing:-.012em}
+
+.dir{border-top:1px solid var(--accent);padding-block:30px 78px}
+.dir__bar{display:flex;gap:18px;align-items:baseline;margin-bottom:34px;flex-wrap:wrap}
+.dir__bar .n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:4px 9px;border-radius:2px}
+.dir__bar .nm{font-weight:700;font-size:17px;letter-spacing:-.02em}
+.dir__bar .pr{color:var(--ink-2);font-size:14.5px;max-width:60ch}
+
+.split{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.copy{grid-column:1 / 7}
+.svc{border-top:1px solid var(--line);padding-block:20px 22px}
+.svc:first-child{border-top:1px solid var(--ink)}
+.svc .n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  color:var(--accent);display:block;margin-bottom:10px}
+.svc h3{margin-bottom:8px}
+.svc p{font-size:15px;line-height:1.55;color:var(--ink-2);max-width:40ch}
+.rig{grid-column:8 / 13;display:grid;place-items:center;min-height:470px;position:relative}
+
+/* ---------- cube ---------- */
+.cube{position:relative;transform-style:preserve-3d}
+.face{position:absolute;inset:0;backface-visibility:hidden;
+  display:grid;place-items:center;overflow:hidden}
+/* The billboard. Counter-rotated every frame about the face normal so the
+   type reads upright no matter where the cube is in its tumble.
+   70.7% is the inscribed square: a box of side s spinning about its own centre
+   stays inside a face of side f for as long as s*sqrt(2) <= f. At 70.7% the
+   box's corners just reach the face edge and never cross it, so the type can
+   sit in a corner and still rotate freely. */
+.bb{width:70.7%;height:70.7%;display:flex;flex-direction:column;
+  justify-content:space-between;align-items:flex-start;text-align:left;
+  will-change:transform}
+.f__n{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase}
+.f__t{font-size:15.5px;font-weight:700;letter-spacing:-.02em;line-height:1.16;margin-top:9px}
+.wrk{color:#fff}
+.w1{background:var(--demo-1)} .w2{background:var(--demo-2);color:var(--ink)} .w3{background:var(--demo-3)}
+.svc-f{background:var(--surface)}
+.svc-f .f__n{color:var(--accent)}
+
+/* per-variant */
+.a1 .rig{perspective:1200px}
+.a2 .rig{perspective:2800px}
+.a3 .rig{perspective:820px;min-height:540px}
+.a4 .rig{perspective:1100px}
+
+.a2 .face{border:1px solid var(--line)}
+.a2 .frame{position:absolute;inset:9px;border:1px solid var(--accent);pointer-events:none}
+.a2 .wrk .frame{border-color:rgba(255,255,255,.55)}
+.a2 .w2 .frame{border-color:rgba(22,22,20,.42)}
+
+.a3 .bb{justify-content:center;align-items:center}
+.a3 .big{font-family:var(--mono);font-size:96px;line-height:1;
+  color:var(--accent);letter-spacing:-.02em;display:block}
+.a3 .wrk .bb{justify-content:flex-end}
+
+.a4 .stack{position:relative;display:grid;place-items:center}
+.a4 .shadow{position:absolute;bottom:-84px;left:50%;translate:-50% 0;
+  width:220px;height:26px;border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(22,22,20,.26) 0%, rgba(22,22,20,0) 72%)}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr;gap:34px}
+  .copy,.rig{grid-column:1}
+  .rig{min-height:370px;order:-1}
+}
+@media (max-width:620px){:root{--gutter:16px}}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">Direction A &middot; four solids &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+  <section class="intro">
+    <h1>The solid, four ways.</h1>
+    <p class="muted">All four tumble on three axes at once, continuously. Every face counter-rotates
+      its own type so the words stay upright at every angle. Cards are identical in all four, so the
+      only thing changing is the cube. Hover a cube to freeze it.</p>
+  </section>
+
+  <!-- A1 -->
+  <section class="dir a1" data-cube data-vx="3.3" data-vy="5.5" data-vz="2.2" data-size="224">
+    <div class="dir__bar"><span class="n">A1</span><span class="nm">Bare</span>
+      <span class="pr">No borders anywhere. White meets colour edge to edge, so it reads as one solid object rather than six panels. Even drift on all three axes.</span></div>
+    <div class="split">
+      <div class="copy" data-cards></div>
+      <div class="rig"><div class="cube" data-faces></div></div>
+    </div>
+  </section>
+
+  <!-- A2 -->
+  <section class="dir a2" data-cube data-vx="1.7" data-vy="4.3" data-vz="0.9" data-size="224" data-frame="1">
+    <div class="dir__bar"><span class="n">A2</span><span class="nm">Ruled</span>
+      <span class="pr">Every face carries an inset 1px rule, the page&rsquo;s one repeated gesture applied to the object. Near-flat perspective, slowest tumble. Reads editorial rather than toy. The rule belongs to the cube, so it rolls; only the type stays upright.</span></div>
+    <div class="split">
+      <div class="copy" data-cards></div>
+      <div class="rig"><div class="cube" data-faces></div></div>
+    </div>
+  </section>
+
+  <!-- A3 -->
+  <section class="dir a3" data-cube data-vx="4.6" data-vy="6.2" data-vz="3.4" data-size="330" data-numeral="1">
+    <div class="dir__bar"><span class="n">A3</span><span class="nm">Big</span>
+      <span class="pr">Scaled up on a deep perspective so it dominates its half. Service faces drop to a single mono numeral, because the titles already sit in the cards to the left and saying them twice was redundant.</span></div>
+    <div class="split">
+      <div class="copy" data-cards></div>
+      <div class="rig"><div class="cube" data-faces></div></div>
+    </div>
+  </section>
+
+  <!-- A4 -->
+  <section class="dir a4" data-cube data-vx="3.0" data-vy="6.0" data-vz="1.5" data-size="224" data-bob="1">
+    <div class="dir__bar"><span class="n">A4</span><span class="nm">Grounded</span>
+      <span class="pr">A contact shadow puts it on a surface instead of in space, and it bobs as it turns. The only one with apparent weight, which is what makes a kick believable.</span></div>
+    <div class="split">
+      <div class="copy" data-cards></div>
+      <div class="rig"><div class="stack"><div class="cube" data-faces></div><div class="shadow"></div></div></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  const SERVICES = [
+    ["01","A brand’s main site","The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for."],
+    ["02","A launch site with a date on it","One product, one moment, one page that has to be live before the drop. Everything on it points at the date."],
+    ["03","A page that tells one story","For the one thing that deserves more than a grid tile and three bullet points."]
+  ];
+  const WORK = [["Demo 01","Helmet","w1"],["Demo 02","Fragrance","w2"],["Demo 03","Story","w3"]];
+
+  /* Face order pairs each service with the work opposite it:
+     front/back, right/left, top/bottom. */
+  const FACES = [
+    {fx:0,  fy:0,   kind:"svc", i:0},
+    {fx:0,  fy:180, kind:"wrk", i:0},
+    {fx:0,  fy:90,  kind:"svc", i:1},
+    {fx:0,  fy:-90, kind:"wrk", i:1},
+    {fx:90, fy:0,   kind:"svc", i:2},
+    {fx:-90,fy:0,   kind:"wrk", i:2}
+  ];
+
+  // --- cards ---
+  document.querySelectorAll("[data-cards]").forEach(host => {
+    host.innerHTML = SERVICES.map(([n,t,b]) =>
+      `<div class="svc"><span class="n">${n}</span><h3>${t}</h3><p>${b}</p></div>`).join("");
+  });
+
+  /* Matrices come from DOMMatrix rather than being hand-rolled, because the
+     sign convention for rotateX/rotateY has to match CSS exactly and the only
+     way to guarantee that is to let CSS parse the string itself. */
+  const DEG = 180 / Math.PI;
+
+  /* The billboard angle. Rotating the type by t about the face normal sends its
+     local up vector to (sin t, -cos t) in face space, which lands in screen
+     space at  sin(t)*X - cos(t)*Y,  where X and Y are the screen projections of
+     the face's own axes. Upright means that vector has no horizontal component,
+     so solve  sin(t)*m11 - cos(t)*m21 = 0  for t. Solving the projected vector
+     rather than the pre-projection one is what keeps a foreshortened face
+     upright too: a face angled away squashes along one axis, which shears the
+     apparent angle, and only the projected solve cancels that. atan2 gives two
+     answers 180 apart, so take the one pointing up rather than down. */
+  const upright = W => {
+    let t = Math.atan2(W.m21, W.m11);
+    if (Math.sin(t)*W.m12 - Math.cos(t)*W.m22 > 0) t += Math.PI;
+    return t * DEG;
+  };
+
+  const cubes = [];
+  document.querySelectorAll("[data-cube]").forEach(sec => {
+    const cube = sec.querySelector("[data-faces]");
+    const size = +sec.dataset.size, half = size/2;
+    cube.style.width = cube.style.height = size + "px";
+
+    const faces = FACES.map(f => {
+      const el = document.createElement("div");
+      const isSvc = f.kind === "svc";
+      el.className = "face " + (isSvc ? "svc-f" : "wrk " + WORK[f.i][2]);
+      el.style.transform = `rotateX(${f.fx}deg) rotateY(${f.fy}deg) translateZ(${half}px)`;
+
+      let inner;
+      if (isSvc && sec.dataset.numeral) {
+        inner = `<span class="big">${SERVICES[f.i][0]}</span>`;
+      } else if (isSvc) {
+        inner = `<p class="f__n">${SERVICES[f.i][0]}</p><p class="f__t">${SERVICES[f.i][1]}</p>`;
+      } else {
+        inner = `<p class="f__n">${WORK[f.i][0]}</p><p class="f__t">${WORK[f.i][1]}</p>`;
+      }
+      el.innerHTML = `<div class="bb">${inner}</div>` + (sec.dataset.frame ? `<span class="frame"></span>` : "");
+      cube.appendChild(el);
+      return { bb: el.querySelector(".bb"),
+               base: new DOMMatrix(`rotateX(${f.fx}deg) rotateY(${f.fy}deg)`) };
+    });
+
+    const c = {
+      el: cube, faces,
+      vx:+sec.dataset.vx, vy:+sec.dataset.vy, vz:+sec.dataset.vz,
+      bob: !!sec.dataset.bob,
+      shadow: sec.querySelector(".shadow"),
+      t: 0, paused: false
+    };
+    const rig = sec.querySelector(".rig");
+    rig.addEventListener("mouseenter", () => c.paused = true);
+    rig.addEventListener("mouseleave", () => c.paused = false);
+    cubes.push(c);
+  });
+
+  const draw = c => {
+    const rx = c.t*c.vx, ry = c.t*c.vy, rz = c.t*c.vz;
+    const bob = c.bob ? Math.sin(c.t*0.62)*13 : 0;
+    c.el.style.transform =
+      `translateY(${bob.toFixed(2)}px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+    if (c.shadow) {
+      const k = 1 - Math.abs(bob)/40;
+      c.shadow.style.opacity = (0.55 + 0.35*k).toFixed(3);
+      c.shadow.style.scale = (0.86 + 0.14*k).toFixed(3);
+    }
+    const M = new DOMMatrix(`rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`);
+    for (const f of c.faces)
+      f.bb.style.transform = `rotateZ(${upright(M.multiply(f.base)).toFixed(2)}deg)`;
+  };
+
+  /* Reduced motion: no loop at all, a chosen resting pose, and the type is
+     still billboarded once so it is upright when it lands. */
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    cubes.forEach(c => { c.vx=-20; c.vy=-32; c.vz=0; c.t=1; c.bob=false; draw(c); });
+  } else {
+    let last = performance.now();
+    const loop = now => {
+      const dt = Math.min((now-last)/1000, 0.05); last = now;
+      for (const c of cubes) { if (!c.paused) c.t += dt; draw(c); }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>

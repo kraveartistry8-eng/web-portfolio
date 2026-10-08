@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 2 of 9 &middot; Core &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">Sections, theme blocks, and what Horizon changed</p>
+    <h1>Merchant-editable is the actual product.</h1>
+    <p class="lead">The table says 2.0 sections plus blocks. The architecture moved on: theme blocks are reusable across sections and nest inside each other, and Horizon is the default theme for every store created in 2026.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Holds, wording lags</span><span class="n">Theme blocks, not just section blocks. Horizon not Horizons.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">2 to 3 weekends</span><span class="n">The schema and preset model is the learning curve, not the Liquid.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Full, as of today</span><span class="n">Weeks 1 to 5 moved from Dawn to Skeleton this morning.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>Online Store 2.0 introduced sections with JSON templates, letting merchants reorder page
+  content. Theme blocks go further. They live as individual Liquid files in a
+  <span class="mono">/blocks</span> directory, each holding markup, a
+  <span class="mono">{% schema %}</span> and optional <span class="mono">{% stylesheet %}</span>,
+  and they are reusable across different sections rather than being locked to the section that
+  defined them. They also nest inside one another to create hierarchy.</p>
+<p>A theme block needs a preset defined before it appears in the theme editor's block picker. That
+  detail is the difference between a block a merchant can find and one only you know exists.</p>
+<p>Three themes matter right now. <strong>Horizon</strong> is the default for new stores and the
+  reference implementation of the block architecture. <strong>Skeleton</strong> is what
+  <span class="mono">shopify theme init</span> clones and what shopify.dev names as the recommended
+  starting point for new theme development. <strong>Dawn</strong> is the previous default, still
+  supported with bug fixes, no longer receiving new features.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>Yes, with two corrections to the wording. "2.0 Sections + Blocks" undersells what
+  changed, because the reusable, nestable theme block is the newer and more consequential unit. And
+  the update is Horizon, singular.</p>
+<p>"Merchant-editable layouts" is the right framing and the most commercially important phrase in
+  the whole table. It is the thing a merchant actually experiences after you leave.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>Editability is a support-cost decision disguised as a design decision</h4>
+  <p>Your care plan explicitly excludes content entry and support tickets, calling that a $200
+  maintenance plan and a different supplier. That exclusion only survives if the merchant can change
+  their own content. A beautiful theme they cannot edit converts your retainer into the exact
+  low-value work you refused.</p></div></li>
+<li><div><h4>Forking Horizon is the tempting wrong move</h4>
+  <p>Horizon is the thing merchants run, so copying it looks like the shortcut. It is a large
+  codebase you did not write, and the portfolio piece exists so you can explain every decision in it
+  to an agency principal. Skeleton is minimal and yours. Read Horizon, do not fork it.</p></div></li>
+<li><div><h4>Nesting depth is undocumented</h4>
+  <p>The shopify.dev page demonstrates blocks inside blocks but does not state a maximum. Secondary
+  sources claim eight levels in Horizon. <strong>[Low Confidence]</strong> on that figure. It matters
+  only if you design a deeply nested system and discover a ceiling late.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>Core. This is most of what a $15k to $40k build actually delivers</td></tr>
+  <tr><td>Tier 3 relevance</td><td>Moderate. Headless projects bypass it entirely</td></tr>
+  <tr><td>Billable on its own</td><td>Yes. Block systems are the deliverable merchants notice</td></tr>
+  <tr><td>Confidence</td><td>9 of 10</td></tr>
+</table>
+<div class="flag ok"><h4>Where it sits in your plan</h4>
+<p>Week 2 builds the homepage above the fold as a configurable section with its schema, and Sunday of
+  that week validates in the theme editor that a non-technical person could change it. That validation
+  step is the single best-designed task in the October block, because it tests the thing the merchant
+  will actually judge you on.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://shopify.dev/docs/storefronts/themes/architecture/blocks/theme-blocks">Theme blocks, shopify.dev</a></li>
+<li><a href="https://shopify.dev/docs/storefronts/themes/getting-started/create">Create a theme, shopify.dev</a> &mdash; Skeleton as default and recommendation</li>
+<li><a href="https://shopify.dev/changelog/posts/color-palettes">Color palettes in themes, Shopify changelog</a> &mdash; 17 June 2026</li>
+<li><a href="https://craftshift.com/shopify-horizon-vs-dawn-2026/">Horizon vs Dawn, 2026</a> &mdash; secondary, for the default-theme change</li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>Insufficient data available for the maximum theme block nesting depth. shopify.dev does not state
+  one, and the figure circulating in secondary sources is unverified.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <span class="muted">Theme architecture</span> <a href="03-graphql-apis.html">GraphQL APIs</a> <a href="04-shopify-functions.html">Shopify Functions</a> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <a href="06-core-web-vitals.html">Core Web Vitals</a> <a href="07-storefront-mcp.html">Storefront MCP</a> <a href="08-structured-data.html">Structured data</a> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

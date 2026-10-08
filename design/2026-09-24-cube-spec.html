@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --demo-1:#C4511F; --demo-2:#E3D5BE; --demo-3:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.042em;line-height:.99}
+h2{font-size:clamp(22px,2.7vw,31px)}
+h3{font-size:17px}
+p{margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.intro{padding-block:58px 30px}
+.intro h1{max-width:18ch;margin-bottom:18px}
+.intro p{max-width:64ch;font-size:18px;line-height:1.45;letter-spacing:-.012em}
+
+/* ---- live section ---- */
+.live{padding-block:26px 84px}
+.split{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.copy{grid-column:1 / 7}
+.svc{border-top:1px solid var(--line);padding-block:20px 22px}
+.svc:first-child{border-top:1px solid var(--ink)}
+.svc .n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;color:var(--accent);
+  display:block;margin-bottom:10px}
+.svc h3{font-size:21px;margin-bottom:8px}
+.svc p{font-size:15px;line-height:1.55;color:var(--ink-2);max-width:40ch}
+.rig{grid-column:8 / 13;display:grid;place-items:center;min-height:430px;
+  perspective:900px;position:relative;touch-action:none;cursor:grab}
+.rig.dragging{cursor:grabbing}
+.cube{position:relative;transform-style:preserve-3d;will-change:transform}
+.face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;
+  display:grid;place-items:center;border:0;padding:0;font:inherit;color:inherit;
+  text-align:left;cursor:pointer;transition:box-shadow 140ms linear}
+.face:hover,.face:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.wrk:hover,.wrk:focus-visible{box-shadow:inset 0 0 0 2px rgba(255,255,255,.92)}
+.w2:hover,.w2:focus-visible{box-shadow:inset 0 0 0 2px rgba(22,22,20,.75)}
+.pad{width:70.7%;height:70.7%;display:flex;flex-direction:column;
+  justify-content:space-between;align-items:flex-start}
+.svc-f .pad{justify-content:center;align-items:center}
+.wrk .pad{justify-content:flex-end}
+.f__n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase}
+.f__t{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.14;margin-top:7px}
+.big{font-family:var(--mono);font-size:92px;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.wrk{color:#fff}
+.w1{background:var(--demo-1)} .w2{background:var(--demo-2);color:var(--ink)} .w3{background:var(--demo-3)}
+.svc-f{background:var(--surface)} .svc-f .f__n{color:var(--accent)}
+.bar{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;
+  padding-inline:4px}
+
+/* ---- spec ---- */
+.band{border-top:1px solid var(--accent);padding-block:34px 60px}
+.band__h{margin-bottom:24px}
+.band__h .label{margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:11px 14px 11px 0;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:400;border-bottom:1px solid var(--ink)}
+td:first-child{font-weight:700;white-space:nowrap;padding-right:22px}
+td code,.mono{font-family:var(--mono);font-size:12.5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:26px 40px}
+.no li{margin-bottom:7px}
+.no{padding-left:19px;max-width:62ch}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr;gap:30px}
+  .copy,.rig{grid-column:1} .rig{min-height:440px;order:-1}
+  .two{grid-template-columns:1fr}
+}
+@media (max-width:620px){:root{--gutter:16px} table{font-size:13.5px}}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">Cube spec &middot; weighted + S3 &middot; step 6 &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+  <section class="intro">
+    <h1>Weighted, resting corner on.</h1>
+    <p class="muted">At the size it ships. Spin it in any direction and it carries the spin, bleeding
+      it off slowly the way a model globe does. Rest your pointer on it and it slows faster, then
+      settles corner on. Each face marks itself as you point at it, so a click is never a guess.</p>
+  </section>
+
+  <section class="live"><div class="split">
+    <div class="copy" data-cards></div>
+    <div class="rig">
+      <div class="cube" data-faces></div>
+      <div class="bar">
+        <span class="label" data-state>drifting</span>
+        <span class="label">drag &middot; click a face</span>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="band">
+    <div class="band__h"><p class="label">01</p><h2>States</h2></div>
+    <table>
+      <tr><th>State</th><th>What it is</th><th>How it is entered</th></tr>
+      <tr><td>Drift</td><td>Turning at 0.30 rad/s, about 17&deg; a second, around an axis that
+        precesses slowly so the tumble never repeats.</td><td>Default, and what a coast fades back
+        into once it drops below a walking pace.</td></tr>
+      <tr><td>Held</td><td>Following the pointer one to one on any axis. No smoothing, no
+        constraint.</td><td>Pointer down on the cube.</td></tr>
+      <tr><td>Coasting</td><td>Carrying the angular velocity it was released with, capped at
+        183&deg;/s, losing it to friction. A full throw runs about 6.4 seconds.</td>
+        <td>Pointer up after a drag.</td></tr>
+      <tr><td>Settling</td><td>Easing to the nearest square-on pose plus a fixed view offset of
+        &minus;38&deg; Y and &minus;28&deg; X, which shows three faces.</td><td>Pointer or keyboard
+        focus is on it and the spin has dropped below the threshold.</td></tr>
+      <tr><td>Open</td><td>Overlay showing. The cube holds still underneath.</td>
+        <td>Click, Enter or Space on a face.</td></tr>
+    </table>
+  </section>
+
+  <section class="band">
+    <div class="band__h"><p class="label">02</p><h2>Motion</h2></div>
+    <table>
+      <tr><th>Thing</th><th>Behaviour</th><th>Number</th></tr>
+      <tr><td>Drift</td><td>Constant angular velocity about a precessing axis.</td>
+        <td><span class="mono">0.30 rad/s</span>, precession <span class="mono">0.15 rad/s</span></td></tr>
+      <tr><td>Grip</td><td>Pointer delta maps to rotation about the screen axes, applied on the left
+        so it turns in view space rather than object space. Any direction, no fixed mount. While it
+        is held it tracks the hand exactly, at whatever speed the hand moves.</td>
+        <td><span class="mono">0.0055 rad/px</span></td></tr>
+      <tr><td>Top speed</td><td>Hard ceiling on the angular velocity the cube may keep on release.
+        This is what mass actually does, and it is the reason a violent drag no longer launches it.
+        Peak fell from about 670&deg;/s to 183&deg;/s.</td>
+        <td><span class="mono">3.20 rad/s</span> (183&deg;/s)</td></tr>
+      <tr><td>Release</td><td>Velocity is averaged across the last several pointer moves, not taken
+        from the final frame, so one stuttered event cannot decide the throw. Then the ceiling is
+        applied. A press that qualifies as a click leaves no spin at all.</td>
+        <td>smoothing <span class="mono">0.35</span></td></tr>
+      <tr><td>Friction</td><td>Exponential decay of angular velocity. Deliberately slow, so a full
+        throw is still visibly turning several seconds later. Top speed to rest takes 6.4s.</td>
+        <td><span class="mono">0.40 /s</span></td></tr>
+      <tr><td>Pointer drag</td><td>Resting the pointer on a spinning cube multiplies friction, the
+        way a finger on a globe does. Sized so that a cube thrown hard and then pointed at comes
+        to a readable stop inside about a second and a half.</td>
+        <td><span class="mono">&times;4.0</span></td></tr>
+      <tr><td>Settle</td><td>Spherical interpolation to the target pose, exponential ease, framerate
+        independent so it lands in the same time at 60 and 120Hz.</td>
+        <td>rate <span class="mono">4.4</span>, threshold <span class="mono">0.25 rad/s</span></td></tr>
+      <tr><td>Face mark</td><td>2px inset rule in accent, white on the colour faces.</td>
+        <td><span class="mono">140ms linear</span></td></tr>
+    </table>
+  </section>
+
+  <section class="band">
+    <div class="band__h"><p class="label">03</p><h2>Input</h2></div>
+    <div class="two">
+      <div>
+        <h3>Pointer</h3>
+        <p class="muted" style="margin-top:8px;font-size:14.5px">A press that moves under 7px and
+          lasts under 320ms is a click, and a click kills any spin rather than starting one. Anything
+          else is a drag, and the trailing click the browser fires afterwards is swallowed for 60ms.
+          Clicks land on faces only; the space around the cube does nothing, because at a three-face
+          pose there is no single face a background click could honestly mean.</p>
+      </div>
+      <div>
+        <h3>Touch</h3>
+        <p class="muted" style="margin-top:8px;font-size:14.5px">Same thresholds. There is no hover,
+          so a tap on a face opens it directly and a flick spins it exactly as a pointer does. Nothing
+          needs releasing, because a coast ends by itself.
+          <span class="mono">touch-action:none</span> is on the cube box only, never the section, so
+          the page still scrolls.</p>
+      </div>
+      <div>
+        <h3>Keyboard</h3>
+        <p class="muted" style="margin-top:8px;font-size:14.5px">Six faces are real buttons in DOM
+          order, service then work, 01 through 03. Focus settles the cube to that face and draws the
+          same mark. Enter or Space opens. Escape closes and focus returns to the face it came from.</p>
+      </div>
+      <div>
+        <h3>Reduced motion</h3>
+        <p class="muted" style="margin-top:8px;font-size:14.5px">No loop runs at all. The cube is
+          composed at a fixed corner pose showing three faces, drag and inertia are off, and clicking
+          and tabbing work exactly as they do otherwise. It is a static object, not a slower one.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band__h"><p class="label">04</p><h2>Responsive</h2></div>
+    <table>
+      <tr><th>Width</th><th>Layout</th><th>Cube edge</th><th>Silhouette</th><th>Column</th></tr>
+      <tr><td>900 and up</td><td>Cards columns 1 to 6, cube 8 to 12</td><td>230px</td><td>374px</td><td>413px</td></tr>
+      <tr><td>620 to 900</td><td>Stacks. Cube first, cards under it</td><td>260px</td><td>423px</td><td>full width</td></tr>
+      <tr><td>Under 620</td><td>Stacked, 16px gutter</td><td>200px</td><td>325px</td><td>358px at 390</td></tr>
+    </table>
+    <p class="muted" style="margin-top:16px;font-size:14.5px;max-width:62ch">The silhouette is the
+      number that matters, not the edge. A cube resting corner on projects about 1.63 times its own
+      edge across, against 1.41 for a square-on pose, so the sizes above are set from the column
+      width backwards. Every visible face stays far above the 44px touch minimum at every width,
+      which is the one thing a rotating target is not allowed to fail.</p>
+  </section>
+
+  <section class="band">
+    <div class="band__h"><p class="label">05</p><h2>What it must not do</h2></div>
+    <ul class="no muted">
+      <li>No bounce, no overshoot, no collision, nothing ballistic. It carries a spin and loses it
+        to friction; it is never thrown and never hits anything.</li>
+      <li>Never exceed the ceiling, however hard it is dragged. The cap is not a tuning preference,
+        it is the thing that makes the object read as having mass.</li>
+      <li>Never rotate on scroll. Scroll belongs to the page.</li>
+      <li>Never come to rest where no face can be clicked.</li>
+      <li>Never swallow a page scroll gesture on touch.</li>
+      <li>No entrance animation that starts the section empty. The cube renders composed.</li>
+      <li>No shadow, bevel, gloss or rounded corner. It is the same flat system as the rest of the page.</li>
+      <li>No second accent. Colour on the cube comes only from the three demos.</li>
+    </ul>
+  </section>
+
+  <section class="band">
+    <div class="band__h"><p class="label">06</p><h2>Still open</h2></div>
+    <ul class="no muted">
+      <li>The overlay itself has not been designed. This spec only says a click opens one, and that
+        opposite faces open the same one.</li>
+      <li>No demo exists, so the three colour faces are placeholders. The section can ship before
+        they do, but the overlays cannot.</li>
+      <li>The layout architecture sheet still describes three equal service cells across twelve
+        columns. It needs amending to the split.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const PAIRS=[
+ {n:"01",title:"A brand’s main site",body:"The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.",demo:"Demo 01",demoName:"Helmet",cls:"w1"},
+ {n:"02",title:"A launch site with a date on it",body:"One product, one moment, one page that has to be live before the drop. Everything on it points at the date.",demo:"Demo 02",demoName:"Fragrance",cls:"w2"},
+ {n:"03",title:"A page that tells one story",body:"For the one thing that deserves more than a grid tile and three bullet points.",demo:"Demo 03",demoName:"Story",cls:"w3"}];
+const FD=[{fx:0,fy:0,n:[0,0,1],s:1,i:0},{fx:0,fy:180,n:[0,0,-1],s:0,i:0},
+          {fx:0,fy:90,n:[1,0,0],s:1,i:1},{fx:0,fy:-90,n:[-1,0,0],s:0,i:1},
+          {fx:90,fy:0,n:[0,-1,0],s:1,i:2},{fx:-90,fy:0,n:[0,1,0],s:0,i:2}];
+const qn=q=>{const m=Math.hypot(q[0],q[1],q[2],q[3])||1;return q.map(v=>v/m);};
+const qmul=(a,b)=>[a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
+ a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
+ a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
+ a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]];
+const qaxis=(ax,an)=>{const h=an/2,s=Math.sin(h);return [Math.cos(h),ax[0]*s,ax[1]*s,ax[2]*s];};
+const qmat=([w,x,y,z])=>[[1-2*(y*y+z*z),2*(x*y-w*z),2*(x*z+w*y)],
+ [2*(x*y+w*z),1-2*(x*x+z*z),2*(y*z-w*x)],[2*(x*z-w*y),2*(y*z+w*x),1-2*(x*x+y*y)]];
+const slerp=(a,b,t)=>{let d=a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3];
+ if(d<0){b=b.map(v=>-v);d=-d;} if(d>0.9995)return qn(a.map((v,i)=>v+(b[i]-v)*t));
+ const th=Math.acos(d),s=Math.sin(th);
+ return a.map((v,i)=>v*Math.sin((1-t)*th)/s+b[i]*Math.sin(t*th)/s);};
+const CANON=(()=>{const AX=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+ const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+ const cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ const mq=M=>{const t=M[0][0]+M[1][1]+M[2][2];
+  if(t>0){const s=Math.sqrt(t+1)*2;return qn([0.25*s,(M[2][1]-M[1][2])/s,(M[0][2]-M[2][0])/s,(M[1][0]-M[0][1])/s]);}
+  if(M[0][0]>M[1][1]&&M[0][0]>M[2][2]){const s=Math.sqrt(1+M[0][0]-M[1][1]-M[2][2])*2;
+   return qn([(M[2][1]-M[1][2])/s,0.25*s,(M[0][1]+M[1][0])/s,(M[0][2]+M[2][0])/s]);}
+  if(M[1][1]>M[2][2]){const s=Math.sqrt(1+M[1][1]-M[0][0]-M[2][2])*2;
+   return qn([(M[0][2]-M[2][0])/s,(M[0][1]+M[1][0])/s,0.25*s,(M[1][2]+M[2][1])/s]);}
+  const s=Math.sqrt(1+M[2][2]-M[0][0]-M[1][1])*2;
+  return qn([(M[1][0]-M[0][1])/s,(M[0][2]+M[2][0])/s,(M[1][2]+M[2][1])/s,0.25*s]);};
+ const o=[];for(const x of AX)for(const y of AX){if(Math.abs(dot(x,y))>1e-9)continue;
+  const z=cr(x,y);o.push(mq([[x[0],y[0],z[0]],[x[1],y[1],z[1]],[x[2],y[2],z[2]]]));}
+ return o;})();
+const near=q=>{let b=CANON[0],bd=-1;for(const c of CANON){
+ const d=Math.abs(q[0]*c[0]+q[1]*c[1]+q[2]*c[2]+q[3]*c[3]);if(d>bd){bd=d;b=c;}}return b;};
+const D=Math.PI/180;
+const CORNER=qmul(qaxis([0,1,0],-38*D),qaxis([1,0,0],-28*D));
+
+document.querySelector("[data-cards]").innerHTML=PAIRS.map(p=>
+ `<div class="svc"><span class="n">${p.n}</span><h3>${p.title}</h3><p>${p.body}</p></div>`).join("");
+
+const rig=document.querySelector(".rig"),cube=document.querySelector("[data-faces]");
+const stateEl=document.querySelector("[data-state]");
+/* A corner-on cube throws a silhouette about 1.63x its own edge, much wider
+   than the 1.41x of a square-on pose, so the size has to be set against the
+   column it sits in rather than chosen. Measured, not estimated. */
+const sizeFor = w => w >= 900 ? 230 : w >= 620 ? 260 : 200;
+const faces=FD.map(f=>{const p=PAIRS[f.i];
+ const el=document.createElement("button");el.type="button";
+ el.className="face "+(f.s?"svc-f":"wrk "+p.cls);
+ el.innerHTML=`<span class="pad">`+(f.s?`<span class="big">${p.n}</span>`
+  :`<span class="f__n">${p.demo}</span><span class="f__t">${p.demoName}</span>`)+`</span>`;
+ el.setAttribute("aria-label",`${p.n}. ${p.title}. Opens ${p.demoName}.`);
+ /* Only keyboard focus should pull the cube square. A pointer press also
+    focuses the button, and without this test the cube would stay settled for
+    good after any drag instead of going back to its drift. */
+ el.addEventListener("focus",()=>{
+   if(!el.matches(":focus-visible"))return;
+   S.focused=true;S.parked=false;});
+ el.addEventListener("blur",()=>S.focused=false);
+ el.addEventListener("click",e=>{e.preventDefault();if(!S.swallow)alert(`Opens: ${p.demoName} — ${p.title}`);});
+ cube.appendChild(el);return {el,fx:f.fx,fy:f.fy};});
+
+const layout=()=>{const S2=sizeFor(window.innerWidth);
+ cube.style.width=cube.style.height=S2+"px";
+ for(const f of faces) f.el.style.transform=
+   `rotateX(${f.fx}deg) rotateY(${f.fy}deg) translateZ(${S2/2}px)`;};
+layout();
+addEventListener("resize",layout,{passive:true});
+
+const S={q:qn([1,.22,.35,.12]),om:[0,0,0],t:0,hovered:false,focused:false,
+         dragging:false,swallow:false};
+const apply=()=>{const M=qmat(S.q);
+ cube.style.transform=`matrix3d(${M[0][0]},${M[1][0]},${M[2][0]},0,`+
+ `${M[0][1]},${M[1][1]},${M[2][1]},0,${M[0][2]},${M[1][2]},${M[2][2]},0,0,0,0,1)`;};
+
+/* Tuned by hand on 2026-09-24, not chosen. MAX_SPIN is the ceiling the cube is
+   allowed to keep once it leaves your hand; friction alone cannot stop a violent
+   drag from launching it, a cap can. */
+const K=0.0055, MAX_SPIN=3.20, DAMP=0.40, HOVER_DRAG=4.0, SLOW=0.25, IDLE=0.30;
+let px=0,py=0,pt=0,down=0,moved=0;
+rig.addEventListener("pointerenter",()=>S.hovered=true);
+rig.addEventListener("pointerleave",()=>S.hovered=false);
+rig.addEventListener("pointerdown",e=>{
+ S.dragging=true;moved=0;down=performance.now();pt=down;
+ px=e.clientX;py=e.clientY;S.om=[0,0,0];          // grabbing it stops it dead
+ rig.classList.add("dragging");rig.setPointerCapture(e.pointerId);});
+rig.addEventListener("pointermove",e=>{
+ if(!S.dragging)return;
+ const now=performance.now(), dt=Math.max((now-pt)/1000,1/240); pt=now;
+ const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY;
+ moved+=Math.hypot(dx,dy);
+ S.q=qn(qmul(qmul(qaxis([0,1,0],dx*K),qaxis([1,0,0],dy*K)),S.q));
+ /* Averaged across moves rather than read off the last frame, so one stuttered
+    pointer event cannot decide the whole throw. */
+ const inst=[dy*K/dt, dx*K/dt, 0];
+ S.om=[S.om[0]+(inst[0]-S.om[0])*0.35, S.om[1]+(inst[1]-S.om[1])*0.35, 0];});
+const end=()=>{if(!S.dragging)return;S.dragging=false;rig.classList.remove("dragging");
+ const click=moved<7&&performance.now()-down<320;
+ if(click){S.om=[0,0,0];return;}
+ S.swallow=true;setTimeout(()=>S.swallow=false,60);
+ const sp=Math.hypot(...S.om);
+ if(sp>MAX_SPIN && sp>1e-6) S.om=S.om.map(v=>v*MAX_SPIN/sp);};
+rig.addEventListener("pointerup",end);
+rig.addEventListener("pointercancel",end);
+
+if(matchMedia("(prefers-reduced-motion: reduce)").matches){
+ S.q=qmul(CORNER,near(S.q));apply();stateEl.textContent="static";
+}else{
+ let last=performance.now();
+ const loop=now=>{
+  const dt=Math.min((now-last)/1000,.05); last=now; S.t+=dt;
+  if(!S.dragging){
+   const k=Math.exp(-DAMP*(S.hovered?HOVER_DRAG:1)*dt);
+   S.om=S.om.map(v=>v*k);
+   const sp=Math.hypot(...S.om);
+   if(sp>1e-4) S.q=qn(qmul(qaxis(S.om.map(v=>v/sp),sp*dt),S.q));
+   if(sp<SLOW){
+    if(S.hovered||S.focused){
+     S.q=slerp(S.q,qmul(CORNER,near(S.q)),1-Math.exp(-4.4*dt));
+    }else{
+     /* Fade the resting drift in as the coast dies, so there is no moment where
+        the cube is visibly inert and no seam between the two motions. */
+     const blend=1-sp/SLOW, a=S.t*.15;
+     const ax=[Math.sin(a)*.5,.82,Math.cos(a)*.45], m=Math.hypot(...ax);
+     S.q=qn(qmul(qaxis([ax[0]/m,ax[1]/m,ax[2]/m],IDLE*dt*blend),S.q));
+    }
+   }
+   const s2=Math.hypot(...S.om);
+   stateEl.textContent=s2>SLOW?"coasting":(S.hovered||S.focused)?"settling":"drifting";
+  }else stateEl.textContent="held";
+  apply();requestAnimationFrame(loop);};
+ apply();requestAnimationFrame(loop);
+}
+})();
+</script>
+</body>
+</html>

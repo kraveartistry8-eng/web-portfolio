@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storefront MCP and agentic commerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 7 of 9 &middot; Specialized &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">The opening with no incumbent</p>
+    <h1>Real, documented, and younger than your plan.</h1>
+    <p class="lead">Shopify's agent documentation covers the full buyer journey, from authentication through discovery, cart, checkout and order monitoring. The catalogue endpoint is live and specific. The cart layer is early access.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Holds, with care</span><span class="n">Catalogue documented. Cart is early access, not GA.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">1 weekend</span><span class="n">The concepts are new. The implementation is small.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Partial</span><span class="n">Week 4 emits standard events. MCP itself is untouched.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>Shopify's agents documentation is organised as a buyer journey in four stages: negotiate
+  and authenticate, with agent profile verification and access tiers; discover products, through a
+  global catalogue or a single merchant's Storefront Catalog; build carts and convert to checkout,
+  through Cart and Checkout MCP tools; and monitor orders, through Order MCP tools and webhook
+  subscriptions.</p>
+<p>The <strong>Storefront Catalog MCP</strong> sits at
+  <span class="mono">https://{storedomain}/api/ucp/mcp</span> and implements the Universal Commerce
+  Protocol. It exposes exactly three tools: <span class="mono">search_catalog</span>,
+  <span class="mono">lookup_catalog</span> and <span class="mono">get_product</span>. Every request
+  must include a <span class="mono">meta.ucp-agent.profile</span> URL pointing at the agent's profile.
+  It is catalogue only; cart and purchase live elsewhere in the stack.</p>
+<p>The theme side of this is the standard storefront events and actions layer shipped on 17 June.
+  Themes emit events such as <span class="mono">shopify:cart:lines-update</span>, and
+  <span class="mono">Shopify.actions</span> exposes functions an app or agent can call. Shopify is
+  explicit that this is recommended rather than required, because every action ships with a default
+  implementation on every Liquid storefront.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>Substantially yes, and my own first read was too harsh. Looking only at the catalogue
+  endpoint, "add to cart and purchase" is wrong. Looking at the agents documentation as a whole, Cart,
+  Checkout and Order MCP tools are all there, so the claim describes the stack accurately.</p>
+<p>The word doing the most work is "autonomously", and the caveat is that the Universal Cart API is
+  described as an early access program. Treat the catalogue half as shipped and the transacting half
+  as real but early.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>No incumbent is the whole point, and also the whole risk</h4>
+  <p>Nobody in the $5M to $20M band has bought this, which is why there is no supplier to displace.
+  It is also why there is no evidence it produces revenue. Those are the same fact seen from two
+  sides.</p></div></li>
+<li><div><h4>Default implementations undercut the pitch, slightly</h4>
+  <p>Actions work on every Liquid storefront without setup. So "an agent can drive your store" is
+  already partly true for a merchant who does nothing. The honest pitch is about doing it well, with
+  events that fire correctly and a catalogue an agent can actually parse, rather than about
+  possibility.</p></div></li>
+<li><div><h4>This is the one place to hold the line on numbers</h4>
+  <p>Agentic traffic is new enough that nobody has credible conversion data. Your plan already says
+  to say what you built and what it does, and to attach no revenue number. That discipline matters
+  more here than anywhere else on this list, because the temptation is largest.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>High as a wedge. It is the switching argument with no incumbent</td></tr>
+  <tr><td>Tier 3 relevance</td><td>Growing. Agent-first was explicit in the Hydrogen rewrite</td></tr>
+  <tr><td>Billable on its own</td><td>As a roadmap diagnosis at $1,500 to $3,000, yes</td></tr>
+  <tr><td>Confidence</td><td>8 of 10</td></tr>
+</table>
+<div class="flag ok"><h4>Where it sits in your plan</h4>
+<p>Week 4's cart drawer now emits the standard events and exposes
+  <span class="mono">Shopify.actions</span>, so the storefront demonstrates the theme half by
+  existing. The new section 03 flag makes it the switching argument. The MCP endpoints themselves are
+  not in the curriculum, and for a first six months that is a defensible line.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://shopify.dev/docs/agents">Agents documentation, shopify.dev</a> &mdash; the four-stage journey</li>
+<li><a href="https://shopify.dev/docs/agents/catalog/storefront-catalog">Storefront Catalog MCP, shopify.dev</a> &mdash; endpoint, profile, three tools</li>
+<li><a href="https://shopify.dev/docs/storefronts/themes/best-practices/standard-events-and-actions">Standard storefront events and actions, shopify.dev</a></li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>Insufficient data available for the general availability status of the Universal Cart API, which
+  is described as early access. Confirm before telling a merchant an agent can complete a purchase on
+  their store.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <a href="03-graphql-apis.html">GraphQL APIs</a> <a href="04-shopify-functions.html">Shopify Functions</a> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <a href="06-core-web-vitals.html">Core Web Vitals</a> <span class="muted">Storefront MCP</span> <a href="08-structured-data.html">Structured data</a> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

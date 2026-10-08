@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom Pixels and server-side tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 9 of 9 &middot; Specialized &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">The skill your retainer runs on</p>
+    <h1>Your care plan promises numbers you cannot yet collect.</h1>
+    <p class="lead">This is the open gap. The monthly page of numbers is half of what $5,000 a month buys, and the method for collecting it changed in 2024 and 2025 while nothing in 27 weeks teaches the replacement.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Holds, PII loose</span><span class="n">Pixels do see customer data, under consent.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">1 afternoon</span><span class="n">For a working custom pixel. Server-side is a further step.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Absent</span><span class="n">Week 20 is called Measure what the first job changed.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>checkout.liquid was deprecated in two stages. Information, Shipping and Payment went on
+  <strong>13 August 2024</strong>, with automatic upgrades from 6 January 2025 that discarded those
+  customisations. Thank you and Order status followed on <strong>28 August 2025</strong>, which also
+  covered script tags and additional scripts. Any analytics loaded through checkout.liquid, which for
+  most stores meant Google Tag Manager, stopped collecting at those dates.</p>
+<p>The <strong>Web Pixels API</strong> replaced it. Pixels run inside a sandbox and subscribe to
+  customer events. There are two kinds. An <strong>app pixel</strong> runs in a strict sandbox, is
+  registered through the <span class="mono">@shopify/web-pixels-extension</span> package with a
+  <span class="mono">register()</span> function, and reads its configuration from the Admin API. A
+  <strong>custom pixel</strong> runs in a lax sandbox, is written directly in the admin's pixel
+  manager, needs no boilerplate, and cannot access the settings property.</p>
+<p>Both receive <span class="mono">init.data</span>, which contains Cart and Customer objects at page
+  render, and both can reach cookies, localStorage and sessionStorage through the browser API. Events
+  include page and product views and the checkout progression events.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>Substantially yes. Custom Pixels and server-side forwarding are genuinely how you
+  restore measurement after checkout.liquid.</p>
+<p>"PII data flow" is the loose part. Shopify restricted that access deliberately, and pixels operate
+  under the customer privacy and consent layer rather than having free run of the page. Customer data
+  is present in <span class="mono">init.data</span>, so the claim is not wrong, but describing the
+  job as restoring PII is the wrong thing to say to a merchant. What you restore is reliable event
+  measurement.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>This underwrites the business, not a feature</h4>
+  <p>Section 03 says the monthly page of numbers is "the document that makes renewal a formality
+  instead of a conversation." That page needs event data from a checkout you no longer have raw
+  access to. If a client's tracking broke in 2024 and was never rebuilt, month one produces either no
+  page or a page you cannot stand behind.</p></div></li>
+<li><div><h4>Consent makes the data incomplete by design</h4>
+  <p>Some visitors will not be tracked, and that is correct behaviour rather than a bug. Any
+  before-and-after comparison you publish has to account for it. Quietly presenting partial data as
+  complete is the kind of number section 06 tells you not to stand behind.</p></div></li>
+<li><div><h4>It is also an unusually good door-opener</h4>
+  <p>Broken checkout analytics is diagnosable from outside, has a date attached, and costs the
+  merchant money they can feel. That is the same shape as the Scripts gap, and better than most
+  design observations, because the merchant already suspects their numbers are wrong.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>High. It is how you prove the build worked</td></tr>
+  <tr><td>Tier 3 relevance</td><td>Moderate</td></tr>
+  <tr><td>Billable on its own</td><td>Yes, and it is the natural first month of a care plan</td></tr>
+  <tr><td>Confidence</td><td>8 of 10</td></tr>
+</table>
+<div class="flag"><h4>The recommendation, not yet applied</h4>
+<p>One task in week 20: stand up a custom pixel on the dev store, fire the standard checkout events,
+  confirm they arrive. An afternoon, not a weekend. Week 20 is already titled
+  <em>Measure what the first job changed</em>, which makes it the only week in the plan whose title
+  describes something the curriculum cannot currently do.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://shopify.dev/docs/api/web-pixels-api">Web Pixels API, shopify.dev</a> &mdash; sandboxes, app vs custom, init.data</li>
+<li><a href="https://qikify.com/blogs/all-articles/checkout-liquid-deprecation">checkout.liquid deprecation timeline</a> &mdash; secondary, for the two stage dates</li>
+<li><a href="https://nebulab.com/blog/shopify-web-pixels">Shopify web pixels, Nebulab</a> &mdash; secondary, sandbox behaviour</li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>Insufficient data available on shopify.dev for exactly how consent state alters the payload a
+  pixel receives. The Pixel Privacy documentation is referenced but was not read in this pass. Resolve
+  this before promising a client any specific completeness of measurement.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <a href="03-graphql-apis.html">GraphQL APIs</a> <a href="04-shopify-functions.html">Shopify Functions</a> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <a href="06-core-web-vitals.html">Core Web Vitals</a> <a href="07-storefront-mcp.html">Storefront MCP</a> <a href="08-structured-data.html">Structured data</a> <span class="muted">Custom Pixels</span></div>
+</div></section>
+</body>
+</html>

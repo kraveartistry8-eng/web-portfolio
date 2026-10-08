@@ -1,0 +1,53 @@
+---
+import Cube from "./Cube.astro";
+import { pairs } from "../data/services";
+---
+<section class="section" id="services">
+  <div class="page">
+    <div class="split">
+      {/* Cards carry the copy as plain text on the left. The cube repeats the
+          same three services on its faces. Deliberate repetition: the copy is
+          never only pixels, so search, screen readers and anyone who will not
+          play with it all still get it. */}
+      <div class="split__copy">
+        {pairs.map((p) => (
+          <article class="svc">
+            <p class="label svc__n">{p.n}</p>
+            <h3>{p.title}</h3>
+            <p class="muted">{p.body}</p>
+          </article>
+        ))}
+      </div>
+      <div class="split__object">
+        <Cube />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The only asymmetric row on the page. Copy takes columns 1 to 6, the object
+     takes 8 to 13, and column 7 is the gap that keeps them from arguing. */
+  .split {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+    align-items: center;
+  }
+  .split__copy   { grid-column: 1 / 7; }
+  .split__object { grid-column: 8 / 13; }
+
+  /* Ruled, not filled. See tokens.css rule 2. */
+  .svc { border-top: 1px solid var(--line); padding-block: var(--space-5) 22px; }
+  .svc:first-child { border-top: 1px solid var(--ink); }
+  .svc__n { color: var(--accent); margin-bottom: 10px; }
+  .svc h3 { margin-bottom: var(--space-2); }
+  .svc p  { font-size: var(--size-small); line-height: 1.55; max-width: 40ch; }
+
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; gap: var(--space-7); }
+    /* Object first on a narrow screen: it is the reason to stop scrolling. */
+    .split__copy   { grid-column: 1; }
+    .split__object { grid-column: 1; order: -1; }
+  }
+</style>

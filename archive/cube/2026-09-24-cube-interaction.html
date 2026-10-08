@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Interaction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --demo-1:#C4511F; --demo-2:#E3D5BE; --demo-3:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.042em;line-height:.99}
+h2{font-size:clamp(22px,2.6vw,30px)}
+p{margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.intro{padding-block:58px 34px}
+.intro h1{max-width:17ch;margin-bottom:18px}
+.intro p{max-width:64ch;font-size:18px;line-height:1.45;letter-spacing:-.012em}
+
+.band{border-top:1px solid var(--accent);padding-block:34px 70px}
+.band__head{margin-bottom:30px}
+.band__head .label{margin-bottom:9px}
+.band__head p{max-width:64ch;color:var(--ink-2);margin-top:10px}
+
+.grid{display:grid;gap:26px}
+.grid--4{grid-template-columns:repeat(4,1fr)}
+.grid--3{grid-template-columns:repeat(3,1fr)}
+
+.cell{display:flex;flex-direction:column;gap:12px}
+.cell__h{display:flex;gap:9px;align-items:baseline}
+.cell__h .k{font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:3px 7px;border-radius:2px}
+.cell__h .nm{font-weight:700;font-size:15px;letter-spacing:-.02em}
+.cell__d{font-size:13.5px;line-height:1.5;color:var(--ink-2);min-height:82px}
+.rig{background:var(--surface);border:1px solid var(--line);
+  aspect-ratio:1;display:grid;place-items:center;perspective:980px;
+  position:relative;touch-action:none;cursor:grab;overflow:hidden}
+.rig.dragging{cursor:grabbing}
+.cube{position:relative;transform-style:preserve-3d;will-change:transform}
+.face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;
+  display:grid;place-items:center;border:0;padding:0;font:inherit;color:inherit;
+  text-align:left;cursor:pointer}
+.pad{width:70.7%;height:70.7%;display:flex;flex-direction:column;
+  justify-content:space-between;align-items:flex-start}
+.svc-f .pad{justify-content:center;align-items:center}
+.wrk .pad{justify-content:flex-end}
+.f__n{font-family:var(--mono);font-size:8.5px;letter-spacing:.11em;text-transform:uppercase}
+.f__t{font-size:12.5px;font-weight:700;letter-spacing:-.02em;line-height:1.12;margin-top:5px}
+.big{font-family:var(--mono);font-size:46px;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.wrk{color:#fff}
+.w1{background:var(--demo-1)} .w2{background:var(--demo-2);color:var(--ink)} .w3{background:var(--demo-3)}
+.svc-f{background:var(--surface)}
+.svc-f .f__n{color:var(--accent)}
+.st{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2)}
+
+.ov{position:fixed;inset:0;z-index:50;display:none;background:rgba(240,240,238,.94);
+  -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.ov[open]{display:grid;place-items:center}
+.ov__card{background:var(--surface);border:1px solid var(--accent);
+  width:min(760px,calc(100vw - 2*var(--gutter)))}
+.ov__field{height:200px;display:grid;place-items:end start;padding:20px}
+.ov__body{padding:26px 30px 30px;display:grid;gap:12px}
+.btn{display:inline-block;background:var(--accent);color:#fff;font-family:var(--mono);
+  font-size:11px;letter-spacing:.11em;text-transform:uppercase;padding:14px 24px;
+  border-radius:2px;border:0;cursor:pointer}
+.ov__row{display:flex;gap:12px;margin-top:6px}
+
+@media (max-width:980px){ .grid--4{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:760px){ .grid--3,.grid--4{grid-template-columns:1fr} :root{--gutter:16px} }
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">Cube interaction &middot; step 3 &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+  <section class="intro">
+    <h1>Seven behaviours. Handle them.</h1>
+    <p class="muted">No momentum anywhere. All seven drift when left alone, all seven print the type
+      on the face, all seven open a panel on click. The top row changes what a drag does. The bottom
+      row changes where a hover lands. The small mono word in the corner of each tells you what
+      state it is in.</p>
+  </section>
+
+  <section class="band">
+    <div class="band__head">
+      <p class="label">Row one</p>
+      <h2>What a drag does</h2>
+      <p>Hover settles all four the same way, a few degrees off square, so the only variable is the
+        drag. Press and pull each one, then let go and watch what it does.</p>
+    </div>
+    <div class="grid grid--4" data-row="drag"></div>
+  </section>
+
+  <section class="band">
+    <div class="band__head">
+      <p class="label">Row two</p>
+      <h2>Where a hover lands</h2>
+      <p>All three drag the same way, held one to one and settling on release. The variable is the
+        pose it comes to rest in when you put the pointer on it.</p>
+    </div>
+    <div class="grid grid--3" data-row="settle"></div>
+  </section>
+</div>
+
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ovt">
+  <div class="ov__card">
+    <div class="ov__field" id="ovf"><p class="label" id="ovk"></p></div>
+    <div class="ov__body">
+      <p class="label" id="ovn"></p><h2 id="ovt"></h2><p class="muted" id="ovb"></p>
+      <div class="ov__row"><button class="btn" id="ovc">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const PAIRS = [
+  { n:"01", title:"A brand’s main site",
+    body:"The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.",
+    demo:"Demo 01", demoName:"Helmet", cls:"w1", v:"--demo-1", tone:"#fff" },
+  { n:"02", title:"A launch site with a date on it",
+    body:"One product, one moment, one page that has to be live before the drop. Everything on it points at the date.",
+    demo:"Demo 02", demoName:"Fragrance", cls:"w2", v:"--demo-2", tone:"#161614" },
+  { n:"03", title:"A page that tells one story",
+    body:"For the one thing that deserves more than a grid tile and three bullet points.",
+    demo:"Demo 03", demoName:"Story", cls:"w3", v:"--demo-3", tone:"#fff" }
+];
+const FACEDEF = [
+  { fx:0,   fy:0,   n:[0,0,1],  svc:true,  i:0 },
+  { fx:0,   fy:180, n:[0,0,-1], svc:false, i:0 },
+  { fx:0,   fy:90,  n:[1,0,0],  svc:true,  i:1 },
+  { fx:0,   fy:-90, n:[-1,0,0], svc:false, i:1 },
+  { fx:90,  fy:0,   n:[0,-1,0], svc:true,  i:2 },
+  { fx:-90, fy:0,   n:[0,1,0],  svc:false, i:2 }
+];
+
+// ---- quaternions --------------------------------------------------------
+const qn = q => { const m = Math.hypot(q[0],q[1],q[2],q[3]) || 1; return q.map(v=>v/m); };
+const qmul = (a,b) => [
+  a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
+  a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
+  a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
+  a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]
+];
+const qaxis = (ax,ang) => { const h=ang/2,s=Math.sin(h);
+  return [Math.cos(h),ax[0]*s,ax[1]*s,ax[2]*s]; };
+const qmat = ([w,x,y,z]) => [
+  [1-2*(y*y+z*z), 2*(x*y-w*z),   2*(x*z+w*y)  ],
+  [2*(x*y+w*z),   1-2*(x*x+z*z), 2*(y*z-w*x)  ],
+  [2*(x*z-w*y),   2*(y*z+w*x),   1-2*(x*x+y*y)]
+];
+const slerp = (a,b,t) => {
+  let d=a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3];
+  if(d<0){b=b.map(v=>-v);d=-d;}
+  if(d>0.9995) return qn(a.map((v,i)=>v+(b[i]-v)*t));
+  const th=Math.acos(d), s=Math.sin(th);
+  return a.map((v,i)=>v*Math.sin((1-t)*th)/s + b[i]*Math.sin(t*th)/s);
+};
+/* The 24 poses that put one face square on with its type level: every
+   right-handed pairing of signed axes, i.e. the cube's rotation group. */
+const CANON = (() => {
+  const AX=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const mq=M=>{const t=M[0][0]+M[1][1]+M[2][2];
+    if(t>0){const s=Math.sqrt(t+1)*2;return qn([0.25*s,(M[2][1]-M[1][2])/s,(M[0][2]-M[2][0])/s,(M[1][0]-M[0][1])/s]);}
+    if(M[0][0]>M[1][1]&&M[0][0]>M[2][2]){const s=Math.sqrt(1+M[0][0]-M[1][1]-M[2][2])*2;
+      return qn([(M[2][1]-M[1][2])/s,0.25*s,(M[0][1]+M[1][0])/s,(M[0][2]+M[2][0])/s]);}
+    if(M[1][1]>M[2][2]){const s=Math.sqrt(1+M[1][1]-M[0][0]-M[2][2])*2;
+      return qn([(M[0][2]-M[2][0])/s,(M[0][1]+M[1][0])/s,0.25*s,(M[1][2]+M[2][1])/s]);}
+    const s=Math.sqrt(1+M[2][2]-M[0][0]-M[1][1])*2;
+    return qn([(M[1][0]-M[0][1])/s,(M[0][2]+M[2][0])/s,(M[1][2]+M[2][1])/s,0.25*s]);};
+  const out=[];
+  for(const x of AX) for(const y of AX){
+    if(Math.abs(dot(x,y))>1e-9) continue;
+    const z=cross(x,y);
+    out.push(mq([[x[0],y[0],z[0]],[x[1],y[1],z[1]],[x[2],y[2],z[2]]]));
+  }
+  return out;
+})();
+const nearest = q => {
+  let best=CANON[0], bd=-1;
+  for(const c of CANON){ const d=Math.abs(q[0]*c[0]+q[1]*c[1]+q[2]*c[2]+q[3]*c[3]);
+    if(d>bd){bd=d;best=c;} }
+  return best;
+};
+const D = Math.PI/180;
+/* Offsets applied in view space, so the pose reads the same whichever face
+   happens to be the nearest one. */
+const OFFSET = {
+  square: [1,0,0,0],
+  tilt:   qmul(qaxis([0,1,0], 7*D),  qaxis([1,0,0], -5.5*D)),
+  corner: qmul(qaxis([0,1,0], -38*D), qaxis([1,0,0], -28*D))
+};
+
+// ---- overlay ------------------------------------------------------------
+const ov=document.getElementById("ov");
+let lastFocus=null;
+const open = i => {
+  const p=PAIRS[i];
+  document.getElementById("ovf").style.background=`var(${p.v})`;
+  const k=document.getElementById("ovk");
+  k.textContent=`${p.demo} · ${p.demoName} · placeholder, not built yet`;
+  k.style.color=p.tone;
+  document.getElementById("ovn").textContent=p.n;
+  document.getElementById("ovt").textContent=p.title;
+  document.getElementById("ovb").textContent=p.body;
+  lastFocus=document.activeElement;
+  ov.setAttribute("open",""); document.getElementById("ovc").focus();
+};
+const close = () => { ov.removeAttribute("open"); if(lastFocus) lastFocus.focus(); };
+document.getElementById("ovc").addEventListener("click", close);
+ov.addEventListener("click", e => { if(e.target===ov) close(); });
+document.addEventListener("keydown", e => { if(e.key==="Escape"&&ov.hasAttribute("open")) close(); });
+
+// ---- one cube -----------------------------------------------------------
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const all = [];
+
+function makeCube(host, opt){
+  const cell=document.createElement("div"); cell.className="cell";
+  cell.innerHTML =
+    `<div class="cell__h"><span class="k">${opt.key}</span><span class="nm">${opt.name}</span></div>
+     <p class="cell__d">${opt.desc}</p>
+     <div class="rig"><div class="cube"></div><span class="st">idle</span></div>`;
+  host.appendChild(cell);
+
+  const rig=cell.querySelector(".rig"), cube=cell.querySelector(".cube"), st=cell.querySelector(".st");
+  const size=opt.size;
+  cube.style.width=cube.style.height=size+"px";
+
+  const faces=FACEDEF.map(f=>{
+    const p=PAIRS[f.i];
+    const el=document.createElement("button"); el.type="button";
+    el.className="face "+(f.svc?"svc-f":"wrk "+p.cls);
+    el.style.transform=`rotateX(${f.fx}deg) rotateY(${f.fy}deg) translateZ(${size/2}px)`;
+    el.innerHTML=`<span class="pad">`+(f.svc?`<span class="big">${p.n}</span>`
+      :`<span class="f__n">${p.demo}</span><span class="f__t">${p.demoName}</span>`)+`</span>`;
+    el.setAttribute("aria-label",`${p.n}. ${p.title}. Opens ${p.demoName}.`);
+    el.addEventListener("focus",()=>c.focused=true);
+    el.addEventListener("blur",()=>c.focused=false);
+    el.addEventListener("click",e=>{ e.preventDefault(); if(!c.swallow) open(f.i); });
+    cube.appendChild(el);
+    return { el, n:f.n, i:f.i };
+  });
+
+  const c = {
+    rig, cube, st, faces, opt,
+    q: qn([1, 0.22+Math.random()*0.2, 0.35, 0.12]),
+    t: Math.random()*40,
+    hovered:false, focused:false, dragging:false, parked:false, swallow:false,
+    detent: 0, target:null
+  };
+
+  const apply=()=>{ const M=qmat(c.q);
+    cube.style.transform=`matrix3d(${M[0][0]},${M[1][0]},${M[2][0]},0,`+
+      `${M[0][1]},${M[1][1]},${M[2][1]},0,${M[0][2]},${M[1][2]},${M[2][2]},0,0,0,0,1)`; };
+  c.apply=apply;
+
+  c.front=()=>{ const M=qmat(c.q); let b=faces[0],bz=-2;
+    for(const f of faces){ const z=M[2][0]*f.n[0]+M[2][1]*f.n[1]+M[2][2]*f.n[2];
+      if(z>bz){bz=z;b=f;} } return b; };
+
+  // pointer
+  let px=0,py=0,down=0,moved=0;
+  rig.addEventListener("pointerenter",()=>{ c.hovered=true; });
+  rig.addEventListener("pointerleave",()=>{ c.hovered=false; c.parked=false; });
+  rig.addEventListener("pointerdown",e=>{
+    if(opt.drag==="none") return;
+    c.dragging=true; moved=0; down=performance.now(); px=e.clientX; py=e.clientY;
+    c.detent=0; rig.classList.add("dragging"); rig.setPointerCapture(e.pointerId);
+  });
+  rig.addEventListener("pointermove",e=>{
+    if(!c.dragging) return;
+    const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY;
+    moved+=Math.hypot(dx,dy);
+    if(opt.drag==="detent"){
+      /* Accumulate along whichever screen axis is being pulled harder, and fire
+         a single quarter turn each time the pull passes the threshold. */
+      c.detent += Math.abs(dx)>Math.abs(dy) ? dx : dy;
+      const horiz = Math.abs(dx)>=Math.abs(dy);
+      if(Math.abs(c.detent)>58){
+        const dir=Math.sign(c.detent);
+        c.target = qmul(qaxis(horiz?[0,1,0]:[1,0,0], dir*90*D), c.q);
+        c.detent=0;
+      }
+      return;
+    }
+    const k=0.0075;
+    c.q = qn(qmul(qmul(qaxis([0,1,0],dx*k), qaxis([1,0,0],dy*k)), c.q));
+  });
+  const end=()=>{
+    if(!c.dragging) return;
+    c.dragging=false; rig.classList.remove("dragging");
+    const isClick = moved<7 && performance.now()-down<320;
+    if(!isClick){ c.swallow=true; setTimeout(()=>c.swallow=false,60); }
+    /* Track parks where you left it and will not settle again until the pointer
+       has left and come back. That is the whole point of the option. */
+    if(opt.drag==="track" && !isClick) c.parked=true;
+  };
+  rig.addEventListener("pointerup",end);
+  rig.addEventListener("pointercancel",end);
+  rig.addEventListener("click",e=>{
+    if(c.swallow||e.target.closest(".face")) return;
+    open(c.front().i);
+  });
+
+  apply();
+  all.push(c);
+}
+
+// ---- rows ---------------------------------------------------------------
+const DRAGS=[
+  {key:"D1",name:"Held",   drag:"settle", settle:"tilt",
+   desc:"Follows the pointer one to one while you hold it, stops dead on release, then eases to the nearest face. Free to handle, decisive when you let go."},
+  {key:"D2",name:"Trackball",drag:"track", settle:"tilt",
+   desc:"Follows one to one and stays exactly where you leave it, at any angle. Move the pointer away and back to make it settle again."},
+  {key:"D3",name:"Detent", drag:"detent", settle:"tilt",
+   desc:"Pull past a threshold and it turns exactly one quarter, then locks. A rotary selector rather than an object you handle."},
+  {key:"D4",name:"No drag",drag:"none",   settle:"tilt",
+   desc:"Dragging does nothing at all. It drifts, it settles when you point at it, it opens when you click. Nothing to get wrong on touch."}
+];
+const SETTLES=[
+  {key:"S1",name:"Dead square", drag:"settle", settle:"square",
+   desc:"Exactly face on, type perfectly level. Reads as a flat card the moment it lands, and the object disappears."},
+  {key:"S2",name:"Few degrees", drag:"settle", settle:"tilt",
+   desc:"About seven degrees off square, so two neighbouring faces stay as slivers and it still reads as a cube."},
+  {key:"S3",name:"Three quarter",drag:"settle", settle:"corner",
+   desc:"Corner on, three faces visible at once. Strongest as an object, weakest for knowing which face a click will open."}
+];
+DRAGS.forEach(o=>makeCube(document.querySelector('[data-row="drag"]'), {...o, size:126}));
+SETTLES.forEach(o=>makeCube(document.querySelector('[data-row="settle"]'), {...o, size:178}));
+
+// ---- loop ---------------------------------------------------------------
+if(reduce){
+  all.forEach(c=>{ c.q=qmul(OFFSET[c.opt.settle], nearest(c.q)); c.apply(); c.st.textContent="settled"; });
+}else{
+  let last=performance.now();
+  const loop=now=>{
+    const dt=Math.min((now-last)/1000,0.05); last=now;
+    for(const c of all){
+      c.t+=dt;
+      const settling=(c.hovered||c.focused)&&!c.dragging&&!c.parked;
+      c.st.textContent = c.dragging?"dragging" : c.parked?"parked" : settling?"settling" : "drifting";
+
+      if(c.target){                       // detent quarter turn in progress
+        c.q=slerp(c.q,c.target,1-Math.exp(-9*dt));
+        const d=Math.abs(c.q[0]*c.target[0]+c.q[1]*c.target[1]+c.q[2]*c.target[2]+c.q[3]*c.target[3]);
+        if(d>0.99995){ c.q=c.target; c.target=null; }
+      } else if(!c.dragging){
+        if(settling){
+          c.q=slerp(c.q, qmul(OFFSET[c.opt.settle], nearest(c.q)), 1-Math.exp(-4.4*dt));
+        } else if(!c.parked && c.opt.drag!=="detent"){
+          const a=c.t*0.15;
+          const ax=[Math.sin(a)*0.5,0.82,Math.cos(a)*0.45];
+          const m=Math.hypot(...ax);
+          c.q=qn(qmul(qaxis([ax[0]/m,ax[1]/m,ax[2]/m],0.30*dt), c.q));
+        } else if(!c.parked){             // detent drifts too, just slower
+          const a=c.t*0.15;
+          const ax=[Math.sin(a)*0.5,0.82,Math.cos(a)*0.45];
+          const m=Math.hypot(...ax);
+          c.q=qn(qmul(qaxis([ax[0]/m,ax[1]/m,ax[2]/m],0.30*dt), c.q));
+        }
+      }
+      c.apply();
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopify Functions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 4 of 9 &middot; Advanced &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">The backend logic layer that replaced Scripts</p>
+    <h1>You were selling this before you could build it.</h1>
+    <p class="lead">Functions is the only skill on the list that your plan sold and never taught. Week 6 now teaches it, because the Scripts shutdown on 30 June is the sharpest opening you have.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Holds</span><span class="n">Rust or JavaScript, both compiled to WebAssembly.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">1 day in JS</span><span class="n">Rust is weeks. JavaScript is enough to be credible.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Added today</span><span class="n">Week 6, Thursday. A product discount Function.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>Functions customise Shopify's backend logic. You write code that Shopify injects at a
+  defined function target, it receives JSON input and returns JSON output, and that output directs
+  what Shopify does. It runs server side, on Shopify's infrastructure, not in the browser.</p>
+<p>They are written in <strong>Rust or JavaScript</strong> and compile to WebAssembly modules.
+  shopify.dev recommends Rust for performance, specifically to prevent failures on large carts.
+  JavaScript has templates and libraries and is the faster path to a first working Function.</p>
+<p>The available targets cover discounts, payment customisation, delivery options, cart and checkout
+  validation, order routing, product bundles, fulfilment constraints, local pickup and pickup points.
+  That list is effectively the set of commercial rules a merchant might want to bend.</p>
+<p>Scripts, the Shopify Plus feature Functions replaces, was deprecated on 30 June 2026. Anything
+  still published was deactivated and stopped working. Shopify's own migration path is to install an
+  app built on Functions, or rebuild the logic yourself.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>Yes. "Replaces deprecated Scripts" and "sub-5ms backend execution" both check out, the
+  latter from Shopify's own migration page, which describes Functions executing in under five
+  milliseconds against Scripts.</p>
+<p>"Rust/Wasm" is half the story. Wasm is correct and mandatory. Rust is recommended rather than
+  required, and leaving JavaScript out of the row makes the skill look several weeks further away
+  than it is.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>The commercial window is three months old and closing</h4>
+  <p>Scripts died on 30 June. Merchants who cared have already installed a Functions-based app. What
+  remains is the slower half: stores running generic app behaviour where bespoke logic used to be, or
+  running nothing. That is still a real gap in October, and it is more diagnosable than most
+  openings, but it is not getting larger.</p></div></li>
+<li><div><h4>JavaScript is enough until it is not</h4>
+  <p>Shopify recommends Rust for large carts for a reason. If you sell a discount rebuild to a
+  merchant with a big catalogue and heavy carts, a JavaScript Function is where it will fail, and it
+  will fail in the checkout, which is the worst place to learn this.</p></div></li>
+<li><div><h4>Functions are a sandbox, not a server</h4>
+  <p>The input and output contract is the whole interface. If a rule depends on outside data, that is
+  a different architecture. shopify.dev does not document network access on the Functions overview,
+  so scope any Function that needs external data carefully until you have checked.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>High and immediate. The Scripts rebuild is billable now</td></tr>
+  <tr><td>Tier 3 relevance</td><td>High. It is backend work, which is what a build seat usually is</td></tr>
+  <tr><td>Billable on its own</td><td>Yes. This is a scoped rebuild, not an audit</td></tr>
+  <tr><td>Confidence</td><td>9 of 10</td></tr>
+</table>
+<div class="flag"><h4>The inconsistency this report closed</h4>
+<p>Section 03 of the roadmap sells a Functions rebuild as the opening created by the Scripts
+  shutdown. Until this morning no week in the plan taught Functions. Week 6 now writes a product
+  discount Function in JavaScript, deploys it and watches it apply in the dev store checkout, and
+  section 03 points at week 6 so the promise and the curriculum agree.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://shopify.dev/docs/apps/build/functions">Shopify Functions, shopify.dev</a> &mdash; languages, Wasm, targets</li>
+<li><a href="https://help.shopify.com/en/manual/checkout-settings/script-editor/transitioning-to-functions">Transitioning to Functions, Shopify Help</a> &mdash; 30 June 2026, sub-5ms</li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>Insufficient data available for whether Functions can make network calls. The overview page does
+  not address it. Check before scoping anything that needs outside data.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <a href="03-graphql-apis.html">GraphQL APIs</a> <span class="muted">Shopify Functions</span> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <a href="06-core-web-vitals.html">Core Web Vitals</a> <a href="07-storefront-mcp.html">Storefront MCP</a> <a href="08-structured-data.html">Structured data</a> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{
+  "brand": {
+    "name": "Afterglow",
+    "tagline": "One fragrance told in four stages, from the gold of last light to deep violet, and you do not see the bottle until the end.",
+    "product": "A signature fragrance. One scent, not a range.",
+    "character": "The hour after sunset. A thing met in sequence, not all at once.",
+    "pillars": [
+      "deepening",
+      "sequence",
+      "restraint"
+    ],
+    "visual-world": "Four stages tracing the sky after sundown. The light only ever deepens. The brand is felt in the world, never stamped on it.",
+    "reveal-rule": "The bottle is shown last. Nothing in the storefront leads with packaging.",
+    "launch-fiction": "Launch night 17 October 2026, Brooklyn venue, doors 7:00 PM. Press walk through the scent room by room before seeing the bottle."
+  },
+  "color": {
+    "ground": {
+      "value": "#080808",
+      "name": "Void",
+      "use": "Page ground. Required by the deepening-light rule, not borrowed"
+    },
+    "surface-deep": {
+      "value": "#141414",
+      "use": "Recessed panels"
+    },
+    "surface": {
+      "value": "#2B2B2B",
+      "use": "Cards and raised panels"
+    },
+    "text": {
+      "value": "#EEECEA",
+      "use": "Primary text"
+    },
+    "muted": {
+      "value": "#C0C0C0",
+      "use": "Secondary text"
+    },
+    "border": {
+      "value": "rgba(192,192,192,0.22)",
+      "use": "Hairline"
+    },
+    "stages": {
+      "_note": "Week 2. Four stages, each darker and warmer than the last. Define with Shopify's color_palette setting type, which replaced colour schemes in June 2026.",
+      "1": {
+        "name": "Gold of last light",
+        "value": null
+      },
+      "2": {
+        "name": null,
+        "value": null,
+        "_note": "Unnamed in the source material. Sits between gold and rose."
+      },
+      "3": {
+        "name": "Rose",
+        "value": null
+      },
+      "4": {
+        "name": "Deep violet",
+        "value": null
+      }
+    },
+    "_forbidden": {
+      "#39FF14": "Krave production tracker. Means 'system online'. Not Afterglow's.",
+      "#FF00BD": "Krave production tracker. Trouble accent for blocked and at-risk. Not Afterglow's."
+    }
+  },
+  "typography": {
+    "_status": "Week 2. Set the scale measured, not eyeballed.",
+    "display": {
+      "family": null,
+      "use": "Wordmark and hero only"
+    },
+    "body": {
+      "family": null,
+      "use": "All UI, headings, body, labels"
+    },
+    "scale": null,
+    "tracking": null,
+    "leading": null
+  },
+  "spacing": {
+    "_status": "Week 2",
+    "base": null,
+    "scale": null
+  },
+  "radius": {
+    "_status": "Week 2"
+  },
+  "shadow": {
+    "_status": "Week 2. On a void ground, elevation reads through surface steps more than shadow."
+  },
+  "motion": {
+    "_status": "Week 2 for values. Personality is locked.",
+    "personality": "Deepening, never snapping. The scent is met as a journey, not a cloud.",
+    "duration": null,
+    "ease": null
+  }
+}

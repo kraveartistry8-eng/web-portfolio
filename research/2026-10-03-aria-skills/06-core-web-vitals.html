@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Core Web Vitals and INP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 6 of 9 &middot; Advanced &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">A real metric carrying an invented number</p>
+    <h1>The thresholds are checkable. The business claim is not.</h1>
+    <p class="lead">INP is well defined and easy to verify, which makes it one of the few things you can say to a client and have them confirm. The conversion claim attached to it in the table has no source anywhere.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Half</span><span class="n">Metric solid. Conversion and ranking claim unsourced.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">1 weekend</span><span class="n">Measuring is an afternoon. Fixing is the skill.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Partial</span><span class="n">Week 6 validates CLS. INP never appears.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>Interaction to Next Paint measures a page's responsiveness across all click, tap and
+  keyboard interactions during a visit, from the moment a user acts to the moment the browser paints
+  the next frame. It covers input delay, event handler processing and rendering.</p>
+<p>web.dev sets the thresholds precisely: <strong>200ms or under is good</strong>, above 200ms to
+  500ms needs improvement, <strong>above 500ms is poor</strong>. INP is the successor metric to First
+  Input Delay, which it replaced because FID measured only the first interaction.</p>
+<p>The other two Core Web Vitals are Largest Contentful Paint and Cumulative Layout Shift. Your plan
+  already checks CLS in week 6, where the instruction is to validate zero cumulative layout shift
+  because Plus brands reject on it.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>The metric half is accurate and verifiable on a primary source. The business half is
+  not. web.dev's INP article makes no claim at all about conversion rates or search rankings.</p>
+<p>"Poor INP directly hurts conversion rates and search engine rankings" is the exact pattern your
+  roadmap's section 06 exists to catch: a real finding carrying a causal sentence it cannot support.
+  Core Web Vitals are a ranking input and a weak one by Google's own description, and every
+  conversion figure attached to them in circulation comes from a party selling performance work.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>Its value to you is that it is checkable, not that it is persuasive</h4>
+  <p>A measured INP of 180ms is a fact the client can verify in a minute. A claimed conversion lift
+  is a number they can only take on faith, and the sophisticated ones will not. Your positioning is
+  judgment with measurement attached. This metric is the cleanest example of that you have.</p></div></li>
+<li><div><h4>Theme JavaScript is rarely the cause</h4>
+  <p>A restrained theme will usually pass INP. The thing that breaks it is the merchant's app stack
+  competing for the main thread, which you did not install and may not be able to remove. That is
+  worth knowing before you promise a number on a store you did not build.</p></div></li>
+<li><div><h4>Checking CLS but not INP is an odd gap</h4>
+  <p>Week 6 already validates layout shift. Adding INP to the same check costs nothing, uses the same
+  tooling, and closes the only Core Web Vital your plan measures against a brand's actual rejection
+  criteria.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>High as evidence. It is the proof your build is better, stated as a number</td></tr>
+  <tr><td>Tier 3 relevance</td><td>Moderate. Assumed competence on a team build</td></tr>
+  <tr><td>Billable on its own</td><td>Yes, as a scoped performance engagement. Beware promising outcomes</td></tr>
+  <tr><td>Confidence</td><td>9 of 10 on the metric, 3 on the business claim</td></tr>
+</table>
+<div class="flag"><h4>What to say and what not to say</h4>
+<p>Say: this build measures 180ms INP and zero layout shift, here is the report, check it yourself.
+  Do not say: poor performance costs you x% of revenue. The first is verifiable and makes you look
+  rigorous. The second is the thing the one buyer worth having will check and find unsupported.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://web.dev/articles/inp">Interaction to Next Paint, web.dev</a> &mdash; thresholds, successor to FID</li>
+<li><a href="https://web.dev/articles/vitals">Web Vitals, web.dev</a></li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>Insufficient data available for any sourced, methodologically stated link between INP and
+  conversion. Everything located was vendor marketing. This is the same folklore pattern your
+  design-psychology audit flagged in September.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <a href="03-graphql-apis.html">GraphQL APIs</a> <a href="04-shopify-functions.html">Shopify Functions</a> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <span class="muted">Core Web Vitals</span> <a href="07-storefront-mcp.html">Storefront MCP</a> <a href="08-structured-data.html">Structured data</a> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!-- @dsCard height=340 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Frequency Alignment Tracker</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--void); color:var(--text); font-family:var(--font-sans); overflow:hidden; }
+  .cover { position:relative; width:960px; height:340px; overflow:hidden; }
+  .band { position:absolute; top:0; left:0; width:960px; height:112px; }
+  .band svg { display:block; width:960px; height:112px; }
+  .green { fill:var(--green); }
+  .pink { fill:var(--pink); }
+  .purple { fill:var(--purple); }
+  .card { fill:var(--card); }
+  .silver { fill:var(--silver); }
+  .cut { stroke:var(--void); stroke-width:3; }
+  .sig { stroke:var(--green); stroke-width:3; }
+  .words { position:absolute; left:var(--hero-h1-gap); bottom:var(--hero-h1-gap); right:var(--hero-h1-gap); }
+  .name { margin:0; font-size:64px; line-height:.95; font-weight:900; letter-spacing:-0.036em; color:var(--text); }
+  .tag { margin:8px 0 0 2px; font-size:14px; line-height:20px; color:var(--silver); max-width:440px; }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="band" aria-hidden="true">
+<svg viewBox="0 0 960 112" width="960" height="112">
+<!--
+  blocks      green 384 wide (the signal, largest) · purple 192 · pink 128 · card 224 bleeding right · silver 64×48 relief — all bleed off the top; ≈40% of the band
+  arrangement a strip of unequal bands, widths in grid-64 multiples, bottoms stepped like a VU meter
+  pattern     plus grid at grid-64 pitch, from the body's green background grid: cut in void out of the green slab, drawn in green over the card
+  scales      widths grid-64 × 6/3/2/3.5/1; gutters grid-64 ÷ 4; square corners (the site defines no radius)
+-->
+<rect class="green" x="0" y="-16" width="384" height="128"/>
+<rect class="pink" x="400" y="-16" width="128" height="96"/>
+<rect class="purple" x="544" y="-16" width="192" height="128"/>
+<rect class="card" x="752" y="-16" width="224" height="80"/>
+<rect class="silver" x="752" y="80" width="64" height="32"/>
+<g class="cut">
+  <path d="M26 32h12M32 26v12 M90 32h12M96 26v12 M154 32h12M160 26v12 M218 32h12M224 26v12 M282 32h12M288 26v12 M346 32h12M352 26v12"/>
+  <path d="M26 96h12M32 90v12 M90 96h12M96 90v12 M154 96h12M160 90v12 M218 96h12M224 90v12 M282 96h12M288 90v12 M346 96h12M352 90v12"/>
+</g>
+<g class="sig">
+  <path d="M794 32h12M800 26v12 M858 32h12M864 26v12 M922 32h12M928 26v12"/>
+</g>
+</svg>
+</div>
+<div class="words">
+  <h1 class="name">Frequency Alignment<br>Tracker</h1>
+  <p class="tag">Every crew, every deliverable — tuned to your vision, in real time.</p>
+</div>
+</div>
+</body>
+</html>

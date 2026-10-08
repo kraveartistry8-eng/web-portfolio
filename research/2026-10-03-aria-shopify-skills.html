@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopify Skill Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --warn:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3,h4{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(34px,5.2vw,62px);letter-spacing:-.042em;line-height:.97}
+h2{font-size:clamp(23px,2.9vw,33px)}
+h3{font-size:19px}
+h4{font-size:15px;letter-spacing:-.01em}
+p{margin:0;max-width:68ch}
+a{color:var(--accent)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+.mono{font-family:var(--mono);font-size:12.5px}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+
+.hero{padding-block:76px 50px}
+.hero .label{margin-bottom:18px}
+.hero h1{max-width:15ch;margin-bottom:28px}
+.hero .lead{font-size:clamp(19px,2.1vw,25px);line-height:1.38;letter-spacing:-.014em;max-width:56ch}
+
+.band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-top:44px}
+.band div{background:var(--surface);padding:24px 22px 26px}
+.band .k{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:12px}
+.band .v{font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-.03em;line-height:1.05;display:block}
+.band .n{font-size:13.5px;color:var(--ink-2);line-height:1.45;margin-top:9px;display:block}
+
+section.sec{border-top:1px solid var(--accent);padding-block:40px 64px}
+.sec__h{display:flex;gap:16px;align-items:baseline;margin-bottom:26px;flex-wrap:wrap}
+.sec__h .num{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:4px 9px;border-radius:2px}
+.sec > .page > p + p{margin-top:14px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:20px}
+th,td{text-align:left;vertical-align:top;padding:11px 16px 11px 0;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:400;border-bottom:1px solid var(--ink)}
+td:first-child{font-weight:700;padding-right:24px}
+td.num,th.num{font-family:var(--mono);font-size:13px;white-space:nowrap}
+caption{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);padding-bottom:10px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px 44px;margin-top:8px}
+.card{border-top:1px solid var(--ink);padding-top:16px}
+.card h3{margin-bottom:10px}
+.card p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.card p + p{margin-top:10px}
+
+.flag{border-left:2px solid var(--warn);padding:4px 0 4px 18px;margin-top:22px}
+.flag h4{color:var(--warn);margin-bottom:7px}
+.flag p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.flag p + p{margin-top:10px}
+
+ol.devil{counter-reset:d;list-style:none;padding:0;margin:22px 0 0}
+ol.devil li{counter-increment:d;border-top:1px solid var(--line);padding:18px 0 20px;
+  display:grid;grid-template-columns:38px 1fr;gap:16px}
+ol.devil li::before{content:counter(d,decimal-leading-zero);font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;color:var(--accent);padding-top:3px}
+ol.devil h4{margin-bottom:6px}
+ol.devil p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+ol.devil p + p{margin-top:9px}
+
+.cf{display:flex;align-items:center;gap:9px}
+.cf__t{width:62px;height:5px;background:var(--line);position:relative;flex:0 0 auto}
+.cf__t span{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.cf__n{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+
+ul.plain{padding-left:19px;max-width:66ch}
+ul.plain li{margin-bottom:9px}
+
+.verdict{background:var(--surface);border:1px solid var(--accent);padding:34px 36px 38px;margin-top:8px}
+.verdict h3{margin-bottom:14px;max-width:34ch}
+.verdict p + p{margin-top:13px}
+
+.src{font-size:13.5px;line-height:1.6}
+.src li{margin-bottom:7px;color:var(--ink-2)}
+
+.tier{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:6px}
+
+@media (max-width:860px){
+  .band{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr;gap:26px}
+}
+@media (max-width:620px){
+  :root{--gutter:16px}
+  table{font-size:13.5px}
+  th,td{padding-right:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; Shopify skill stack &middot; 3 Oct 2026</p>
+</div></div>
+
+<div class="page">
+  <header class="hero">
+    <p class="label">Nine skills, audited against the 27-week plan</p>
+    <h1>Six of nine are covered. The three that are not are the ones you sell.</h1>
+    <p class="lead">The skills table is broadly accurate and two of its claims do not survive
+      checking. The more useful finding is the mapping: the roadmap teaches the core tier well,
+      skips most of the specialized tier, and until today sold a capability it never taught.</p>
+
+    <div class="band">
+      <div>
+        <span class="k">Core tier</span>
+        <span class="v">3 of 3</span>
+        <span class="n">Liquid and the front end, theme architecture, GraphQL. October and
+          weeks 15 to 16 cover these properly.</span>
+      </div>
+      <div>
+        <span class="k">Advanced tier</span>
+        <span class="v">2 of 3</span>
+        <span class="n">Functions added to week 6 today. Headless is deliberately deferred.
+          Core Web Vitals is partial: the plan checks CLS, not INP.</span>
+      </div>
+      <div>
+        <span class="k">Specialized tier</span>
+        <span class="v">1 of 3</span>
+        <span class="n">Agentic commerce is half covered. Structured data and server-side
+          tracking are absent, and one of them underwrites your retainer.</span>
+      </div>
+    </div>
+  </header>
+</div>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>Executive summary</h2></div>
+
+  <p>The table is a reasonable map of the 2026 role. Its tiering is sound: the core three are
+    table stakes, the advanced three are what separate a theme editor from a developer, and the
+    specialized three are where the new money is because almost nobody has them yet.</p>
+
+  <p>Two of its claims fail verification. The MCP row overstates what the documented endpoint does.
+    The structured data row repeats a marketing position that controlled testing in 2026 contradicts.
+    One more, the INP conversion claim, is the familiar pattern of a real metric carrying an
+    unsourced business number.</p>
+
+  <p>The finding that matters most is not about the table at all. Before today, section 03 of your
+    roadmap sold a Shopify Functions rebuild as the opening created by the Scripts shutdown, and no
+    week in the plan taught Functions. That is now fixed in week 6. The same inconsistency still
+    exists, unfixed, for measurement: the care plan promises a monthly page of numbers, and nothing
+    in 27 weeks teaches you how to collect them after the checkout.liquid deprecation took the old
+    method away.</p>
+
+  <div class="flag">
+    <h4>The pattern worth naming</h4>
+    <p>Both gaps are the same shape. The plan is strong on what you build and thin on what you
+      measure and automate afterwards. That is the half a merchant pays monthly for, which makes
+      it the expensive half to be missing.</p>
+  </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>The core three</h2></div>
+
+  <div class="two">
+    <div class="card">
+      <span class="tier">Core &middot; verified</span>
+      <h3>Liquid, HTML, CSS, JavaScript</h3>
+      <p>Accurate and uncontroversial. Liquid remains the template language for every non-headless
+        storefront, and the June agentic work extended Liquid storefronts rather than replacing
+        them.</p>
+      <p><strong>Plan coverage: full.</strong> Weeks 2 to 5 are nothing but this. The product loops
+        in week 3 are explicitly Liquid with CSS transitions and no library, which is the right
+        constraint for learning it.</p>
+    </div>
+    <div class="card">
+      <span class="tier">Core &middot; verified, with a correction</span>
+      <h3>Theme architecture, sections and blocks</h3>
+      <p>Accurate, and the table's own wording lags. It says "2.0 Sections + Blocks" and
+        "post-Horizons update". The current architecture is <em>theme blocks</em>, which Horizon
+        introduced, and Horizon is the default theme for stores created in 2026. Dawn still uses the
+        older section stacking and no longer receives new features.</p>
+      <p><strong>Plan coverage: full, as of today.</strong> Weeks 1 to 5 were built on Dawn until
+        this morning. They now start from Skeleton, which is both what
+        <span class="mono">theme init</span> clones and what shopify.dev names as the recommended
+        base.</p>
+    </div>
+    <div class="card">
+      <span class="tier">Core &middot; verified</span>
+      <h3>GraphQL Admin and Storefront API</h3>
+      <p>Accurate. The Admin API is how an app reads and writes store data; the Storefront API is
+        how any headless or custom front end queries the catalogue. Both are GraphQL only for new
+        work.</p>
+      <p><strong>Plan coverage: partial.</strong> Week 15 writes GraphQL loaders against the Admin
+        API inside the React Router app. The Storefront API is never touched, because the plan
+        deliberately defers headless. That is a defensible trade, not an oversight.</p>
+    </div>
+    <div class="card">
+      <span class="tier">Advanced &middot; added to the plan today</span>
+      <h3>Shopify Functions</h3>
+      <p>Accurate. Functions customise Shopify's backend logic, compile to WebAssembly, and are
+        written in <strong>Rust or JavaScript</strong>. Shopify recommends Rust for performance on
+        large carts. The targets cover discounts, payment customisation, delivery options, cart and
+        checkout validation, order routing, bundles, fulfilment constraints and pickup.</p>
+      <p>The sub-5ms figure comes from Shopify's own Scripts migration page, which describes
+        Functions as executing in under five milliseconds against Scripts.</p>
+      <p><strong>Plan coverage: none until today.</strong> Week 6 now writes a product discount
+        Function in JavaScript and deploys it. JavaScript rather than Rust is the right first step:
+        enough to be credible, far quicker to reach.</p>
+    </div>
+  </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>Where the table overstates</h2></div>
+
+  <ol class="devil">
+    <li>
+      <div>
+        <h4>Storefront MCP does not let an agent purchase, at least not at the documented endpoint</h4>
+        <p>The table says MCP "enables AI agents to browse, add to cart, and purchase autonomously."
+          The documented UCP catalogue endpoint at
+          <span class="mono">/api/ucp/mcp</span> exposes exactly three tools:
+          <span class="mono">search_catalog</span>, <span class="mono">lookup_catalog</span> and
+          <span class="mono">get_product</span>. shopify.dev describes it as catalogue only, with no
+          cart or purchase capability, and every request must carry an agent profile URL.</p>
+        <p>A separate, older endpoint at <span class="mono">/api/mcp</span> is reported to include
+          cart management and ordering, and that one needs no authentication.
+          <strong>[Low Confidence]</strong> on the second endpoint: secondary sources only, not
+          confirmed against shopify.dev in this pass. The honest version of the claim is that the
+          catalogue half is documented and real, and the transacting half needs checking before you
+          say it to a merchant.</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Structured data probably does not do what the AIO row says</h4>
+        <p>The row claims JSON-LD "drives zero-click AI discovery and semantic search visibility."
+          Controlled testing in February 2026 found that ChatGPT and Perplexity tokenise JSON-LD as
+          raw text rather than parsing it semantically, and a multi-engine experiment across ChatGPT,
+          Claude, Perplexity, Gemini and Google AI Mode found every system extracted visible HTML
+          while hidden structured data was not processed at the point of citation selection.</p>
+        <p>Against that sit vendor claims of 2.5x and 3.2x citation lift. None names a sample or a
+          method. The balanced reading is that schema helps indirectly, through Google's own
+          pipeline, and that what AI engines actually read is <em>visible</em> page content. The
+          practical instruction inverts: write the answer on the page, do not hide it in a script
+          tag.</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>The INP conversion claim is the usual shape</h4>
+        <p>INP itself is solid. web.dev defines good as 200ms or under, needs improvement to 500ms,
+          poor above 500ms, and names it the successor to First Input Delay. That page makes no
+          claim about conversion or rankings.</p>
+        <p>"Poor INP directly hurts conversion rates and search engine rankings" is a real metric
+          carrying an unsourced business number. Core Web Vitals are a ranking input, and a weak
+          one by Google's own description. Section 06 of your roadmap already forbids quoting
+          numbers you cannot stand behind. This is one of them.</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>"Framework-agnostic since June 2026" is premature</h4>
+        <p>Hydrogen's rebuild with Vercel is real: a complete rewrite, framework and runtime
+          agnostic, decoupled from Remix and Oxygen, running on Next.js, Svelte, Nuxt or your own
+          stack. But it was announced in that window, not shipped. It is in closed alpha, with
+          public beta expected Q3 2026 and general availability Q1 2027.</p>
+        <p>For you this is good news rather than bad. GA lands inside your plan window, every agency
+          is re-skilling at the same time, and the target is Next.js plus the Shopify data layer
+          rather than the old Remix-on-Oxygen stack.</p>
+      </div>
+    </li>
+  </ol>
+  </div>
+</div></section>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>The gap that is still open</h2></div>
+
+  <p>Custom Pixels and server-side tracking is the one row in the table that your plan needs and
+    does not have, and the reason is specific rather than general.</p>
+
+  <p>checkout.liquid was deprecated in two stages. Information, Shipping and Payment went on
+    13 August 2024, with automatic upgrades from 6 January 2025 that discarded those customisations.
+    Thank you and Order status followed on 28 August 2025, which also covered script tags and
+    additional scripts. Anything loading analytics through checkout.liquid, which for most stores
+    meant Google Tag Manager, stopped collecting at those dates.</p>
+
+  <p>The Web Pixels API replaced it. Pixels now run in a sandbox, either as a standalone Custom
+    Pixel written in the admin or inside an app, and they are subject to the customer privacy and
+    consent layer rather than having free access to the page.</p>
+
+  <div class="flag">
+    <h4>Why this is not optional for you</h4>
+    <p>Your care plan is two promises. One shipped thing a month, and one page of numbers showing
+      what it measured before and after. Section 03 calls that monthly page "the document that makes
+      renewal a formality instead of a conversation."</p>
+    <p>That page needs event data from a checkout you no longer have raw access to. If a merchant's
+      tracking broke in 2024 or 2025 and was never properly rebuilt, which is common, then your
+      first month produces a page of numbers you cannot stand behind, or no page at all. The
+      retainer is the business, and this is the skill the retainer runs on.</p>
+  </div>
+
+  <p style="margin-top:22px">The correction is small in calendar terms. A Custom Pixel that fires
+    the standard events into one destination is an afternoon, not a weekend. The judgement call is
+    where it goes, because weeks 17 to 19 are already a three-weekend scope-build-deliver sprint
+    and week 20 is titled <em>Measure what the first job changed</em>, which is precisely the week
+    that currently assumes a capability you do not have.</p>
+
+  <div class="flag" style="border-left-color:var(--accent)">
+    <h4>Recommendation, not yet applied</h4>
+    <p>Put a Custom Pixel into week 20, where the plan already intends to measure. One task:
+      stand up a Custom Pixel on the dev store, fire the standard checkout events, and confirm they
+      arrive. It replaces nothing, and it turns the care plan's second promise from an intention
+      into a capability.</p>
+  </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Skills against the plan</h2></div>
+
+  <table>
+    <caption>Nine skills, where they sit, and whether 27 weeks produce them</caption>
+    <tr>
+      <th>Skill</th><th>Claim holds</th><th>Tier value to you</th>
+      <th>Time to competence</th><th>In the plan</th><th class="num">Conf.</th>
+    </tr>
+    <tr>
+      <td>Liquid, HTML, CSS, JS</td>
+      <td>Yes</td>
+      <td>Tier 2 floor. Without it nothing else sells</td>
+      <td>You have it</td>
+      <td>Weeks 2&ndash;5, fully</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:100%"></span></span><span class="cf__n">10</span></span></td>
+    </tr>
+    <tr>
+      <td>Theme architecture, blocks</td>
+      <td>Yes, wording lags</td>
+      <td>Tier 2 core. Merchant-editable is what they pay for</td>
+      <td>2&ndash;3 weekends</td>
+      <td>Weeks 1&ndash;5, on Skeleton as of today</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:90%"></span></span><span class="cf__n">9</span></span></td>
+    </tr>
+    <tr>
+      <td>GraphQL Admin / Storefront API</td>
+      <td>Yes</td>
+      <td>Tier 3 entry. Agencies assume it</td>
+      <td>1&ndash;2 weekends</td>
+      <td>Week 15, Admin only</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:90%"></span></span><span class="cf__n">9</span></span></td>
+    </tr>
+    <tr>
+      <td>Shopify Functions</td>
+      <td>Yes. Rust <em>or</em> JS, both to Wasm</td>
+      <td>Tier 2 and 3. The Scripts rebuild is billable now</td>
+      <td>1 day in JS, weeks in Rust</td>
+      <td>Week 6, added today</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:90%"></span></span><span class="cf__n">9</span></span></td>
+    </tr>
+    <tr>
+      <td>Hydrogen, headless</td>
+      <td>Overstated. Alpha, GA Q1 2027</td>
+      <td>Tier 3 only. Subcontract seat, not direct</td>
+      <td>3&ndash;4 weekends</td>
+      <td>Deliberately deferred</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:80%"></span></span><span class="cf__n">8</span></span></td>
+    </tr>
+    <tr>
+      <td>Core Web Vitals, INP</td>
+      <td>Metric yes, business claim no</td>
+      <td>Tier 2 differentiator. Checkable, so quotable</td>
+      <td>1 weekend</td>
+      <td>Partial. Week 6 checks CLS, never INP</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:90%"></span></span><span class="cf__n">9</span></span></td>
+    </tr>
+    <tr>
+      <td>Storefront MCP, agentic</td>
+      <td>Half. Catalogue yes, purchase unverified</td>
+      <td>Tier 2 wedge. No incumbent holds it</td>
+      <td>1 weekend</td>
+      <td>Partial. Week 4 emits standard events</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:70%"></span></span><span class="cf__n">7</span></span></td>
+    </tr>
+    <tr>
+      <td>Structured data, JSON-LD</td>
+      <td>Contested. Engines read visible HTML</td>
+      <td>Low. Do it, do not sell it</td>
+      <td>Half a day</td>
+      <td>Absent</td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:60%"></span></span><span class="cf__n">6</span></span></td>
+    </tr>
+    <tr>
+      <td>Custom Pixels, server-side</td>
+      <td>Yes, with a caveat on PII</td>
+      <td><strong>Tier 2 and the care plan runs on it</strong></td>
+      <td>1 afternoon for the basics</td>
+      <td><strong>Absent. The open gap</strong></td>
+      <td class="num"><span class="cf"><span class="cf__t"><span style="width:80%"></span></span><span class="cf__n">8</span></span></td>
+    </tr>
+  </table>
+
+  <div class="flag">
+    <h4>On the PII caveat</h4>
+    <p>The table says Custom Pixels restore "PII data flow lost after checkout.liquid deprecation."
+      That is loose. Shopify restricted that access deliberately, and pixels run sandboxed under the
+      customer privacy and consent layer. What is restored is <em>event</em> data, and server-side
+      forwarding is what makes it reliable. Sell the measurement, not the personal data.</p>
+  </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">06</span><h2>Gaps in this research</h2></div>
+
+  <ul class="plain">
+    <li><strong>The <span class="mono">/api/mcp</span> cart and checkout capability.</strong>
+      Reported by several secondary sources, not confirmed on shopify.dev. Check before claiming an
+      agent can transact on a store you built.</li>
+    <li><strong>Whether Functions can make network calls.</strong> The functions documentation page
+      does not address it. Matters if you ever scope a Function that needs outside data.</li>
+    <li><strong>Insufficient data available for</strong> the general availability status of standard
+      storefront events, and for Static Apps GA, both of which rest on single secondary sources.</li>
+    <li><strong>Every conversion figure attached to any of these skills.</strong> No named study, no
+      sample size, no method, in any source found. Treat the lot as unusable in a proposal.</li>
+  </ul>
+
+  <div class="verdict">
+    <h3>What to do with this</h3>
+    <p>Nothing today. Today is the partner account, the dev store, the CLI, Skeleton with hot
+      reload confirmed both ways, and the brand with its one line.</p>
+    <p>Before week 6, nothing more. Functions is in the plan now and that was the urgent one,
+      because you were selling it.</p>
+    <p>Before week 20, decide on the Custom Pixel. That week is called <em>Measure what the first
+      job changed</em>, and it is the only week in the plan whose title describes something the
+      curriculum cannot yet do.</p>
+  </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="page" style="padding:0;max-width:none">
+  <div class="page">
+  <div class="sec__h"><span class="num">07</span><h2>Sources</h2></div>
+  <ol class="src">
+    <li><a href="https://shopify.dev/docs/apps/build/functions">Shopify Functions, shopify.dev</a>
+      &mdash; languages, WebAssembly, function targets</li>
+    <li><a href="https://help.shopify.com/en/manual/checkout-settings/script-editor/transitioning-to-functions">Transitioning from Scripts to Functions, Shopify Help</a>
+      &mdash; 30 June 2026 deprecation, sub-5ms</li>
+    <li><a href="https://shopify.dev/docs/agents/catalog/storefront-catalog">Storefront Catalog MCP, shopify.dev</a>
+      &mdash; endpoint, agent profile, the three catalogue tools</li>
+    <li><a href="https://shopify.dev/docs/storefronts/themes/getting-started/create">Create a theme, shopify.dev</a>
+      &mdash; Skeleton as default and recommended base</li>
+    <li><a href="https://shopify.dev/docs/api/checkout-ui-extensions">Checkout UI extensions, shopify.dev</a>
+      &mdash; Preact, Polaris web components, API 2026-07, 64KB</li>
+    <li><a href="https://shopify.dev/docs/storefronts/themes/best-practices/standard-events-and-actions">Standard storefront events and actions, shopify.dev</a>
+      &mdash; recommended not required, default implementations</li>
+    <li><a href="https://web.dev/articles/inp">Interaction to Next Paint, web.dev</a>
+      &mdash; 200ms and 500ms thresholds, successor to FID</li>
+    <li><a href="https://shopify.dev/changelog/posts/color-palettes">Color palettes in themes, Shopify changelog</a>
+      &mdash; 17 June 2026</li>
+    <li><a href="https://vercel.com/blog/vercel-and-shopify-are-rebuilding-hydrogen">Vercel and Shopify are rebuilding Hydrogen</a>
+      &mdash; rewrite, framework agnostic, timeline</li>
+    <li><a href="https://arxiv.org/pdf/2510.06823">Exposing citation vulnerabilities in generative engines, arXiv</a>
+      &mdash; how engines select citations</li>
+    <li><a href="https://www.frase.io/blog/faq-schema-ai-search-geo-aeo">FAQ schema and AI search</a>
+      &mdash; the indirect-pathway reading</li>
+    <li><a href="https://qikify.com/blogs/all-articles/checkout-liquid-deprecation">checkout.liquid deprecation timeline</a>
+      &mdash; 13 Aug 2024 and 28 Aug 2025 stages</li>
+    <li><a href="https://nebulab.com/blog/shopify-web-pixels">Shopify web pixels, Nebulab</a>
+      &mdash; sandbox behaviour and custom pixels</li>
+  </ol>
+
+  <p class="muted" style="margin-top:26px;font-size:13.5px">Primary sources carry confidence 8 and
+    above. Everything resting on vendor or agency blogs is capped at 7 regardless of how many agree,
+    because they cite each other. Research run 3 October 2026.</p>
+  </div>
+</div></section>
+
+</body>
+</html>

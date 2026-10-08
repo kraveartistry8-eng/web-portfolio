@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hydrogen and headless</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 5 of 9 &middot; Advanced &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">The rebuild, and why deferring it is right</p>
+    <h1>Announced in June. Not shipped until 2027.</h1>
+    <p class="lead">The table says framework-agnostic since June 2026. It was announced then and is still in closed alpha. General availability lands in Q1 2027, which is inside your plan window rather than before it.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Overstated</span><span class="n">Closed alpha. Beta Q3 2026, GA Q1 2027.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">3 to 4 weekends</span><span class="n">And the plan correctly says there is no room before March.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Deferred on purpose</span><span class="n">Named in the tier 3 flag, scheduled nowhere.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>Hydrogen was Shopify's React framework for headless storefronts, opinionated about Remix
+  as the framework and Oxygen as the hosting layer. It has been rebuilt from the ground up in
+  collaboration with Vercel as a complete rewrite: framework agnostic, runtime agnostic, agent first,
+  and decoupled from both Remix and Oxygen.</p>
+<p>The new version runs on Next.js, Svelte, Nuxt or a custom framework, and anywhere JavaScript runs.
+  It is open source. The timeline is closed alpha now, public beta expected Q3 2026, general
+  availability Q1 2027.</p>
+<p>Alongside it, the Storefront API remains the data layer. The practical consequence is that the
+  skill worth having is no longer "Hydrogen" as a framework. It is one JavaScript framework in depth,
+  most usefully Next.js, plus the Shopify data layer.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>No, as written. "Framework-agnostic since June 2026" states as shipped something that
+  was announced and is still in closed alpha. A merchant or agency who checks will find the alpha
+  status immediately.</p>
+<p>The rest of the row is accurate. One JS framework in depth plus quarterly API upgrades is a fair
+  description of what the work demands.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>The timing is in your favour, which is unusual</h4>
+  <p>GA in Q1 2027 lands inside the plan's final phase. Every agency you email in November is
+  re-skilling at the same time you would be, which removes the experience gap that normally keeps a
+  newcomer out of tier 3. Next.js is also a far larger pool than Remix on Oxygen ever was.</p></div></li>
+<li><div><h4>Headless is usually the wrong recommendation for your target band</h4>
+  <p>Builds run $80k to $250k and above, need a team of at least three, and carry ongoing engineering
+  of roughly $3k to $10k a month for a single market. A $5M to $20M brand asking for headless is
+  usually asking for something a well-built Liquid storefront would deliver for a fifth of the cost.
+  Being the person who says that is worth more than being the person who builds it.</p></div></li>
+<li><div><h4>Chasing an alpha is the classic way to lose a quarter</h4>
+  <p>The plan says build a Hydrogen storefront when an agency conversation asks for it, and not one
+  weekend before. That instruction gets harder to follow as the GA date approaches and the
+  announcements get louder. It was right when it was written and it is still right.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>Low. Headless is not what a $15k to $40k build needs</td></tr>
+  <tr><td>Tier 3 relevance</td><td>The whole of it. This is what the $900 to $1,600 day rate is for</td></tr>
+  <tr><td>Billable on its own</td><td>Only through an agency seat, not direct, inside six months</td></tr>
+  <tr><td>Confidence</td><td>8 of 10</td></tr>
+</table>
+<div class="flag ok"><h4>Where it sits in your plan</h4>
+<p>The tier 3 flag names it and schedules it nowhere, which is the correct handling. It now also
+  records that the capability an agency hires for by March is Next.js plus the Shopify data layer
+  rather than Remix on Oxygen.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://vercel.com/blog/vercel-and-shopify-are-rebuilding-hydrogen">Vercel and Shopify are rebuilding Hydrogen</a></li>
+<li><a href="https://weaverse.io/blogs/shopify-hydrogen-framework-agnostic-agent-ready-toolkit-2026">Hydrogen developer preview, framework agnostic</a> &mdash; secondary, for the alpha and GA timeline</li>
+<li><a href="https://weaverse.io/blogs/shopify-headless-pricing">Shopify headless pricing 2026</a> &mdash; vendor tier, build and retainer ranges</li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>All build-cost and retainer figures here come from agency and vendor blogs with no stated method.
+  They converge across independent domains, which is weak corroboration rather than evidence. Treat
+  them as ranges to negotiate inside, never as figures to quote.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <a href="03-graphql-apis.html">GraphQL APIs</a> <a href="04-shopify-functions.html">Shopify Functions</a> <span class="muted">Hydrogen and headless</span> <a href="06-core-web-vitals.html">Core Web Vitals</a> <a href="07-storefront-mcp.html">Storefront MCP</a> <a href="08-structured-data.html">Structured data</a> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

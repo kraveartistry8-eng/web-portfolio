@@ -1,0 +1,25 @@
+{
+  "v": 3,
+  "assetGroups": {},
+  "blobs": {},
+  "createdOnFiles": {
+    "at": "2026-10-04T21:56:04Z",
+    "v": 1
+  },
+  "docs": {
+    "readme": "project/README.md",
+    "sections": []
+  },
+  "groups": [],
+  "lastChange": {
+    "at": "2026-10-04T21:56:04Z",
+    "by": "KraveArtistry",
+    "note": "Initial system from the site's :root variables, body and h1 rules.",
+    "via": "Claude (Cowork)"
+  },
+  "layout": "files",
+  "libraries": [],
+  "namespace": "FrequencyAlignment",
+  "sections": {},
+  "title": "Frequency Alignment Tracker"
+}

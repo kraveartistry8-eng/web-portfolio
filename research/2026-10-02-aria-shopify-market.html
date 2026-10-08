@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopify Market Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --warn:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3,h4{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(34px,5.2vw,62px);letter-spacing:-.042em;line-height:.97}
+h2{font-size:clamp(23px,2.9vw,33px)}
+h3{font-size:19px}
+h4{font-size:15px;letter-spacing:-.01em}
+p{margin:0;max-width:68ch}
+a{color:var(--accent)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+.mono{font-family:var(--mono);font-size:12.5px}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+
+.hero{padding-block:76px 50px}
+.hero .label{margin-bottom:18px}
+.hero h1{max-width:15ch;margin-bottom:28px}
+.hero .lead{font-size:clamp(19px,2.1vw,25px);line-height:1.38;letter-spacing:-.014em;max-width:56ch}
+
+/* headline stat band */
+.band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-top:44px}
+.band div{background:var(--surface);padding:24px 22px 26px}
+.band .k{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:12px}
+.band .v{font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-.03em;line-height:1.05;display:block}
+.band .n{font-size:13.5px;color:var(--ink-2);line-height:1.45;margin-top:9px;display:block}
+
+section.sec{border-top:1px solid var(--accent);padding-block:40px 64px}
+.sec__h{display:flex;gap:16px;align-items:baseline;margin-bottom:26px;flex-wrap:wrap}
+.sec__h .num{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:4px 9px;border-radius:2px}
+.sec > .page > p + p{margin-top:14px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:20px}
+th,td{text-align:left;vertical-align:top;padding:11px 16px 11px 0;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:400;border-bottom:1px solid var(--ink)}
+td:first-child{font-weight:700;padding-right:24px}
+td.num,th.num{font-family:var(--mono);font-size:13px;white-space:nowrap}
+caption{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);padding-bottom:10px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px 44px;margin-top:8px}
+.card{border-top:1px solid var(--ink);padding-top:16px}
+.card h3{margin-bottom:10px}
+.card p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+
+.flag{border-left:2px solid var(--warn);padding:4px 0 4px 18px;margin-top:22px}
+.flag h4{color:var(--warn);margin-bottom:7px}
+.flag p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+
+ol.devil{counter-reset:d;list-style:none;padding:0;margin:22px 0 0}
+ol.devil li{counter-increment:d;border-top:1px solid var(--line);padding:18px 0 20px;
+  display:grid;grid-template-columns:38px 1fr;gap:16px}
+ol.devil li::before{content:counter(d,decimal-leading-zero);font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;color:var(--accent);padding-top:3px}
+ol.devil h4{margin-bottom:6px}
+ol.devil p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+
+/* confidence bar */
+.cf{display:flex;align-items:center;gap:9px}
+.cf__t{width:62px;height:5px;background:var(--line);position:relative;flex:0 0 auto}
+.cf__t span{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.cf__n{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+
+ul.plain{padding-left:19px;max-width:66ch}
+ul.plain li{margin-bottom:9px}
+
+.verdict{background:var(--surface);border:1px solid var(--accent);padding:34px 36px 38px;margin-top:8px}
+.verdict h3{margin-bottom:14px;max-width:26ch}
+.verdict p + p{margin-top:13px}
+
+.src{font-size:13.5px;line-height:1.6}
+.src li{margin-bottom:7px;color:var(--ink-2)}
+
+@media (max-width:860px){
+  .band{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr;gap:26px}
+}
+@media (max-width:620px){
+  :root{--gutter:16px}
+  table{font-size:13.5px}
+  th,td{padding-right:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; Shopify market intelligence &middot; 2 Oct 2026</p>
+</div></div>
+
+<div class="page">
+  <header class="hero">
+    <p class="label">Tier 2 custom theme builds &middot; Tier 3 Plus and headless</p>
+    <h1>The market is splitting, not shrinking.</h1>
+    <p class="lead">Basic Shopify work has had the floor fall out from under it. Specialized work is
+      busier and better paid than it has ever been. Skipping tier one is the correct read, and the
+      data on it is unusually clear.</p>
+
+    <div class="band">
+      <div>
+        <span class="k">Tier 2 &middot; custom theme</span>
+        <span class="v">$10k&ndash;$50k</span>
+        <span class="n">Design-led studios charge $250 to $500 an hour and run $15k to $150k a
+          project. Your $30k target sits comfortably inside this.</span>
+      </div>
+      <div>
+        <span class="k">Tier 3 &middot; Hydrogen</span>
+        <span class="v">$50k&ndash;$260k</span>
+        <span class="v" style="font-size:15px;letter-spacing:0;font-weight:400;color:var(--ink-2);margin-top:6px">plus $3.9k&ndash;$13k a month maintenance</span>
+        <span class="n">Ten to twenty-four-plus weeks. React-based, which means your existing stack
+          transfers directly.</span>
+      </div>
+      <div>
+        <span class="k">The catch</span>
+        <span class="v" style="color:var(--warn)">~75%</span>
+        <span class="n">Share of merchants asking for headless who get steered back to standard
+          Shopify Plus by the agencies that build headless.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 01 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">01</span><h2>Tier 2, custom theme builds</h2></div>
+    <p class="muted">This is the tier closest to what you already sell, and the pivot does not
+      require you to accept less money than the bespoke positioning asked for.</p>
+
+    <table>
+      <caption>What buyers pay</caption>
+      <tr><th>Seller</th><th>Scope</th><th class="num">Price</th></tr>
+      <tr><td>Typical agency</td><td>Custom theme, app integrations, launch support</td><td class="num">$5,000&ndash;$15,000</td></tr>
+      <tr><td>Agency</td><td>Custom theme, tailored workflows, non-standard storefront</td><td class="num">$10,000&ndash;$20,000</td></tr>
+      <tr><td>Strong-portfolio agency</td><td>Complex builds with advanced functionality</td><td class="num">$10,000&ndash;$50,000+</td></tr>
+      <tr><td>Design-led studio</td><td>Design and build, $250&ndash;$500/hr</td><td class="num">$15,000&ndash;$150,000+</td></tr>
+    </table>
+
+    <div class="flag">
+      <h4>Read the last row, not the first</h4>
+      <p>The gap between "Shopify developer" and "design-led studio" on the same platform is two to
+        three times the rate. That is the category you would be entering. The label you pick at the
+        start decides which row you get quoted against for years.</p>
+    </div>
+  </div></section>
+
+  <!-- 02 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">02</span><h2>Tier 3, Hydrogen and headless</h2></div>
+    <p class="muted">Real, well funded, and considerably more gated than the price tags suggest.</p>
+
+    <table>
+      <caption>Build economics</caption>
+      <tr><th>Scope</th><th class="num">Cost</th><th class="num">Timeline</th></tr>
+      <tr><td>Focused, single brand, modest customization</td><td class="num">$50,000&ndash;$90,000</td><td class="num">10&ndash;14 weeks</td></tr>
+      <tr><td>Mid-market, one to three markets, custom UX</td><td class="num">$90,000&ndash;$155,000</td><td class="num">14&ndash;22 weeks</td></tr>
+      <tr><td>Enterprise, multi-region or multi-brand</td><td class="num">$155,000&ndash;$260,000+</td><td class="num">24+ weeks</td></tr>
+      <tr><td>Ongoing maintenance</td><td class="num">$3,900&ndash;$13,000/mo</td><td class="num">continuous</td></tr>
+    </table>
+
+    <div class="two" style="margin-top:34px">
+      <div class="card">
+        <h3>Your stack already transfers</h3>
+        <p>Hydrogen is React-based. The Astro, GSAP and Three.js work you have been doing maps
+          directly onto this tier and almost not at all onto tier one. The craft you spent two weeks
+          proving on the cube is the craft tier three actually pays for. Brands running Hydrogen at
+          scale include Allbirds, SKIMS, Gymshark, Good American and Denim Tears.</p>
+      </div>
+      <div class="card">
+        <h3>And the buyer is the audience you already picked</h3>
+        <p>Hydrogen's buyer profile is large DTC brands at $5m to $30m-plus revenue needing custom
+          UX beyond what Liquid allows. That is near word for word the audience you defined for the
+          bespoke positioning. You may not be changing markets at all. You may be changing the
+          platform you serve them on.</p>
+      </div>
+    </div>
+
+    <div class="flag">
+      <h4>But headless requires something your audience does not have</h4>
+      <p>The buyer has to run a front-end engineering function, own a release pipeline and absorb
+        ongoing maintenance complexity. A $5m DTC brand with a founder and a small marketing team,
+        which is exactly the buyer you defined, usually cannot. There is real tension between your
+        stated audience and tier three's actual entry requirement, and it is the thing most likely
+        to make a confident plan quietly fail.</p>
+    </div>
+  </div></section>
+
+  <!-- 03 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">03</span><h2>Rates and the employment fallback</h2></div>
+
+    <table>
+      <caption>Freelance rate benchmarks</caption>
+      <tr><th>Segment</th><th class="num">Rate</th></tr>
+      <tr><td>Experienced freelance Shopify dev, market average</td><td class="num">$78&ndash;$133/hr</td></tr>
+      <tr><td>Senior, five to ten years</td><td class="num">$100&ndash;$165/hr</td></tr>
+      <tr><td>US-based professional freelancer</td><td class="num">$75&ndash;$160/hr</td></tr>
+      <tr><td>Upwork, global median</td><td class="num">$20/hr</td></tr>
+      <tr><td>Upwork, US only</td><td class="num">$50&ndash;$80/hr</td></tr>
+      <tr><td>Upwork, Top Rated Plus US</td><td class="num">$90&ndash;$150/hr</td></tr>
+      <tr><td>Agency subcontract, Hydrogen and Oxygen</td><td class="num">$50&ndash;$75/hr</td></tr>
+    </table>
+
+    <div class="flag">
+      <h4>Compare the last two rows</h4>
+      <p>Subcontracting to an agency on Hydrogen pays less per hour than direct freelance work on
+        the same platform. If you take that route you are buying the credential, not the rate, and
+        it is worth going in knowing that is the trade.</p>
+    </div>
+
+    <table style="margin-top:38px">
+      <caption>Employment, as a fallback</caption>
+      <tr><th>Measure</th><th class="num">Value</th></tr>
+      <tr><td>Average Shopify developer salary</td><td class="num">$96,617</td></tr>
+      <tr><td>Remote Shopify app developer average</td><td class="num">$109,490 &middot; $52.64/hr</td></tr>
+      <tr><td>Senior Shopify developer</td><td class="num">$80,000&ndash;$160,000</td></tr>
+      <tr><td>Shopify full-stack</td><td class="num">$130,000&ndash;$150,000</td></tr>
+      <tr><td>Shopify developer roles that are remote</td><td class="num">13%</td></tr>
+    </table>
+
+    <div class="flag">
+      <h4>The remote fallback is thinner than the listing count</h4>
+      <p>There are over a thousand remote Shopify listings, which sounds abundant. But only 13% of
+        Shopify developer roles are remote at all. 81% are physical and 6% hybrid. If remote
+        employment is the safety net under the plan, it is a narrower net than it appears.</p>
+    </div>
+  </div></section>
+
+  <!-- 04 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">04</span><h2>The devil's advocate</h2></div>
+    <p class="muted">Evidence that cuts against the thesis, found deliberately.</p>
+
+    <ol class="devil">
+      <li><div>
+        <h4>The bifurcation thesis has a self-interested primary source</h4>
+        <p>The sharpest version of "basic work is dying, specialized work is booming" comes from an
+          Upwork Top Rated Plus developer with $300k earned who sells specialized services. He
+          concedes it is personal pipeline observation rather than market data. The direction is
+          corroborated by the rate spreads above, but treat the framing as directional, not
+          measured.</p>
+      </div></li>
+      <li><div>
+        <h4>Upwork itself is contracting</h4>
+        <p>Q2 2026 showed year-over-year declines in gross services volume, revenue and active
+          clients. More than half the businesses paying freelancers on Upwork and Fiverr in 2022 had
+          stopped entirely by 2025. Upwork cut one in four of its own jobs. Any plan that routes
+          through marketplaces is routing through a shrinking channel.</p>
+      </div></li>
+      <li><div>
+        <h4>The agencies who build headless talk most clients out of it</h4>
+        <p>One agency that builds headless storefronts steers roughly 75% of merchants who ask for
+          it back to native Shopify Plus. 78% of Shopify domains already have good time-to-first-byte
+          on Liquid. The consistent recommendation across sources is to stay on Liquid unless
+          headless solves a problem Liquid genuinely blocks. Tier three's addressable market is
+          roughly a quarter the size of the people asking for it.</p>
+      </div></li>
+      <li><div>
+        <h4>The number that moved you is the floor</h4>
+        <p>Your friend's $10,000 deal sits at the bottom of tier two. Nothing in this research says
+          $10k is lucrative for a US-based design-led operator. It says $10k is entry.</p>
+      </div></li>
+      <li><div>
+        <h4>One cited figure did not survive checking</h4>
+        <p>"Software development gigs fell 21% post-ChatGPT" appears only in the self-interested
+          source and could not be traced to a primary. Do not repeat it in a proposal or a pitch.</p>
+      </div></li>
+    </ol>
+  </div></section>
+
+  <!-- 05 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">05</span><h2>Metrics and confidence</h2></div>
+    <table>
+      <tr><th>Variable</th><th class="num">Value</th><th class="num">Confidence</th></tr>
+      <tr><td>Hydrogen is React-based, existing stack transfers</td><td class="num">certain</td><td><div class="cf"><div class="cf__t"><span style="width:100%"></span></div><span class="cf__n">10</span></div></td></tr>
+      <tr><td>Tier 2 custom theme build range</td><td class="num">$10k&ndash;$50k</td><td><div class="cf"><div class="cf__t"><span style="width:90%"></span></div><span class="cf__n">9</span></div></td></tr>
+      <tr><td>Tier 3 Hydrogen focused build</td><td class="num">$50k&ndash;$90k</td><td><div class="cf"><div class="cf__t"><span style="width:80%"></span></div><span class="cf__n">8</span></div></td></tr>
+      <tr><td>Tier 3 timeline, focused</td><td class="num">10&ndash;14 weeks</td><td><div class="cf"><div class="cf__t"><span style="width:80%"></span></div><span class="cf__n">8</span></div></td></tr>
+      <tr><td>Experienced freelance rate, US</td><td class="num">$75&ndash;$165/hr</td><td><div class="cf"><div class="cf__t"><span style="width:80%"></span></div><span class="cf__n">8</span></div></td></tr>
+      <tr><td>Design-led studio rates on Shopify</td><td class="num">$250&ndash;$500/hr</td><td><div class="cf"><div class="cf__t"><span style="width:70%"></span></div><span class="cf__n">7</span></div></td></tr>
+      <tr><td>Basic theme work being commoditized</td><td class="num">directional</td><td><div class="cf"><div class="cf__t"><span style="width:70%"></span></div><span class="cf__n">7</span></div></td></tr>
+      <tr><td>Agency subcontract rate, Hydrogen</td><td class="num">$50&ndash;$75/hr</td><td><div class="cf"><div class="cf__t"><span style="width:60%"></span></div><span class="cf__n">6</span></div></td></tr>
+      <tr><td>Shopify dev roles that are remote</td><td class="num">13%</td><td><div class="cf"><div class="cf__t"><span style="width:60%"></span></div><span class="cf__n">6</span></div></td></tr>
+      <tr><td>Merchants wrongly asking for headless</td><td class="num">~75%</td><td><div class="cf"><div class="cf__t"><span style="width:60%"></span></div><span class="cf__n">6</span></div></td></tr>
+    </table>
+  </div></section>
+
+  <!-- 06 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">06</span><h2>Gaps</h2></div>
+    <p class="muted">Stated rather than papered over.</p>
+    <ul class="plain muted" style="margin-top:18px">
+      <li><strong>Insufficient data available for</strong> the absolute size of the tier 3 market,
+        how many Hydrogen builds happen per year, and what share run through agencies versus
+        direct.</li>
+      <li><strong>Insufficient data available for</strong> whether the Shopify Partner Directory
+        generates real inbound for a solo operator with no reviews. Listing is free and needs no
+        portfolio, but nothing found quantifies lead flow at the bottom of the directory.</li>
+      <li><strong>Not verified:</strong> the 21% decline in software development gigs. Single
+        self-interested source, no primary.</li>
+      <li><strong>Not researched:</strong> your runway, your monthly number, your current income, or
+        how many hours a week you have. Those were asked for and not yet given, and no plan can be
+        evaluated without them.</li>
+    </ul>
+  </div></section>
+
+  <!-- 07 -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">07</span><h2>What this means for you</h2></div>
+    <div class="verdict">
+      <h3>Tier 2 and tier 3 are a sequence, not a choice.</h3>
+      <p>Running at both at once, solo, with zero Shopify case studies, is the capacity trap I would
+        expect to break you. Tier two earns cash and produces the case studies. Tier three, entered
+        through agency subcontracting, buys the credential at a lower hourly rate than you could
+        charge directly. One funds the other. They do not run in parallel.</p>
+      <p>The strongest single fact in this report is that your existing craft transfers to tier
+        three and not to tier one. That is an argument for where you aim, not for where you start.</p>
+      <p>The addendum changes one thing about this. Retainers at five to twenty thousand a month
+        mean the goal may not be a bigger project at all. It may be two or three brands on monthly
+        retainers, which is a smaller number to sell and a far steadier business to run alone.</p>
+      <p>And the demo problem did not go away, it followed you. You still have to build something
+        before anyone pays you, on either tier. The difference is that a Shopify demo has a
+        constrained brief and merchants are everywhere, which may make it a genuinely easier first
+        build than the bespoke demo you have been circling for two weeks.</p>
+    </div>
+  </div></section>
+
+  <!-- 08 addendum -->
+  <section class="sec"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">08</span><h2>Addendum &middot; recruiter-side data</h2></div>
+    <p class="muted">Added after the first pass, from Constant Hire's Shopify developer salary study
+      dated 8 April 2026, built from their own candidate interviews rather than job-board scraping.
+      It reaches the same tier conclusion from the hiring side rather than the agency side, and adds
+      one cut neither source had.</p>
+
+    <table>
+      <caption>The new cut: pay by the store's revenue, not the developer's seniority</caption>
+      <tr><th>Store revenue</th><th>Who they hire</th><th class="num">Pay</th></tr>
+      <tr><td>Under $1M</td><td>Freelancer</td><td class="num">$25&ndash;$50/hr &middot; or $2,500&ndash;$5,000 retainer</td></tr>
+      <tr><td>$1M&ndash;$5M</td><td>Mid-level contractor</td><td class="num">$60,000&ndash;$100,000</td></tr>
+      <tr><td>$5M&ndash;$20M</td><td>Senior or agency</td><td class="num">$100,000&ndash;$160,000 &middot; or $5,000&ndash;$15,000/mo</td></tr>
+      <tr><td>$20M+</td><td>Senior to architect</td><td class="num">$150,000&ndash;$250,000+ &middot; or $15,000&ndash;$20,000+/mo</td></tr>
+    </table>
+
+    <div class="flag" style="border-left-color:var(--accent)">
+      <h4 style="color:var(--accent)">Retainers were not in the picture before this</h4>
+      <p>Your target band, $5M to $50M, maps to five to twenty thousand dollars a month, recurring.
+        That is a different business from selling $30k projects one at a time, and a materially
+        better one for a solo operator, because it is the thing that solves the feast and famine
+        problem that kills most of them. It is the single most useful number in this whole report.</p>
+    </div>
+
+    <table style="margin-top:38px">
+      <caption>Corroboration of the tier split, from the hiring side</caption>
+      <tr><th>Stack</th><th class="num">Hourly</th><th class="num">Build cost</th><th class="num">Senior salary</th></tr>
+      <tr><td>Liquid, traditional</td><td class="num">$50&ndash;$150/hr</td><td class="num">$5,000&ndash;$35,000</td><td class="num">$120,000&ndash;$140,000</td></tr>
+      <tr><td>Headless and Hydrogen</td><td class="num">$100&ndash;$250/hr</td><td class="num">$60,000&ndash;$200,000+</td><td class="num">$150,000&ndash;$185,000</td></tr>
+    </table>
+    <p class="muted" style="font-size:14.5px;margin-top:14px">They put the headless premium at 50%
+      to 100% over Liquid. Two independent sources, approached from opposite ends of the market,
+      landing on the same split.</p>
+
+    <div class="two" style="margin-top:34px">
+      <div class="card">
+        <h3>A dated opening worth taking seriously</h3>
+        <p>They name 2026 migration work, specifically Checkout Extensibility and Shopify Functions,
+          as a current demand spike. For someone with no Shopify case studies, a wave that has just
+          started is a far better entry than one that broke five years ago. Nobody has ten years of
+          experience in a skill that is two years old.</p>
+      </div>
+      <div class="card">
+        <h3>And a named channel into your own audience</h3>
+        <p>Constant Hire recruits specifically into DTC and CPG brands, placing tech and creative
+          roles alongside marketing. That is a concrete door into exactly the audience you already
+          chose, rather than a job board. Relevant only if the employment fallback matters to you.</p>
+      </div>
+    </div>
+
+    <div class="flag">
+      <h4>Three cautions on this source</h4>
+      <p><strong>It is a recruiter.</strong> They are paid on placement, usually a percentage of
+        first-year salary, so they have a direct financial interest in benchmarks reading high. Treat
+        these as the top of a real range rather than the middle.</p>
+      <p style="margin-top:11px"><strong>Their hourly figures are salaries divided into hours, not
+        freelance rates.</strong> $36&ndash;$46 junior and $48&ndash;$67 mid look like they contradict
+        the $78&ndash;$133 in section 03. They do not. They are a different measurement. Never quote
+        them at a client.</p>
+      <p style="margin-top:11px"><strong>Two of their statistics do not survive scrutiny.</strong>
+        "AI-enhanced roles pay 60% to 145% more" has a range too wide to be a measurement and states
+        no method. "78% of candidates expect base salaries above $100,000" measures what candidates
+        want, not what anyone pays. Do not repeat either.</p>
+    </div>
+  </div></section>
+
+  <!-- sources -->
+  <section class="sec" style="padding-bottom:90px"><div class="page" style="padding:0;max-width:none">
+    <div class="sec__h"><span class="num">09</span><h2>Sources</h2></div>
+    <ol class="src muted">
+      <li><a href="https://www.ecorn.agency/blog/shopify-store-development-cost">Ecorn &mdash; Shopify Store Development Cost: A 2026 Breakdown</a></li>
+      <li><a href="https://www.elsner.com/shopify-development-cost/">Elsner &mdash; Shopify Store Development Cost 2026</a></li>
+      <li><a href="https://pagefly.io/blogs/shopify/shopify-development-services">PageFly &mdash; Shopify Development Services: Agencies and Costs 2026</a></li>
+      <li><a href="https://www.charleagency.com/articles/shopify-hydrogen-oxygen/">Charle Agency &mdash; Shopify Hydrogen and Oxygen: The Complete 2026 US Guide</a></li>
+      <li><a href="https://askphill.com/blogs/blog/shopify-headless">Ask Phill &mdash; Shopify Headless: When It's Worth It and What It Costs</a></li>
+      <li><a href="https://golance.com/hiring/best-freelance-shopify-developers-hourly-rate">goLance &mdash; Shopify Developer Hourly Rate Guide 2026</a></li>
+      <li><a href="https://hamzataj.com/upwork-shopify-developer-hourly-rate/">Hamza Taj &mdash; Upwork Shopify Developer Hourly Rate 2026</a></li>
+      <li><a href="https://hamzataj.com/shopify-developer-hourly-rate-usa/">Hamza Taj &mdash; Shopify Developer Hourly Rate USA 2026</a></li>
+      <li><a href="https://learnshopify.dev/blog/shopify-developer-salary-2026">learnshopify.dev &mdash; Shopify Developer Salary in 2026</a></li>
+      <li><a href="https://www.ziprecruiter.com/Jobs/Remote-Shopify-App-Developer">ZipRecruiter &mdash; Remote Shopify App Developer Jobs</a></li>
+      <li><a href="https://www.ziprecruiter.com/Jobs/Remote-Shopify">ZipRecruiter &mdash; Remote Shopify Jobs, Oct 2026</a></li>
+      <li><a href="https://www.glassdoor.com/Job/shopify-developer-jobs-SRCH_IS11047_KO0,17.htm">Glassdoor &mdash; Shopify Developer Jobs, Remote</a></li>
+      <li><a href="https://lemon.io/for-developers/shopify-developer-jobs/">Lemon.io &mdash; Shopify Developer Jobs 2026</a></li>
+      <li><a href="https://karangoyal.cc/blog/shopify-freelance-market-splitting-upwork-2026">Karan Goyal &mdash; Shopify Freelance Market 2026 <em>(self-interested, see 04.1)</em></a></li>
+      <li><a href="https://gigradar.io/blog/upwork-market-report-2026">GigRadar &mdash; Upwork Market Report 2026</a></li>
+      <li><a href="https://www.finalroundai.com/blog/upwork-layoffs-2026">FinalRound &mdash; Upwork Cuts 1 in 4 Jobs</a></li>
+      <li><a href="https://www.adsx.com/blog/shopify-partner-program-guide">adsx &mdash; Shopify Partner Program: Complete Guide 2026</a></li>
+      <li><a href="https://weaverse.io/blogs/shopify-hydrogen-is-now-agency-approved-every-guide-warns-about-the-same-hidden-cost">Weaverse &mdash; Shopify Hydrogen Is Now Agency-Approved</a></li>
+      <li><a href="https://www.constanthire.com/posts/shopify-developer-salary">Constant Hire &mdash; Shopify Developer Salary in 2026, 8 Apr 2026 <em>(recruiter, paid on placement, see 08)</em></a></li>
+      <li><a href="https://www.constanthire.com/">Constant Hire &mdash; Ecommerce Recruitment Agency for DTC and CPG Brands</a></li>
+    </ol>
+  </div></section>
+
+</div>
+</body>
+</html>

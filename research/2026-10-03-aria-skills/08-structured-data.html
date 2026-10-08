@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Structured data and AI discovery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 8 of 9 &middot; Specialized &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">JSON-LD, Schema, and the AIO claim</p>
+    <h1>The one row on the list that testing contradicts.</h1>
+    <p class="lead">Structured data is cheap, harmless and worth shipping. The claim that it drives AI discovery is contested by 2026 controlled testing, and the lift figures circulating alongside it name no sample and no method.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Contested</span><span class="n">Engines read visible HTML. Hidden JSON-LD was not parsed.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">Half a day</span><span class="n">Shopify themes emit some of it already.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Absent</span><span class="n">And it is the one gap I would not rush to close.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>Structured data is machine-readable markup describing what a page is about, usually
+  JSON-LD in a script tag using Schema.org vocabulary. On a storefront that means product markup with
+  price, availability and reviews, which is what produces rich results in Google.</p>
+<p>"AIO" is a coinage, not a standard. It is used to mean optimising for AI answer engines, alongside
+  the similar acronyms AEO and GEO. None of them names a specification.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>The Schema.org half is real and uncontroversial. The "drives zero-click AI discovery and
+  semantic search visibility" half does not survive the available testing.</p>
+<p>A February 2026 controlled experiment found that ChatGPT and Perplexity tokenise JSON-LD as raw
+  text rather than parsing it semantically. A separate multi-engine experiment across ChatGPT, Claude,
+  Perplexity, Gemini and Google AI Mode found every system extracted visible HTML content, while
+  hidden structured data in script tags, Microdata attributes and RDFa annotations was not processed
+  at the point of citation selection.</p>
+<p>Against that sit vendor claims: 2.5x higher chance of appearing in AI answers, 40% more AI
+  Overview appearances, 3.2x more citations. None names a sample size or a method. That asymmetry is
+  the finding.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>The practical instruction inverts</h4>
+  <p>If engines read visible content, then the way to be cited is to put the answer on the page in
+  text a human can read, not to hide it in markup. That is a content and layout decision, which is
+  your discipline, rather than a technical one.</p></div></li>
+<li><div><h4>Ship it anyway, for a different reason</h4>
+  <p>Structured data still drives Google rich results, and the most balanced reading found is that
+  schema helps AI citation indirectly through Google's own pipeline rather than directly. It costs
+  half a day. The error is not doing it, the error is selling it.</p></div></li>
+<li><div><h4>This is where a competitor will out-promise you</h4>
+  <p>Somebody will pitch your prospect on AI visibility with a 3.2x number attached. You will not,
+  because you cannot source it. Losing that deal is the cost of the positioning in section 03, and it
+  is the correct trade, but it is worth knowing the moment will come.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>Low. Include it in a build, do not price it separately</td></tr>
+  <tr><td>Tier 3 relevance</td><td>Low</td></tr>
+  <tr><td>Billable on its own</td><td>Not honestly, on current evidence</td></tr>
+  <tr><td>Confidence</td><td>6 of 10, and that is the point</td></tr>
+</table>
+<div class="flag"><h4>If you sell anything here, sell the visible version</h4>
+<p>An agent-readability audit that looks at what is actually in the HTML, what the catalogue exposes
+  and whether <span class="mono">llms.txt</span> and <span class="mono">agents.md</span> say anything
+  useful is defensible. A schema package sold on citation lift is not.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://arxiv.org/pdf/2510.06823">Exposing citation vulnerabilities in generative engines, arXiv</a></li>
+<li><a href="https://www.frase.io/blog/faq-schema-ai-search-geo-aeo">FAQ schema and AI search, GEO and AEO</a> &mdash; the indirect-pathway reading</li>
+<li><a href="https://www.loonis.co/blog/schema-markup-for-ai-search-what-actually-drives-citations-in-2026">Schema markup for AI search, 2026</a> &mdash; vendor tier, cited for the contested claims</li></ol>
+  <div class="flag"><h4>Gap</h4>
+<p>The February 2026 experiment and the multi-engine test are reported through secondary coverage.
+  <strong>[Low Confidence]</strong> on the exact methodology of each. The direction is corroborated
+  across independent sources; the specific figures on both sides of this argument are not
+  trustworthy.</p></div>
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <a href="03-graphql-apis.html">GraphQL APIs</a> <a href="04-shopify-functions.html">Shopify Functions</a> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <a href="06-core-web-vitals.html">Core Web Vitals</a> <a href="07-storefront-mcp.html">Storefront MCP</a> <span class="muted">Structured data</span> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

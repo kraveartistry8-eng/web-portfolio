@@ -1,0 +1,401 @@
+---
+import { pairs, faces } from "../data/services";
+---
+
+<div class="rig" data-rig>
+  {/* Faces are rendered here rather than built by script, for three reasons:
+      Astro's scoped styles never reach elements JavaScript creates, the section
+      has to be composed and clickable before any script runs, and six real
+      buttons in the document is what a screen reader and a crawler need. */}
+  <div class="cube" data-cube>
+    {faces.map((f) => {
+      const p = pairs[f.i];
+      return (
+        <button
+          type="button"
+          class:list={["face", f.svc ? "face--svc" : "face--work"]}
+          style={`--fx:${f.fx}deg; --fy:${f.fy}deg;` +
+                 (f.svc ? "" : ` --tint:${p.tint}; --on-tint:${p.onTint};`)}
+          data-pair={f.i}
+          aria-label={`${p.n}. ${p.title}. Opens ${p.demoName}.`}
+        >
+          <span class="pad">
+            {f.svc
+              ? <span class="numeral">{p.n}</span>
+              : <><span class="kicker">{p.demo}</span><span class="name">{p.demoName}</span></>}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+  <p class="label hint">Drag to spin &middot; click a face</p>
+</div>
+
+<dialog class="panel" data-panel aria-labelledby="panel-title">
+  <div class="panel__field" data-panel-field>
+    <p class="label" data-panel-kicker></p>
+  </div>
+  <div class="panel__body">
+    <p class="label" data-panel-n></p>
+    <h2 id="panel-title" data-panel-title></h2>
+    <p class="muted" data-panel-body></p>
+    <button type="button" class="btn" data-panel-close>Close</button>
+  </div>
+</dialog>
+
+<style>
+  /* The stage. touch-action sits here and nowhere wider, so the page still
+     scrolls everywhere else on a phone. */
+  .rig {
+    display: grid;
+    place-items: center;
+    min-height: 430px;
+    perspective: 900px;
+    position: relative;
+    touch-action: none;
+    cursor: grab;
+  }
+  .rig[data-dragging] { cursor: grabbing; }
+
+  /* A cube resting corner on throws a silhouette about 1.63x its own edge,
+     against 1.41 square on, so the edge is sized from the column it has to fit
+     inside rather than picked. Measured at each breakpoint. */
+  .cube {
+    --cube: 230px;
+    width: var(--cube);
+    height: var(--cube);
+    position: relative;
+    transform-style: preserve-3d;
+    will-change: transform;
+    /* Composed before any script runs, and the resting pose under reduced
+       motion. See tokens.css rule 1. */
+    transform: rotateX(-25deg) rotateY(-38deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    backface-visibility: hidden;
+    background: var(--surface);
+    transform: rotateX(var(--fx)) rotateY(var(--fy)) translateZ(calc(var(--cube) / 2));
+    transition: box-shadow var(--dur-fast) linear;
+  }
+  /* The face marks itself before you commit, because at a three face pose
+     nothing else tells you which one a click will open. */
+  .face:hover,
+  .face:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+
+  .face--work {
+    background: var(--tint);
+    color: var(--on-tint);
+  }
+  .face--work:hover,
+  .face--work:focus-visible { box-shadow: inset 0 0 0 2px var(--on-tint); }
+
+  /* 70.7% is the inscribed square: a box of side s spinning about its own
+     centre reaches a face of side f exactly when s * sqrt(2) = f, and never
+     crosses it. */
+  .pad {
+    width: 70.7%;
+    height: 70.7%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+  .face--svc .pad { justify-content: center; align-items: center; }
+
+  .numeral {
+    font-family: var(--font-mono);
+    font-size: 92px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: var(--size-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+  .name {
+    font-size: 18px;
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    margin-top: 7px;
+  }
+
+  .hint { position: absolute; bottom: 8px; left: 0; }
+
+  /* --- panel ------------------------------------------------------- */
+  .panel {
+    border: 1px solid var(--accent);
+    background: var(--surface);
+    padding: 0;
+    width: min(760px, calc(100vw - 2 * var(--gutter)));
+    max-height: 86vh;
+    color: var(--ink);
+  }
+  .panel::backdrop { background: rgba(240, 240, 238, 0.94); }
+  .panel__field {
+    height: 260px;
+    display: grid;
+    place-items: end start;
+    padding: 20px;
+  }
+  .panel__body { padding: 28px 32px 34px; display: grid; gap: 13px; }
+  .panel__body .btn { justify-self: start; margin-top: 10px; }
+
+  @media (max-width: 900px) {
+    .rig { min-height: 440px; }
+    .cube { --cube: 260px; }
+  }
+  @media (max-width: 620px) {
+    .rig { min-height: 340px; }
+    .cube { --cube: 200px; }
+    .numeral { font-size: 76px; }
+    .panel__field { height: 180px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rig { cursor: default; }
+    .hint { display: none; }
+  }
+</style>
+
+<script>
+  import { pairs } from "../data/services";
+
+  /* Orientation is a quaternion rather than three angles. That is what lets the
+     cube settle to the nearest of its 24 square-on poses from any attitude, and
+     lets a drag on any axis compose without gimbal trouble. */
+  type Q = [number, number, number, number];
+  const qn = (q: number[]): Q => {
+    const m = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+    return [q[0] / m, q[1] / m, q[2] / m, q[3] / m];
+  };
+  const qmul = (a: Q, b: Q): Q => [
+    a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3],
+    a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2],
+    a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1],
+    a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0],
+  ];
+  const qaxis = (ax: number[], an: number): Q => {
+    const h = an / 2, s = Math.sin(h);
+    return [Math.cos(h), ax[0] * s, ax[1] * s, ax[2] * s];
+  };
+  const qmat = ([w, x, y, z]: Q) => [
+    [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+    [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+    [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)],
+  ];
+  const slerp = (a: Q, b: Q, t: number): Q => {
+    let d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+    if (d < 0) { b = [-b[0], -b[1], -b[2], -b[3]]; d = -d; }
+    if (d > 0.9995) return qn([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t,
+                               a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t]);
+    const th = Math.acos(d), s = Math.sin(th);
+    const k0 = Math.sin((1 - t) * th) / s, k1 = Math.sin(t * th) / s;
+    return [a[0] * k0 + b[0] * k1, a[1] * k0 + b[1] * k1,
+            a[2] * k0 + b[2] * k1, a[3] * k0 + b[3] * k1];
+  };
+
+  /* The 24 poses that put one face square on with its type level: every
+     right-handed pairing of signed axes, which is the rotation group of a cube. */
+  const CANON: Q[] = (() => {
+    const AX = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+    const dot = (a: number[], b: number[]) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+    const cross = (a: number[], b: number[]) =>
+      [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+    const mq = (M: number[][]): Q => {
+      const t = M[0][0] + M[1][1] + M[2][2];
+      if (t > 0) { const s = Math.sqrt(t + 1) * 2;
+        return qn([0.25*s, (M[2][1]-M[1][2])/s, (M[0][2]-M[2][0])/s, (M[1][0]-M[0][1])/s]); }
+      if (M[0][0] > M[1][1] && M[0][0] > M[2][2]) {
+        const s = Math.sqrt(1 + M[0][0] - M[1][1] - M[2][2]) * 2;
+        return qn([(M[2][1]-M[1][2])/s, 0.25*s, (M[0][1]+M[1][0])/s, (M[0][2]+M[2][0])/s]); }
+      if (M[1][1] > M[2][2]) {
+        const s = Math.sqrt(1 + M[1][1] - M[0][0] - M[2][2]) * 2;
+        return qn([(M[0][2]-M[2][0])/s, (M[0][1]+M[1][0])/s, 0.25*s, (M[1][2]+M[2][1])/s]); }
+      const s = Math.sqrt(1 + M[2][2] - M[0][0] - M[1][1]) * 2;
+      return qn([(M[1][0]-M[0][1])/s, (M[0][2]+M[2][0])/s, (M[1][2]+M[2][1])/s, 0.25*s]);
+    };
+    const out: Q[] = [];
+    for (const x of AX) for (const y of AX) {
+      if (Math.abs(dot(x, y)) > 1e-9) continue;
+      const z = cross(x, y);
+      out.push(mq([[x[0],y[0],z[0]], [x[1],y[1],z[1]], [x[2],y[2],z[2]]]));
+    }
+    return out;
+  })();
+  const nearest = (q: Q): Q => {
+    let best = CANON[0], bd = -1;
+    for (const c of CANON) {
+      const d = Math.abs(q[0]*c[0] + q[1]*c[1] + q[2]*c[2] + q[3]*c[3]);
+      if (d > bd) { bd = d; best = c; }
+    }
+    return best;
+  };
+
+  const DEG = Math.PI / 180;
+  /* Resting pose: nearest square-on, then a fixed view-space offset so three
+     faces stay visible and it reads as an object rather than a flat card. */
+  const CORNER = qmul(qaxis([0, 1, 0], -38 * DEG), qaxis([1, 0, 0], -28 * DEG));
+
+  /* Tuned by hand, not chosen. MAX_SPIN is the ceiling the cube may keep once it
+     leaves the hand; friction alone cannot stop a violent drag from launching
+     it, a cap can, and that cap is what reads as mass. */
+  const GRIP = 0.0055;      // rad per pixel of drag
+  const MAX_SPIN = 3.20;    // rad/s, about 183 deg/s
+  const FRICTION = 0.40;    // per second
+  const POINTER_DRAG = 4.0; // extra friction while the pointer rests on it
+  const SLOW = 0.25;        // rad/s below which the drift or the settle takes over
+  const IDLE = 0.30;        // rad/s resting rotation
+
+  const rig = document.querySelector<HTMLElement>("[data-rig]");
+  const cube = document.querySelector<HTMLElement>("[data-cube]");
+  const panel = document.querySelector<HTMLDialogElement>("[data-panel]");
+  if (rig && cube && panel) {
+    const S = {
+      q: qn([1, 0.22, 0.35, 0.12]) as Q,
+      om: [0, 0, 0] as number[],
+      t: 0, hovered: false, focused: false, dragging: false, swallow: false,
+    };
+
+    const apply = () => {
+      const M = qmat(S.q);
+      cube.style.transform =
+        `matrix3d(${M[0][0]},${M[1][0]},${M[2][0]},0,` +
+        `${M[0][1]},${M[1][1]},${M[2][1]},0,` +
+        `${M[0][2]},${M[1][2]},${M[2][2]},0,0,0,0,1)`;
+    };
+
+    // ---- panel ----
+    const field = panel.querySelector<HTMLElement>("[data-panel-field]")!;
+    let lastFocus: HTMLElement | null = null;
+    const openPanel = (i: number) => {
+      const p = pairs[i];
+      field.style.background = p.tint;
+      const k = panel.querySelector<HTMLElement>("[data-panel-kicker]")!;
+      k.textContent = `${p.demo} · ${p.demoName} · not built yet`;
+      k.style.color = p.onTint;
+      panel.querySelector<HTMLElement>("[data-panel-n]")!.textContent = p.n;
+      panel.querySelector<HTMLElement>("[data-panel-title]")!.textContent = p.title;
+      panel.querySelector<HTMLElement>("[data-panel-body]")!.textContent = p.body;
+      lastFocus = document.activeElement as HTMLElement;
+      panel.showModal();
+    };
+    panel.querySelector("[data-panel-close]")!
+      .addEventListener("click", () => panel.close());
+    panel.addEventListener("close", () => lastFocus?.focus());
+    panel.addEventListener("click", (e) => { if (e.target === panel) panel.close(); });
+
+    rig.querySelectorAll<HTMLButtonElement>(".face").forEach((el) => {
+      /* Only keyboard focus should pull the cube square. A pointer press focuses
+         the button too, and without this test the cube would stay settled for
+         good after any drag instead of returning to its drift. */
+      el.addEventListener("focus", () => { if (el.matches(":focus-visible")) S.focused = true; });
+      el.addEventListener("blur", () => { S.focused = false; });
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (!S.swallow) openPanel(Number(el.dataset.pair));
+      });
+    });
+
+    // ---- pointer ----
+    let px = 0, py = 0, pt = 0, downAt = 0, moved = 0;
+    let ptrId = -1, captured = false;
+    rig.addEventListener("pointerenter", () => { S.hovered = true; });
+    rig.addEventListener("pointerleave", () => { S.hovered = false; });
+    rig.addEventListener("pointerdown", (e) => {
+      S.dragging = true; moved = 0; downAt = performance.now(); pt = downAt;
+      px = e.clientX; py = e.clientY;
+      S.om = [0, 0, 0];                       // taking hold of it stops it dead
+      rig.dataset.dragging = "";
+      /* Capture is deliberately NOT taken here. Capturing on pointerdown
+         redirects every later pointer event to the rig, so the click that
+         follows a tap targets the rig instead of the face and the face never
+         hears it. Capture is taken below, once the gesture is actually a drag. */
+      ptrId = e.pointerId;
+      captured = false;
+    });
+    rig.addEventListener("pointermove", (e) => {
+      if (!S.dragging) return;
+      const now = performance.now();
+      const dt = Math.max((now - pt) / 1000, 1 / 240); pt = now;
+      const dx = e.clientX - px, dy = e.clientY - py;
+      px = e.clientX; py = e.clientY;
+      moved += Math.hypot(dx, dy);
+      if (!captured && moved >= 7) {
+        rig.setPointerCapture(ptrId);
+        captured = true;
+      }
+      /* Applied on the left so the cube turns about the screen's axes, which is
+         what makes a drag feel like pushing the object rather than steering it. */
+      S.q = qn(qmul(qmul(qaxis([0,1,0], dx*GRIP), qaxis([1,0,0], dy*GRIP)), S.q));
+      /* Averaged across moves rather than read off the final frame, so a single
+         stuttered pointer event cannot decide the whole throw. */
+      const inst = [dy * GRIP / dt, dx * GRIP / dt, 0];
+      S.om = [S.om[0] + (inst[0] - S.om[0]) * 0.35,
+              S.om[1] + (inst[1] - S.om[1]) * 0.35, 0];
+    });
+    const endDrag = () => {
+      if (!S.dragging) return;
+      S.dragging = false;
+      delete rig.dataset.dragging;
+      if (captured && rig.hasPointerCapture(ptrId)) rig.releasePointerCapture(ptrId);
+      captured = false;
+      /* Short and still is a click, and a click leaves no spin behind. Anything
+         else is a drag, and the trailing click the browser fires is swallowed. */
+      if (moved < 7 && performance.now() - downAt < 320) { S.om = [0, 0, 0]; return; }
+      S.swallow = true;
+      setTimeout(() => { S.swallow = false; }, 60);
+      const sp = Math.hypot(S.om[0], S.om[1], S.om[2]);
+      if (sp > MAX_SPIN && sp > 1e-6) S.om = S.om.map((v) => v * MAX_SPIN / sp);
+    };
+    rig.addEventListener("pointerup", endDrag);
+    rig.addEventListener("pointercancel", endDrag);
+
+    // ---- loop ----
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      let last = performance.now();
+      const loop = (now: number) => {
+        const dt = Math.min((now - last) / 1000, 0.05); last = now; S.t += dt;
+        if (!S.dragging) {
+          const k = Math.exp(-FRICTION * (S.hovered ? POINTER_DRAG : 1) * dt);
+          S.om = S.om.map((v) => v * k);
+          const sp = Math.hypot(S.om[0], S.om[1], S.om[2]);
+          if (sp > 1e-4) S.q = qn(qmul(qaxis(S.om.map((v) => v / sp), sp * dt), S.q));
+          if (sp < SLOW) {
+            if (S.hovered || S.focused) {
+              S.q = slerp(S.q, qmul(CORNER, nearest(S.q)), 1 - Math.exp(-4.4 * dt));
+            } else {
+              /* Fade the resting rotation in as the coast dies, so there is no
+                 moment where the cube is visibly inert and no seam between the
+                 two motions. */
+              const blend = 1 - sp / SLOW, a = S.t * 0.15;
+              const ax = [Math.sin(a) * 0.5, 0.82, Math.cos(a) * 0.45];
+              const m = Math.hypot(ax[0], ax[1], ax[2]);
+              S.q = qn(qmul(qaxis([ax[0]/m, ax[1]/m, ax[2]/m], IDLE * dt * blend), S.q));
+            }
+          }
+        }
+        apply();
+        requestAnimationFrame(loop);
+      };
+      apply();
+      requestAnimationFrame(loop);
+    }
+  }
+</script>

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accent Step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono:ital@0;1&display=swap">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF; --ink:#161614; --ink2:#6B6B66; --line:#D8D8D4;
+  --a-old:#137586; --a-new:#185F6B; --cy:#90e0ef;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-weight:400;
+     -webkit-font-smoothing:antialiased}
+.page{max-width:1120px;margin:0 auto;padding:72px 32px 120px}
+
+.masthead{border-bottom:1px solid var(--ink);padding-bottom:18px;margin-bottom:14px}
+.masthead h1{font-weight:700;font-size:clamp(34px,5vw,58px);letter-spacing:-.03em;line-height:.98;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 26px;font-family:var(--mono);font-size:12px;
+      color:var(--ink2);text-transform:uppercase;letter-spacing:.09em;margin-bottom:76px}
+
+section{margin-bottom:96px}
+.num{font-family:var(--mono);font-size:12px;letter-spacing:.09em;color:var(--ink2);
+     text-transform:uppercase;display:block;margin-bottom:10px}
+h2{font-weight:700;font-size:clamp(22px,2.6vw,30px);letter-spacing:-.02em;line-height:1.1;margin:0 0 10px}
+.intro{color:var(--ink2);font-size:16px;line-height:1.55;max-width:62ch;margin:0 0 36px}
+
+/* ---- 01 text step ---- */
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2px}
+.col{background:var(--surface);padding:34px 32px 30px}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+     display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+     padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:26px;color:var(--ink2)}
+.tag b{font-weight:400;color:var(--ink)}
+.swatchbar{height:56px;margin-bottom:26px}
+.spec{font-size:17px;line-height:1.6;margin:0 0 22px;max-width:46ch}
+.spec a{text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+        margin:0 0 6px}
+.ruled{font-weight:700;font-size:23px;letter-spacing:-.02em;padding-bottom:9px;margin:0 0 24px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.09em;
+     text-transform:uppercase;padding:13px 22px;color:#fff;margin-bottom:26px}
+.readout{font-family:var(--mono);font-size:12px;line-height:1.85;color:var(--ink2);
+         border-top:1px solid var(--line);padding-top:14px}
+.readout .r{color:var(--ink)}
+.pass{color:var(--a-new)}
+.thin{color:#8A6A2A}
+
+/* ---- 02 fills ---- */
+.fills{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:26px 18px}
+.fill .chip{padding:24px 20px 22px;margin-bottom:12px}
+.fill .chip p{margin:0;font-size:15px;line-height:1.45;color:var(--ink)}
+.fill .chip .m{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+               color:var(--ink);opacity:.62;margin-bottom:9px}
+.fill h3{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.09em;
+         text-transform:uppercase;margin:0 0 5px;color:var(--ink)}
+.fill .d{font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--ink2);margin:0}
+.fill .d s{text-decoration:none;color:var(--ink)}
+.keep{display:inline-block;background:var(--ink);color:var(--ground);font-family:var(--mono);
+      font-size:10px;letter-spacing:.1em;padding:2px 7px;margin-left:6px}
+
+/* ---- 03 together ---- */
+.hero{background:var(--surface);padding:58px 46px 50px}
+.hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+               color:var(--a-new);margin:0 0 20px}
+.hero h3{font-weight:700;font-size:clamp(30px,4.4vw,52px);line-height:1.06;letter-spacing:-.035em;
+         margin:0 0 24px;max-width:17ch;text-wrap:balance}
+.hero h3 mark{background:var(--cy);color:var(--ink);padding:0 9px;border-radius:2px;
+              box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.hero p{font-size:17px;line-height:1.6;color:var(--ink2);max-width:52ch;margin:0 0 32px}
+.hero p a{color:var(--a-new);text-decoration:none;border-bottom:1px solid var(--a-new)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:46px}
+.btn-solid{display:inline-block;background:var(--a-new);color:#fff;font-family:var(--mono);
+           font-size:12px;letter-spacing:.09em;text-transform:uppercase;padding:14px 24px}
+.btn-ghost{display:inline-block;color:var(--ink);border:1px solid var(--ink);font-family:var(--mono);
+           font-size:12px;letter-spacing:.09em;text-transform:uppercase;padding:13px 24px}
+.panel{background:var(--cy);border:1px solid var(--a-new);padding:28px 26px}
+.panel .m{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+          color:var(--ink);opacity:.7;margin:0 0 9px}
+.panel p{color:var(--ink);font-size:16px;line-height:1.55;margin:0;max-width:56ch}
+.glyphs{font-size:22px;letter-spacing:-.01em;padding:16px 0;margin:34px 0 0;
+        border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
+.glyphs .mn{font-family:var(--mono);font-size:17px;color:var(--a-new)}
+
+.note{border-left:2px solid var(--a-new);padding:4px 0 4px 20px;margin-top:40px;
+      font-size:16px;line-height:1.6;color:var(--ink2);max-width:66ch}
+.note b{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead"><h1>Accent step</h1></div>
+  <div class="meta">
+    <span>2026&#8202;/&#8202;09&#8202;/&#8202;21</span>
+    <span>Container &#183; light mode</span>
+    <span>Epilogue &#183; Fragment Mono</span>
+  </div>
+
+  <!-- 01 -->
+  <section>
+    <span class="num">01 &#8212; The text step</span>
+    <h2>Same family, more headroom</h2>
+    <p class="intro">Identical elements, identical type. The only variable is the accent value. The left is the current locked step and clears AA by 0.20. The right clears it by 1.87.</p>
+
+    <div class="pair">
+      <div class="col">
+        <div class="tag"><span>Current</span><b>#137586</b></div>
+        <div class="swatchbar" style="background:#137586"></div>
+        <p class="kicker" style="color:#137586">Launch &#183; 01</p>
+        <p class="ruled" style="border-bottom:1px solid #137586">A site built for one day</p>
+        <p class="spec">The drop has a date. Everything on the page points at it, and the <a href="#" style="color:#137586">build ships before it</a>, not after.</p>
+        <span class="btn" style="background:#137586">Start a project</span>
+        <div class="readout">
+          <span class="r">4.70:1</span> on ground &#183; AA<br>
+          <span class="r">5.36:1</span> on surface &#183; AA<br>
+          <span class="thin">Margin over AA: 0.20</span>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="tag"><span>Proposed</span><b>#185F6B</b></div>
+        <div class="swatchbar" style="background:#185F6B"></div>
+        <p class="kicker" style="color:#185F6B">Launch &#183; 01</p>
+        <p class="ruled" style="border-bottom:1px solid #185F6B">A site built for one day</p>
+        <p class="spec">The drop has a date. Everything on the page points at it, and the <a href="#" style="color:#185F6B">build ships before it</a>, not after.</p>
+        <span class="btn" style="background:#185F6B">Start a project</span>
+        <div class="readout">
+          <span class="r">6.37:1</span> on ground &#183; AA<br>
+          <span class="r">7.27:1</span> on surface &#183; AAA at 18px+<br>
+          <span class="pass">Margin over AA: 1.87</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <span class="num">02 &#8212; Why the fill stays cyan</span>
+    <h2>Warm panels disappear into the ground</h2>
+    <p class="intro">Every panel below sits directly on the page ground with no border, so the edge either reads or it does not. All of them take ink at 12:1 or better. What separates them is how far they sit from the ground itself.</p>
+
+    <div class="fills">
+      <div class="fill">
+        <div class="chip" style="background:#90e0ef"><p class="m">Panel</p><p>Ink on fill holds at 12.16:1.</p></div>
+        <h3>#90e0ef<span class="keep">Keep</span></h3>
+        <p class="d">vs ground <s>1.31:1</s><br>highest separation</p>
+      </div>
+      <div class="fill">
+        <div class="chip" style="background:#F2DACE"><p class="m">Panel</p><p>Ink on fill holds at 13.54:1.</p></div>
+        <h3>Pale clay</h3>
+        <p class="d">vs ground <s>1.17:1</s><br>edge softens</p>
+      </div>
+      <div class="fill">
+        <div class="chip" style="background:#DCE4D2"><p class="m">Panel</p><p>Ink on fill holds at 13.87:1.</p></div>
+        <h3>Pale sage</h3>
+        <p class="d">vs ground <s>1.15:1</s><br>edge softens</p>
+      </div>
+      <div class="fill">
+        <div class="chip" style="background:#EFE2CC"><p class="m">Panel</p><p>Ink on fill holds at 14.17:1.</p></div>
+        <h3>Pale sand</h3>
+        <p class="d">vs ground <s>1.12:1</s><br>nearly gone</p>
+      </div>
+      <div class="fill">
+        <div class="chip" style="background:#F5E3B3"><p class="m">Panel</p><p>Ink on fill holds at 14.25:1.</p></div>
+        <h3>Pale amber</h3>
+        <p class="d">vs ground <s>1.11:1</s><br>nearly gone</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <span class="num">03 &#8212; Type and accent together</span>
+    <h2>What the pair actually reads like</h2>
+    <p class="intro">Epilogue carries the warmth. The accent carries the function: links, rules, marks, panels, actions. Both jobs are covered once, neither twice.</p>
+
+    <div class="hero">
+      <p class="eyebrow">Web design &#183; remote &#183; solo</p>
+      <h3>I design and build the <mark>parts of a brand</mark> where how it looks is the job.</h3>
+      <p>Main sites, launch sites tied to a date, and product story pages. Not checkout, not accounts, not dashboards. <a href="#">See the three pieces</a>.</p>
+      <div class="actions">
+        <span class="btn-solid">Start a project</span>
+        <span class="btn-ghost">See the work</span>
+      </div>
+      <div class="panel">
+        <p class="m">Note on the rule</p>
+        <p>Any cyan panel carries a 1px #185F6B rule. Without it the fill floats, because 1.31:1 separates the panel from the ground but does not draw an edge.</p>
+      </div>
+      <p class="glyphs">Handgloves &nbsp; agRQ&amp;y1370 &nbsp; <span class="mn">agRQ&amp;y1370</span></p>
+    </div>
+
+    <p class="note"><b>One change only.</b> &#8202;--a-light moves from #137586 to #185F6B. The cyan fill, the dark-mode step, the five neutrals and the ink-on-cyan rule are all unchanged.</p>
+  </section>
+
+</div>
+</body>
+</html>

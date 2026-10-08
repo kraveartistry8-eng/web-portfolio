@@ -1,0 +1,17 @@
+# Dependencies and build output
+node_modules/
+site/dist/
+site/.astro/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor and OS
+.DS_Store
+.vscode/
+
+# Secrets
+.env
+.env.*
+!.env.example

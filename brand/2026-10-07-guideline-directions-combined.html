@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afterglow guideline, the descent with measured specimens, three iterations</title>
+<style>
+  /* Every number on this page was computed, not asserted. Source: tools/fall.py working script.
+     The fall, sRGB interpolated the way an unprefixed CSS gradient interpolates:
+       gold   #DDB049  t 0.000  L 0.779   rose   #A31B41  t 0.667  L 0.469
+       two    #CA6719  t 0.333  L 0.620   violet #3D1A61  t 1.000  L 0.310
+     L falls monotonically at every one of 101 sampled positions. Checked, not assumed.
+     Crossover, where #EEECEA first clears 4.5:1 on the ground: t 0.4803, ground #B9452B, 4.51:1.
+     Shared slice shown in all three spreads: t 0.360 to 0.720.
+       t 0.360  #C7611C  L 0.606  text 3.46     t 0.667  #A31B41  L 0.469  text 6.39
+       t 0.480  #B9452B  L 0.546  text 4.51     t 0.720  #931B46  L 0.441  text 7.17
+     Within this slice the fall is piecewise linear with one knot, at rose, so the three stop
+     gradient below is exact rather than an approximation of the curve. */
+  :root{
+    --void:#080808; --deep:#141414; --surface:#2B2B2B;
+    --text:#EEECEA; --muted:#C0C0C0; --rule:rgba(192,192,192,.22);
+    --s1:#DDB049; --s2:#CA6719; --s3:#A31B41; --s4:#3D1A61;
+    --fall:linear-gradient(180deg,#C7611C 0%,#A31B41 85.2%,#931B46 100%);
+    --gut:clamp(18px,4vw,56px);
+    --ease:cubic-bezier(.2,0,.2,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--void);color:var(--text);
+    font:400 16px/1.65 "Helvetica Neue",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 var(--gut)}
+  h1,h2,h3{font-weight:700;letter-spacing:-.025em;margin:0}
+  p{margin:0}
+  .sm{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .tab{font-variant-numeric:tabular-nums}
+
+  header.top{padding:112px 0 56px;border-bottom:1px solid var(--rule)}
+  h1{font-size:clamp(30px,5.2vw,60px);line-height:1.05;max-width:19ch;margin:18px 0 0}
+  .lede{color:var(--muted);max-width:62ch;margin:26px 0 0}
+  .lede + .lede{margin-top:16px}
+
+  /* The measured problem all three answer. Stated once, up front, so the spreads argue rather than decorate. */
+  .finding{margin:34px 0 0;padding:22px 24px;background:var(--deep);border-left:2px solid var(--s1)}
+  .finding p{font-size:14px;color:var(--muted);max-width:66ch}
+  .finding p:first-child{color:var(--text);margin-bottom:10px}
+  .finding b{color:var(--text);font-weight:400}
+
+  .dir{padding:72px 0;border-bottom:1px solid var(--rule)}
+  .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,27ch);gap:var(--gut);align-items:start}
+  .aside h3{font-size:17px;margin:0 0 10px}
+  .aside p{font-size:14px;color:var(--muted);margin:0 0 14px}
+  .aside p:last-child{margin:0}
+  .aside strong{color:var(--text);font-weight:400}
+  .dirname{margin:0 0 26px}
+  .dirname h2{font-size:clamp(22px,3vw,34px);margin:8px 0 0}
+
+  /* ---------- shared chrome ----------
+     One page shape across all three. Pages of the same document cannot be three rectangles.
+     No folio bar and no page number: the rail is the folio, per the direction spec. */
+  .spread{border:1px solid var(--rule);background:var(--void);overflow:hidden;
+    display:flex;flex-direction:column;height:660px;position:relative}
+  .slug{display:flex;gap:14px;align-items:baseline;padding:11px 20px;background:var(--void);
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    border-bottom:1px solid var(--rule);flex:0 0 auto}
+  .slug b{color:var(--text);font-weight:400}
+  .page{flex:1;min-height:0;display:flex}
+  .field{flex:1;min-width:0;background:var(--fall);position:relative}
+  /* Every region is placed at its own t. A printed ratio has to describe the ground that is
+     actually under it, and flow layout does not know where t 0.4803 is. */
+  .upper{position:absolute;left:0;right:0;top:0;height:33.4%;padding:26px 24px 0;
+    display:flex;align-items:flex-start;overflow:hidden}
+  .cross{position:absolute;left:24px;right:24px;top:33.4%;transform:translateY(-50%)}
+  .lower{position:absolute;left:0;right:0;top:37.5%;bottom:0;padding:0 24px 22px;
+    display:flex;flex-direction:column;justify-content:space-between;gap:15px;overflow:hidden}
+
+  /* The rail. A void strip, so its labels measure 17.00:1 and 11.01:1 rather than riding the fall. */
+  .rail{flex:0 0 62px;background:var(--void);position:relative}
+  .rail b{position:absolute;right:11px;font-size:10px;letter-spacing:.08em;color:var(--text);
+    font-weight:400;font-variant-numeric:tabular-nums;text-align:right;transform:translateY(-50%)}
+  .rail b.first{top:6px;transform:none}
+  .rail b.last{top:auto;bottom:6px;transform:none}
+  .rail b i{font-style:normal;display:block;font-size:8px;letter-spacing:.14em;color:var(--muted);margin-top:1px}
+  .rail .tick{position:absolute;right:0;width:9px;height:1px;background:var(--s1)}
+  .rail .now{position:absolute;right:0;width:2px;background:var(--s1)}
+
+  /* Type inside the fall. Display only above the crossover, body only below it. */
+  .disp{font-size:clamp(19px,3.1vw,31px);line-height:1.12;font-weight:700;letter-spacing:-.022em;
+    color:var(--text);max-width:24ch}
+  .bodyc{color:var(--text);font-size:14.5px;line-height:1.7;max-width:52ch}
+  .bodyc + .bodyc{margin-top:12px}
+  .cross{display:flex;align-items:center;gap:13px}
+  .cross span{flex:1;height:1px;background:rgba(238,236,234,.45)}
+  .cross em{font-style:normal;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text)}
+
+  /* ---------- 1. The Inset ---------- */
+  /* Centred on t 0.5850, where the ground is #AD2E37, so the 1.15:1 printed on the panel
+     describes a position rather than a vibe. The offset is taken inside .lower, which starts at
+     37.5% of the field, so 62.5% of the field is (62.5 - 37.5) / 62.5 = 40% of .lower. Both are
+     percentages of the same height, so the algebra holds at any page size. */
+  .i1 .inset{position:absolute;left:24px;right:24px;top:40%;transform:translateY(-50%)}
+  .inset{border:1px solid rgba(238,236,234,.55);background:var(--s3);padding:16px 18px;
+    display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .inset .nm{font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(--text);flex:0 0 auto}
+  .inset dl{margin:0;display:grid;grid-template-columns:auto auto;gap:2px 12px;font-size:10.5px;
+    line-height:1.45;color:var(--text)}
+  .inset dt{letter-spacing:.1em;text-transform:uppercase;opacity:.74}
+  .inset dd{margin:0;font-variant-numeric:tabular-nums}
+  .whyrule{font-size:10.5px;line-height:1.5;color:var(--text);opacity:.92;max-width:46ch}
+
+  /* ---------- 2. The Margin ---------- */
+  .ledger{flex:0 0 clamp(170px,27%,232px);background:var(--void);position:relative;
+    border-left:1px solid var(--rule)}
+  .ledger .row{position:absolute;left:0;right:0;padding:0 14px;transform:translateY(-50%)}
+  .ledger .row::before{content:"";position:absolute;left:-1px;top:50%;width:14px;height:1px;background:var(--s1)}
+  .ledger .k{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--s1);margin-bottom:5px}
+  .ledger dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:1px 10px;font-size:10.5px;line-height:1.5}
+  .ledger dt{letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .ledger dd{margin:0;color:var(--text);font-variant-numeric:tabular-nums}
+  .ledger .note{font-size:10px;line-height:1.5;color:var(--muted);margin-top:6px;max-width:24ch}
+
+  /* ---------- 3. The Shelf ---------- */
+  .i3 .mid{position:absolute;left:0;right:0;top:37.5%;height:40%;padding:0 24px;overflow:hidden}
+  /* Centred on t 0.6667, which is rose's own position in the fall. The seam is 1.00:1 by
+     construction, not by assertion, and the audit samples this band's midline to prove it. */
+  .shelf{position:absolute;left:0;right:0;top:85.2%;transform:translateY(-50%);
+    padding:13px 24px 14px;border-top:1px solid rgba(238,236,234,.28);
+    border-bottom:1px solid rgba(238,236,234,.28);display:flex;gap:26px;align-items:baseline;flex-wrap:wrap}
+  .shelf .nm{font-size:16px;font-weight:700;letter-spacing:-.015em;color:var(--text)}
+  .shelf dl{margin:0;display:flex;gap:22px;flex-wrap:wrap;font-size:10.5px;line-height:1.5}
+  .shelf div{display:flex;flex-direction:column}
+  .shelf dt{letter-spacing:.1em;text-transform:uppercase;color:var(--text);opacity:.72}
+  .shelf dd{margin:0;color:var(--text);font-variant-numeric:tabular-nums}
+  .i3 .seam{margin-top:14px;font-size:10.5px;line-height:1.5;color:var(--text);opacity:.92;max-width:58ch}
+
+  @media (max-width:860px){
+    .split{grid-template-columns:1fr}
+    .aside{border-top:1px solid var(--rule);padding-top:22px}
+    .spread{height:auto}
+    .page{flex-direction:column}
+    /* The rail keeps its job and loses its labels: a bar that fills as the reader descends. */
+    .rail{flex:0 0 3px;order:-1}
+    .rail b{display:none}
+    .rail .tick{display:none}
+    .rail .now{top:0;bottom:0;right:auto;left:0;width:33.4%;height:3px}
+    .field{display:flex;flex-direction:column}
+    .upper,.cross,.lower,.i1 .inset,.i3 .mid,.shelf{position:static;transform:none;
+      height:auto;top:auto;bottom:auto;left:auto;right:auto;overflow:visible}
+    .upper{padding:24px 20px 0;min-height:0}
+    .cross{margin:22px 20px}
+    .lower{padding:0 20px 22px}
+    .i3 .mid{padding:0 20px 18px}
+    .i3 .seam{padding:14px 20px 22px;max-width:none}
+    .shelf{padding:14px 20px 16px}
+    /* Label above value, so a ratio never shares a line with the thing it measures. */
+    .inset dl,.ledger dl{grid-template-columns:1fr;gap:0}
+    .inset dt,.ledger dt{margin-top:9px}
+    .inset dl dt:first-child,.ledger dl dt:first-child{margin-top:0}
+    /* Specimens go full bleed and stay in document order. They never become a grid. */
+    .inset{flex-direction:column;gap:14px}
+    .ledger{flex:1 1 auto;border-left:0;border-top:1px solid var(--rule);padding:18px 0 4px}
+    .ledger .row{position:static;transform:none;padding:0 20px 18px}
+    .ledger .row::before{display:none}
+    .shelf{flex-direction:column;gap:12px}
+    .shelf dl{gap:14px 22px}
+  }
+  a{color:var(--s1);text-decoration:none;border-bottom:1px solid rgba(221,176,73,.35);
+    transition:color .45s var(--ease),border-color .45s var(--ease)}
+  a:hover{color:#A8832F;border-color:rgba(168,131,47,.3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="sm">Afterglow &middot; guideline document &middot; the descent with measured specimens</p>
+    <h1>Three ways the specimen meets the fall</h1>
+    <p class="lede">The direction is settled: one continuous fall from gold to deep violet, with every rule
+      proved on a field of the colour being specified. What is not settled is how a specimen sits on a ground
+      that is already moving. These are three answers.</p>
+    <p class="lede">All three spreads show the same slice of the same document, t 0.360 to 0.720, so the
+      comparison is about structure and nothing else. Same ground values, same crossover, same copy. Type is
+      the placeholder stack; faces are a later decision and are not pre-empted here.</p>
+    <div class="finding">
+      <p>The measured problem all three are answering</p>
+      <p>The fall passes <b>through</b> rose. A rose specimen panel laid on the ground at t 0.5850, where the
+        ground is #AD2E37, measures <b class="tab">1.15:1</b> against it and all but disappears. Deep violet,
+        which the fall has not reached yet, measures <b class="tab">2.12:1</b> in the same spot, and gold
+        <b class="tab">3.22:1</b>. The spec's line that
+        specimens &ldquo;sit on whatever ground the fall has reached&rdquo; has a failure mode, and it is worst
+        for the stage most likely to need demonstrating.</p>
+      <p>One thing all three share, and that no direction can settle. At 390px the regions are placed by
+        flow rather than at a stated position, so a printed number tied to a position stops being true.
+        It shows up in iteration 1: the panel is centred at t 0.5850 on a wide screen and wherever the
+        copy leaves room on a narrow one. Making a ratio a function of document position rather than a
+        constant is work the build has to do.</p>
+    </div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section class="dir i1">
+    <div class="dirname"><p class="sm">Iteration 1</p><h2>The Inset</h2></div>
+    <div class="split">
+      <div class="spread">
+        <div class="slug"><b>Foundations / Colour</b><span>Afterglow Brand Guidelines</span></div>
+        <div class="page">
+          <div class="field">
+            <div class="upper">
+              <p class="disp">The light only ever deepens. This page is already darker than the last.</p>
+            </div>
+            <div class="cross"><em>Body copy may begin</em><span></span><em class="tab">4.51:1</em></div>
+            <div class="lower">
+              <p class="bodyc">Above that line the ground carries display sizes only, at 3.46:1, which clears
+                the 3:1 floor for large text and nothing else. Below it, running text holds for the rest of
+                the document.</p>
+              <div class="inset">
+                <p class="nm">Rose</p>
+                <dl>
+                  <dt>Hex</dt><dd>#A31B41</dd>
+                  <dt>OKLCH</dt><dd>0.469 &nbsp;0.170 &nbsp;11.8</dd>
+                  <dt>On void</dt><dd>2.66:1</dd>
+                  <dt>Text on it</dt><dd>6.39:1</dd>
+                  <dt>On this ground</dt><dd>1.15:1</dd>
+                  <dt>Role</dt><dd>Ground, never a letterform</dd>
+                </dl>
+              </div>
+              <p class="whyrule">The hairline around that panel is not styling. The panel is centred at
+                t 0.5850, where the ground is #AD2E37, and at 1.15:1 against it the panel has no edge of its
+                own. The border is the printed consequence of a measured failure, not a decision about
+                taste.</p>
+            </div>
+          </div>
+          <div class="rail">
+            <b class="first">0.606<i>L</i></b>
+            <b style="top:33.4%">0.546<i>L</i></b>
+            <b style="top:85.2%">0.469<i>L</i></b>
+            <b class="last">0.441<i>L</i></b>
+            <span class="tick" style="top:33.4%"></span>
+            <span class="tick" style="top:85.2%"></span>
+            <span class="now" style="top:0;height:33.4%"></span>
+          </div>
+        </div>
+      </div>
+      <div class="aside">
+        <h3>The specimen is an object on the page</h3>
+        <p>A bordered rectangle of the colour being specified, inset into the measure, carrying its own data.
+          Closest to how Frame.io and every foundry specimen handle a swatch.</p>
+        <p>It is the only one of the three that can show a stage the fall has not reached, so deep violet and
+          gold are as easy to place as rose.</p>
+        <p>It also discloses its own weakness in print: the 1.15:1 is on the panel, and the hairline exists
+          because of it.</p>
+        <p><strong>Cost.</strong> A border on every specimen is a lot of hairlines, and a rule the document
+          needs in order to work is a rule the brand did not ask for.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section class="dir i2">
+    <div class="dirname"><p class="sm">Iteration 2</p><h2>The Margin</h2></div>
+    <div class="split">
+      <div class="spread">
+        <div class="slug"><b>Foundations / Colour</b><span>Afterglow Brand Guidelines</span></div>
+        <div class="page">
+          <div class="field">
+            <div class="upper">
+              <p class="disp">The light only ever deepens. This page is already darker than the last.</p>
+            </div>
+            <div class="cross"><em>Body copy may begin</em><span></span><em class="tab">4.51:1</em></div>
+            <div class="lower">
+              <p class="bodyc">There is no swatch on this spread. The ground is the swatch. Rose is not shown
+                beside the fall, it is the fall, at the one position where the descent passes through it, and
+                the reading in the margin is taken from the page itself.</p>
+              <p class="bodyc">Nothing here has an edge, because nothing here is an object.</p>
+            </div>
+          </div>
+          <div class="ledger">
+            <div class="row" style="top:33.4%">
+              <p class="k">Crossover</p>
+              <dl>
+                <dt>Ground</dt><dd>#B9452B</dd>
+                <dt>OKLCH L</dt><dd>0.546</dd>
+                <dt>Text on it</dt><dd>4.51:1</dd>
+              </dl>
+              <p class="note">First position in the document that carries body copy.</p>
+            </div>
+            <div class="row" style="top:85.2%">
+              <p class="k">Stage three &middot; rose</p>
+              <dl>
+                <dt>Hex</dt><dd>#A31B41</dd>
+                <dt>OKLCH</dt><dd>0.469 0.170 11.8</dd>
+                <dt>On void</dt><dd>2.66:1</dd>
+                <dt>Text on it</dt><dd>6.39:1</dd>
+              </dl>
+              <p class="note">Read off the ground at this line. Ground, never a letterform.</p>
+            </div>
+          </div>
+          <div class="rail">
+            <b class="first">0.606<i>L</i></b>
+            <b style="top:33.4%">0.546<i>L</i></b>
+            <b style="top:85.2%">0.469<i>L</i></b>
+            <b class="last">0.441<i>L</i></b>
+            <span class="tick" style="top:33.4%"></span>
+            <span class="tick" style="top:85.2%"></span>
+            <span class="now" style="top:0;height:33.4%"></span>
+          </div>
+        </div>
+      </div>
+      <div class="aside">
+        <h3>The page is the sample, the margin is the caption</h3>
+        <p>No panels at all. Data sits in a void ledger at exactly the height where the fall equals the value
+          it describes, with a leader rule connecting the two.</p>
+        <p>The 1.15:1 problem cannot occur, because nothing is laid on the ground. Labels run at 11.01:1 on
+          void instead of fighting a moving field.</p>
+        <p>It is also the only one where the measurement is visibly <em>taken from</em> the document rather
+          than printed next to it.</p>
+        <p><strong>Cost.</strong> It can only specify colours the fall actually passes through at that point.
+          Gold and deep violet need a different spread, and the measure loses about a quarter of its width.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section class="dir i3">
+    <div class="dirname"><p class="sm">Iteration 3</p><h2>The Shelf</h2></div>
+    <div class="split">
+      <div class="spread">
+        <div class="slug"><b>Foundations / Colour</b><span>Afterglow Brand Guidelines</span></div>
+        <div class="page">
+          <div class="field">
+            <div class="upper">
+              <p class="disp">The light only ever deepens. This page is already darker than the last.</p>
+            </div>
+            <div class="cross"><em>Body copy may begin</em><span></span><em class="tab">4.51:1</em></div>
+            <div class="mid">
+              <p class="bodyc">The specimen below is not placed on the ground. It is placed at the position
+                where the ground already equals the value being specified, so there is no join to hide and
+                none was drawn.</p>
+              <p class="seam">The two hairlines below bound a band of type, not a band of colour. Cover the
+                words and the shelf is gone, because its ground and the colour it specifies are the same
+                measurement taken twice.</p>
+            </div>
+            <div class="shelf">
+              <p class="nm">Stage three &middot; rose</p>
+              <dl>
+                <div><dt>Hex</dt><dd>#A31B41</dd></div>
+                <div><dt>OKLCH</dt><dd>0.469 0.170 11.8</dd></div>
+                <div><dt>On void</dt><dd>2.66:1</dd></div>
+                <div><dt>Text on it</dt><dd>6.39:1</dd></div>
+                <div><dt>Seam</dt><dd>1.00:1</dd></div>
+              </dl>
+            </div>
+          </div>
+          <div class="rail">
+            <b class="first">0.606<i>L</i></b>
+            <b style="top:33.4%">0.546<i>L</i></b>
+            <b style="top:85.2%">0.469<i>L</i></b>
+            <b class="last">0.441<i>L</i></b>
+            <span class="tick" style="top:33.4%"></span>
+            <span class="tick" style="top:85.2%"></span>
+            <span class="now" style="top:0;height:33.4%"></span>
+          </div>
+        </div>
+      </div>
+      <div class="aside">
+        <h3>The specimen is a position, not a panel</h3>
+        <p>Full bleed, flush with the fall, placed where the descent passes through the stage. The 1.15:1
+          becomes 1.00:1 by construction and the invisibility stops being a defect.</p>
+        <p>The strongest version of the direction's own argument: the document does not illustrate the rule,
+          it is a reading of it. Nothing is quoted.</p>
+        <p>Also the quietest. Two hairlines and a row of figures is the entire apparatus.</p>
+        <p><strong>Cost.</strong> The most constrained. Each stage can appear at exactly one place in the
+          document, which means the fall's shape dictates the running order of the content, not the other way
+          round.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="slug" style="border:0;padding:26px 0 70px">
+    <b>Afterglow / guideline / combined direction</b>
+    <span>Feature design step 3, third pass &middot; October 2026</span>
+    <span>Provisional ramp &middot; all ratios computed</span>
+  </div>
+</div>
+</body>
+</html>

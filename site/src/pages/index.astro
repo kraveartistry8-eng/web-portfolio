@@ -1,0 +1,48 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import Services from "../components/Services.astro";
+import Section from "../components/Section.astro";
+---
+<Base
+  title="Aaron Streets"
+  description="Main sites, launch sites and product pages for brands that get judged on sight."
+>
+  <Nav />
+  <main>
+    <Hero />
+    <Services />
+
+    {/* Sections below are structural placeholders. Each needs Phase 2
+        feature-design before it gets built. Anchors are live so the
+        nav works and the IA is testable. */}
+
+    <Section id="work" index="The work" title="Three pieces">
+      <p class="muted">
+        Blocked until demo one ships. Lead piece takes columns 1 to 7, the other
+        two stack in 8 to 12 &mdash; the only asymmetric row on the page.
+      </p>
+    </Section>
+
+    <Section id="made" index="The argument" title="Made, not bought">
+      <p class="muted">Why a template cannot be distinctive: thousands of people using it is its selling point.</p>
+    </Section>
+
+    <Section id="process" index="How it works" title="What you are signing up for">
+      <p class="muted">Numbered steps with real durations. Step numbers sit in the left margin, columns 1 to 2.</p>
+    </Section>
+
+    <Section id="not-built" index="Scope" title="What I don't build">
+      <p class="muted">Checkout, accounts, dashboards, internal tools, apps. Narrowest block on the page at six columns.</p>
+    </Section>
+
+    <Section id="pricing" index="Pricing" title="From figures, not quotes">
+      <p class="muted">Same geometry as the services row, so price maps onto service without a label explaining it.</p>
+    </Section>
+
+    <Section id="start" index="Next" title="Start a project">
+      <p class="muted">What you are building, when it has to be live, budget band. The date field does the qualifying.</p>
+    </Section>
+  </main>
+</Base>

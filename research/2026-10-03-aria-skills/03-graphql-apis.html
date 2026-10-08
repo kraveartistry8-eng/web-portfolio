@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GraphQL APIs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">ARIA &middot; skill 3 of 9 &middot; Core &middot; 3 Oct 2026</p>
+</div></div>
+<div class="page">
+  <header class="hero">
+    <p class="label">Admin API and Storefront API</p>
+    <h1>Two different APIs doing two different jobs.</h1>
+    <p class="lead">The table treats them as one row. They are not interchangeable, and your plan touches one of them and deliberately skips the other.</p>
+    <div class="band">
+      <div><span class="k">Claim in the table</span><span class="v">Holds, imprecise</span><span class="n">Admin is not only for headless. It is what every app uses.</span></div>
+      <div><span class="k">Time to competence</span><span class="v">1 to 2 weekends</span><span class="n">GraphQL itself is a weekend. The schemas are the long tail.</span></div>
+      <div><span class="k">In the 27-week plan</span><span class="v">Partial</span><span class="n">Week 15 uses Admin. Storefront never appears.</span></div>
+    </div>
+  </header>
+</div>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">01</span><h2>What it actually is</h2></div>
+  <p>The <strong>Admin API</strong> reads and writes a store's own data: products, orders,
+  customers, metafields, discounts. It is what an embedded app talks to, and it is the API behind the
+  loaders in your week 15 app. GraphQL is the only option for new work.</p>
+<p>The <strong>Storefront API</strong> is the public, customer-facing read API for the catalogue and
+  cart. It is what a headless front end queries, and it is what you would use if you built a store
+  outside Liquid. It is also the layer the new agent tooling sits beside.</p>
+<p>Both are versioned on a quarterly cadence, which means a build you ship is on a dated version and
+  will need periodic attention. That maintenance obligation is itself a reason a merchant needs
+  somebody on retainer, which is worth saying on a call.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">02</span><h2>Does the claim hold</h2></div>
+  <p>Substantially, but "required for headless builds and catalog queries" describes the
+  Storefront API and quietly mislabels the Admin API. The Admin API is required for every app you
+  will ever build, headless or not, and it is the one your plan actually teaches.</p>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">03</span><h2>The devil's advocate</h2></div>
+  <ol class="devil"><li><div><h4>The quarterly version cadence is a liability you can sell</h4>
+  <p>Anything you build against these APIs ages on a schedule. Framed badly that is a defect in your
+  work. Framed correctly it is the clearest possible answer to "what am I paying you for every
+  month", and it is checkable rather than persuasive.</p></div></li>
+<li><div><h4>Skipping the Storefront API is a real limit, not a neutral trade</h4>
+  <p>It is the right call for six months, because headless is deferred. But it means you cannot
+  prototype anything outside Liquid, and the agent catalogue work sits adjacent to it. If an agency
+  conversation goes technical, this is the most likely place to find the edge of what you have
+  built.</p></div></li></ol>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">04</span><h2>What it is worth to you</h2></div>
+  <table>
+  <tr><th>Dimension</th><th>Read</th></tr>
+  <tr><td>Tier 2 relevance</td><td>Moderate. Metafields and bulk work need it, most theme builds do not</td></tr>
+  <tr><td>Tier 3 relevance</td><td>Entry requirement. An agency assumes it without asking</td></tr>
+  <tr><td>Billable on its own</td><td>Indirectly, through apps and integrations</td></tr>
+  <tr><td>Confidence</td><td>9 of 10</td></tr>
+</table>
+<div class="flag ok"><h4>Where it sits in your plan</h4>
+<p>Week 15, Saturday: write the GraphQL loaders and the Polaris rendering. Two weekends is the whole
+  budget, and the plan is explicit that this exists to be credible on an agency call rather than to
+  make you an app developer. That is the correct scope.</p></div>
+</div></section>
+<section class="sec"><div class="page">
+  <div class="sec__h"><span class="num">05</span><h2>Sources and gaps</h2></div>
+  <ol class="src"><li><a href="https://shopify.dev/docs/api/admin-graphql">GraphQL Admin API, shopify.dev</a></li>
+<li><a href="https://shopify.dev/docs/api/storefront">Storefront API, shopify.dev</a></li></ol>
+  
+  <div class="nav"><a href="01-liquid-front-end.html">Liquid and the front end</a> <a href="02-theme-architecture.html">Theme architecture</a> <span class="muted">GraphQL APIs</span> <a href="04-shopify-functions.html">Shopify Functions</a> <a href="05-hydrogen-headless.html">Hydrogen and headless</a> <a href="06-core-web-vitals.html">Core Web Vitals</a> <a href="07-storefront-mcp.html">Storefront MCP</a> <a href="08-structured-data.html">Structured data</a> <a href="09-custom-pixels.html">Custom Pixels</a></div>
+</div></section>
+</body>
+</html>

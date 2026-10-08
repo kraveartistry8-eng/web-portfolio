@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Site Architecture Spec</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap">
+<style>
+:root{--ground:#F0F0EE;--surface:#FFF;--ink:#161614;--ink2:#6B6B66;--line:#D8D8D4;
+--a:#185F6B;--cy:#90e0ef;--warn:#8A6A2A;--stop:#9C3B2B;
+--sans:'Epilogue',system-ui,sans-serif;--mono:'Fragment Mono',ui-monospace,monospace}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+.page{max-width:1080px;margin:0 auto;padding:60px 28px 120px}
+.mast{border-bottom:2px solid var(--ink);padding-bottom:18px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--a);margin:0 0 14px}
+h1{font-weight:700;font-size:clamp(32px,5.4vw,62px);line-height:.98;letter-spacing:-.04em;margin:0;max-width:17ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px 26px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+text-transform:uppercase;color:var(--ink2);padding-top:14px;margin-bottom:66px}
+section{margin-bottom:76px}
+.sh{display:flex;align-items:baseline;gap:15px;border-bottom:1px solid var(--ink);padding-bottom:10px;margin-bottom:26px}
+.sh .n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink2);flex:none}
+.sh h2{font-weight:700;font-size:clamp(21px,2.7vw,30px);letter-spacing:-.025em;margin:0;line-height:1.1}
+.lede{font-size:16.5px;line-height:1.6;color:var(--ink2);max-width:68ch;margin:0 0 28px}
+.wrap{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14.5px;line-height:1.5}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink2);font-weight:400;border-bottom:1px solid var(--ink)}
+tr:last-child td{border-bottom:none}
+td.m{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.pri{font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+.c1{color:var(--stop)}.c2{color:var(--warn)}.c3{color:var(--ink2)}
+.flow{background:var(--surface);border:1px solid var(--line);padding:26px 28px;margin-bottom:2px}
+.flow h4{font-weight:700;font-size:17px;margin:0 0 12px;letter-spacing:-.015em}
+.flow .p{font-family:var(--mono);font-size:12.5px;line-height:2;color:var(--ink)}
+.flow .p b{font-weight:400;background:var(--cy);padding:2px 7px}
+.flow .p span{color:var(--ink2)}
+.tree{background:var(--surface);border:1px solid var(--line);padding:26px 30px;font-family:var(--mono);
+font-size:13px;line-height:2.05}
+.tree .l2{padding-left:26px}.tree .l3{padding-left:52px;color:var(--ink2)}
+.tree em{font-style:normal;color:var(--a)}
+.tree s{text-decoration:none;color:var(--stop)}
+.blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2px;background:var(--line);border:1px solid var(--line)}
+.b{background:var(--surface);padding:24px 24px 26px}
+.b .n{font-family:var(--mono);font-size:11px;color:var(--a);display:block;margin-bottom:12px}
+.b h3{font-weight:700;font-size:18px;margin:0 0 8px;letter-spacing:-.018em;line-height:1.25}
+.b p{margin:0 0 9px;font-size:14.5px;line-height:1.55;color:var(--ink2)}
+.b .q{font-family:var(--mono);font-size:11.5px;color:var(--ink);border-top:1px solid var(--line);padding-top:10px;margin:12px 0 0;line-height:1.6}
+.note{border-left:2px solid var(--a);padding:3px 0 3px 20px;font-size:16px;line-height:1.6;color:var(--ink2);max-width:72ch;margin:26px 0 0}
+.note b{color:var(--ink)}
+.stopbox{border-left:2px solid var(--stop);background:var(--surface);padding:24px 26px;margin-top:26px}
+.stopbox h4{font-weight:700;font-size:18px;margin:0 0 9px;letter-spacing:-.015em}
+.stopbox p{margin:0 0 9px;font-size:15.5px;line-height:1.6;color:var(--ink2);max-width:72ch}
+.stopbox p:last-child{margin:0}
+@media(max-width:620px){.sh{flex-direction:column;gap:4px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="mast">
+  <p class="eyebrow">Phase 0 &#183; information architecture</p>
+  <h1>Sales page, section by section</h1>
+</div>
+<div class="meta">
+  <span>2026 / 09 / 24</span><span>Single page, Astro</span>
+  <span>Goal: qualified inbound enquiry</span>
+</div>
+
+<!-- 1 -->
+<section>
+  <div class="sh"><span class="n">01</span><h2>Content inventory</h2></div>
+  <p class="lede">Ordered by the questions a cold visitor asks, in the order they ask them. Priority is what happens if it's missing at launch, not how much work it is.</p>
+  <div class="wrap"><table>
+    <thead><tr><th>Section</th><th>The question it answers</th><th>Priority</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>Hero</td><td>What is this and is it for me?</td><td class="pri c1">Critical</td><td class="m">Written</td></tr>
+      <tr><td>The three services</td><td>What do you actually make?</td><td class="pri c1">Critical</td><td class="m">Written</td></tr>
+      <tr><td>The work</td><td>Is it any good?</td><td class="pri c1">Critical</td><td class="m c1">Blocked</td></tr>
+      <tr><td>Made, not bought</td><td>Why not a template or an agency?</td><td class="pri c1">Critical</td><td class="m">To write</td></tr>
+      <tr><td>How it works</td><td>What am I signing up for?</td><td class="pri c2">High</td><td class="m">To write</td></tr>
+      <tr><td>What I don't build</td><td>Am I about to waste a call?</td><td class="pri c2">High</td><td class="m">To write</td></tr>
+      <tr><td>Pricing</td><td>Can I afford this?</td><td class="pri c2">High</td><td class="m">To write</td></tr>
+      <tr><td>Start a project</td><td>What happens next?</td><td class="pri c1">Critical</td><td class="m">To write</td></tr>
+      <tr><td>FAQ</td><td>The objection I won't raise on a call</td><td class="pri c3">Medium</td><td class="m">Later</td></tr>
+      <tr><td>Footer</td><td>Orientation, contact, legal</td><td class="pri c3">Medium</td><td class="m">Later</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><b>Deliberately absent:</b> an About section and a testimonials block. You have no testimonials yet, and an empty or thin version of either costs more credibility than leaving it out. The person is visible in the process section instead, where it answers a real question.</p>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="sh"><span class="n">02</span><h2>Sitemap</h2></div>
+  <p class="lede">One page with anchors, plus three demo sites that live on their own domains. Case study pages get added later without restructuring anything.</p>
+  <div class="tree">
+    <div>/ &nbsp; <em>&#8212; the sales page</em></div>
+    <div class="l2">#work &nbsp; <span style="color:#9C3B2B">&#8212; slot, empty until demo 1 ships</span></div>
+    <div class="l2">#services</div>
+    <div class="l2">#process</div>
+    <div class="l2">#pricing</div>
+    <div class="l2">#start &nbsp; <em>&#8212; conversion</em></div>
+    <div style="margin-top:14px">/work/[slug] &nbsp; <span style="color:#6B6B66">&#8212; case study pages, phase 2, not at launch</span></div>
+    <div style="margin-top:14px">External &#8212; the three demos, each its own site</div>
+    <div class="l3">helmet launch site</div>
+    <div class="l3">fragrance main site</div>
+    <div class="l3">culture story page</div>
+  </div>
+  <p class="note"><b>Growth:</b> a fourth service becomes a fourth block. A case study becomes <code>/work/[slug]</code>. Neither forces a restructure, which is the test this has to pass.</p>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="sh"><span class="n">03</span><h2>Navigation</h2></div>
+  <div class="wrap"><table>
+    <thead><tr><th>Label</th><th>Target</th><th>Why this word</th></tr></thead>
+    <tbody>
+      <tr><td class="m">Work</td><td class="m">#work</td><td>Shorter and less formal than "Portfolio," which reads like a student.</td></tr>
+      <tr><td class="m">Services</td><td class="m">#services</td><td>Plain. "Solutions" and "Offerings" are internal vocabulary nobody searches.</td></tr>
+      <tr><td class="m">Process</td><td class="m">#process</td><td>Answers the real anxiety: what is this going to be like.</td></tr>
+      <tr><td class="m">Pricing</td><td class="m">#pricing</td><td>Naming it filters hard and early. Hiding it wastes calls.</td></tr>
+      <tr><td class="m">Start a project</td><td class="m">#start</td><td>Button, not a nav link. The only verb on the bar, so it reads as the action.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Four nouns and one verb, and the verb is styled as a button so the grammar stays parallel. Under the seven-item limit with room for one more.</p>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="sh"><span class="n">04</span><h2>Section specs</h2></div>
+  <div class="blocks">
+    <div class="b"><span class="n">01</span><h3>Hero</h3>
+      <p>Problem named, category established, one action. Composed at rest, nothing animating in.</p>
+      <p class="q">Out: &#8220;See the work&#8221; until there is work.</p></div>
+    <div class="b"><span class="n">02</span><h3>The three services</h3>
+      <p>Three blocks, one sentence title each, two lines of body. This is the subhead expanded.</p>
+      <p class="q">Each links to its matching demo once live.</p></div>
+    <div class="b"><span class="n">03</span><h3>The work</h3>
+      <p>Three pieces. Large image, one line on what it had to do, link out to the live site.</p>
+      <p class="q">Blocked. Structure defined now, filled as pieces land.</p></div>
+    <div class="b"><span class="n">04</span><h3>Made, not bought</h3>
+      <p>The argument. Why a template can't be distinctive: thousands of people using it is its selling point.</p>
+      <p class="q">Perceived quality only. No conversion claims.</p></div>
+    <div class="b"><span class="n">05</span><h3>How it works</h3>
+      <p>Numbered steps with real durations. Where solo becomes a benefit: no handoff, no account manager.</p>
+      <p class="q">Real weeks. Invented timelines get caught.</p></div>
+    <div class="b"><span class="n">06</span><h3>What I don't build</h3>
+      <p>Checkout, accounts, dashboards, internal tools, apps. Stated plainly.</p>
+      <p class="q">Highest-leverage section on the page.</p></div>
+    <div class="b"><span class="n">07</span><h3>Pricing</h3>
+      <p>From-figures per service. Not a quote, a floor.</p>
+      <p class="q">Removes the cheap enquiry before the call.</p></div>
+    <div class="b"><span class="n">08</span><h3>Start a project</h3>
+      <p>Short form. What they're building, when it has to be live, budget band.</p>
+      <p class="q">Date field does the qualifying.</p></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section>
+  <div class="sh"><span class="n">05</span><h2>Flows</h2></div>
+  <div class="flow"><h4>Cold visitor, qualified</h4>
+    <p class="p">Hero <span>&#8594;</span> services <span>&#8594;</span> <b>work</b> <span>&#8594;</span> pricing <span>&#8594;</span> what I don't build <span>&#8594;</span> <b>start</b></p>
+    <p style="margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--ink2)">Proof before price. They need to want it before the number means anything.</p></div>
+  <div class="flow"><h4>Cold visitor, unqualified</h4>
+    <p class="p">Hero <span>&#8594;</span> services <span>&#8594;</span> <b>what I don't build</b> <span>&#8594;</span> leaves</p>
+    <p style="margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--ink2)">This is a success. A dashboard enquiry that bounces here costs nothing; on a call it costs an hour.</p></div>
+  <div class="flow"><h4>Referral, already sold</h4>
+    <p class="p">Lands <span>&#8594;</span> <b>start</b></p>
+    <p style="margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--ink2)">Needs the CTA persistent in the nav so it is never more than one click away.</p></div>
+</section>
+
+<!-- 6 -->
+<section>
+  <div class="sh"><span class="n">06</span><h2>The one real blocker</h2></div>
+  <div class="stopbox">
+    <h4>Don't launch this page before demo 1 exists</h4>
+    <p>The work section sits third, right where a visitor decides whether to keep reading, and it is the only section that proves the headline. A page that says your website is stock, next to no evidence that the author can do better, argues against itself.</p>
+    <p>Nothing stops the page being <em>built</em> now. The structure does not depend on the demos existing, only the launch does. Build the page and the helmet piece in parallel, fill the slot, then ship.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section>
+  <div class="sh"><span class="n">07</span><h2>Next</h2></div>
+  <div class="wrap"><table>
+    <thead><tr><th>Step</th><th>What it produces</th><th>Blocked by</th></tr></thead>
+    <tbody>
+      <tr><td>Brand tokens file</td><td>Palette, type, spacing in a form the build inherits</td><td class="m">Nothing</td></tr>
+      <tr><td>Design spec</td><td>Type scale, layout grid, section rhythm</td><td class="m">This document</td></tr>
+      <tr><td>Astro scaffold</td><td>Project runs locally</td><td class="m">Tokens file</td></tr>
+      <tr><td>Copy for sections 04&#8211;08</td><td>Final text at real lengths</td><td class="m">Nothing</td></tr>
+      <tr><td>Demo 1, helmet</td><td>Fills the work slot</td><td class="m">Its own Phase 0</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Weight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --demo-1:#C4511F; --demo-2:#E3D5BE; --demo-3:#A82A20;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.042em;line-height:.99}
+h2{font-size:20px}
+p{margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.intro{padding-block:56px 30px}
+.intro h1{max-width:16ch;margin-bottom:16px}
+.intro p{max-width:62ch;font-size:18px;line-height:1.45;letter-spacing:-.012em}
+
+.wrap{display:grid;grid-template-columns:1fr 372px;gap:40px;padding-bottom:90px;align-items:start}
+.rig{background:var(--surface);border:1px solid var(--line);height:520px;
+  display:grid;place-items:center;perspective:980px;position:relative;
+  touch-action:none;cursor:grab;overflow:hidden}
+.rig.dragging{cursor:grabbing}
+.cube{position:relative;transform-style:preserve-3d;will-change:transform}
+.face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;
+  display:grid;place-items:center;border:0;padding:0;font:inherit;color:inherit;
+  text-align:left;cursor:pointer;transition:box-shadow 140ms linear}
+.face:hover,.face:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.wrk:hover,.wrk:focus-visible{box-shadow:inset 0 0 0 2px rgba(255,255,255,.92)}
+.w2:hover,.w2:focus-visible{box-shadow:inset 0 0 0 2px rgba(22,22,20,.75)}
+.pad{width:70.7%;height:70.7%;display:flex;flex-direction:column;
+  justify-content:space-between;align-items:flex-start}
+.svc-f .pad{justify-content:center;align-items:center}
+.wrk .pad{justify-content:flex-end}
+.f__n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase}
+.f__t{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.14;margin-top:7px}
+.big{font-family:var(--mono);font-size:84px;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.wrk{color:#fff}
+.w1{background:var(--demo-1)} .w2{background:var(--demo-2);color:var(--ink)} .w3{background:var(--demo-3)}
+.svc-f{background:var(--surface)} .svc-f .f__n{color:var(--accent)}
+
+.panel{border-top:1px solid var(--ink);padding-top:18px}
+.read{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:26px}
+.read div{border:1px solid var(--line);background:var(--surface);padding:11px 12px}
+.read .k{font-family:var(--mono);font-size:9px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);display:block;margin-bottom:5px}
+.read .v{font-family:var(--mono);font-size:19px;letter-spacing:-.02em}
+.presets{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.presets button{font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;padding:10px 13px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);cursor:pointer;border-radius:2px}
+.presets button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ctl{margin-bottom:22px}
+.ctl__top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.ctl__top .nm{font-weight:700;font-size:14px;letter-spacing:-.01em}
+.ctl__top .vl{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.ctl input{width:100%;accent-color:var(--accent)}
+.ctl p{font-size:12.5px;line-height:1.45;color:var(--ink-2);margin-top:6px}
+.out{border-top:1px solid var(--accent);margin-top:28px;padding-top:16px}
+.out code{display:block;font-family:var(--mono);font-size:12px;line-height:1.75;
+  background:var(--surface);border:1px solid var(--line);padding:13px 14px;white-space:pre}
+
+@media (max-width:900px){ .wrap{grid-template-columns:1fr} .rig{height:400px} }
+@media (max-width:620px){ :root{--gutter:16px} }
+</style>
+</head>
+<body>
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">Cube weight &middot; tuner &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+  <section class="intro">
+    <h1>Make it heavy.</h1>
+    <p class="muted">Throw it as violently as you like. While you are holding it, it goes as fast
+      as your hand does. <em>Released at</em> is the speed it was allowed to keep once you let go,
+      and that is capped, so no amount of force gets past it. <em>Rest</em> is how long it then took
+      to come back to the slow drift. Try the presets, then trim with the sliders.</p>
+  </section>
+
+  <div class="wrap">
+    <div class="rig"><div class="cube" data-faces></div></div>
+
+    <div class="panel">
+      <div class="read">
+        <div><span class="k">Now</span><span class="v" data-now>0</span></div>
+        <div><span class="k">Released at</span><span class="v" data-peak>0</span></div>
+        <div><span class="k">Rest</span><span class="v" data-rest>&mdash;</span></div>
+      </div>
+
+      <p class="label" style="margin-bottom:9px">Presets</p>
+      <div class="presets" data-presets></div>
+
+      <div class="ctl" data-ctl="gain">
+        <div class="ctl__top"><span class="nm">Grip</span><span class="vl"></span></div>
+        <input type="range" min="2" max="10" step="0.5">
+        <p>How far it turns per pixel of drag while you are holding it. Lower feels like it resists
+          your hand.</p>
+      </div>
+
+      <div class="ctl" data-ctl="cap">
+        <div class="ctl__top"><span class="nm">Top speed</span><span class="vl"></span></div>
+        <input type="range" min="0.4" max="3.2" step="0.1">
+        <p>The hard ceiling on how fast it can ever be turning. This is the one that stops a violent
+          drag from launching it. Mass, in effect.</p>
+      </div>
+
+      <div class="ctl" data-ctl="damp">
+        <div class="ctl__top"><span class="nm">Friction</span><span class="vl"></span></div>
+        <input type="range" min="0.3" max="3.0" step="0.05">
+        <p>How quickly the spin bleeds away. Higher stops it sooner.</p>
+      </div>
+
+      <div class="out">
+        <p class="label" style="margin-bottom:9px">Current setting</p>
+        <code data-out></code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const PAIRS=[
+ {n:"01",demo:"Demo 01",demoName:"Helmet",cls:"w1",title:"A brand’s main site"},
+ {n:"02",demo:"Demo 02",demoName:"Fragrance",cls:"w2",title:"A launch site with a date on it"},
+ {n:"03",demo:"Demo 03",demoName:"Story",cls:"w3",title:"A page that tells one story"}];
+const FD=[{fx:0,fy:0,s:1,i:0},{fx:0,fy:180,s:0,i:0},{fx:0,fy:90,s:1,i:1},
+          {fx:0,fy:-90,s:0,i:1},{fx:90,fy:0,s:1,i:2},{fx:-90,fy:0,s:0,i:2}];
+const qn=q=>{const m=Math.hypot(q[0],q[1],q[2],q[3])||1;return q.map(v=>v/m);};
+const qmul=(a,b)=>[a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
+ a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
+ a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
+ a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]];
+const qaxis=(ax,an)=>{const h=an/2,s=Math.sin(h);return [Math.cos(h),ax[0]*s,ax[1]*s,ax[2]*s];};
+const qmat=([w,x,y,z])=>[[1-2*(y*y+z*z),2*(x*y-w*z),2*(x*z+w*y)],
+ [2*(x*y+w*z),1-2*(x*x+z*z),2*(y*z-w*x)],[2*(x*z-w*y),2*(y*z+w*x),1-2*(x*x+y*y)]];
+const slerp=(a,b,t)=>{let d=a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3];
+ if(d<0){b=b.map(v=>-v);d=-d;} if(d>0.9995)return qn(a.map((v,i)=>v+(b[i]-v)*t));
+ const th=Math.acos(d),s=Math.sin(th);
+ return a.map((v,i)=>v*Math.sin((1-t)*th)/s+b[i]*Math.sin(t*th)/s);};
+const CANON=(()=>{const AX=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+ const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+ const cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ const mq=M=>{const t=M[0][0]+M[1][1]+M[2][2];
+  if(t>0){const s=Math.sqrt(t+1)*2;return qn([0.25*s,(M[2][1]-M[1][2])/s,(M[0][2]-M[2][0])/s,(M[1][0]-M[0][1])/s]);}
+  if(M[0][0]>M[1][1]&&M[0][0]>M[2][2]){const s=Math.sqrt(1+M[0][0]-M[1][1]-M[2][2])*2;
+   return qn([(M[2][1]-M[1][2])/s,0.25*s,(M[0][1]+M[1][0])/s,(M[0][2]+M[2][0])/s]);}
+  if(M[1][1]>M[2][2]){const s=Math.sqrt(1+M[1][1]-M[0][0]-M[2][2])*2;
+   return qn([(M[0][2]-M[2][0])/s,(M[0][1]+M[1][0])/s,0.25*s,(M[1][2]+M[2][1])/s]);}
+  const s=Math.sqrt(1+M[2][2]-M[0][0]-M[1][1])*2;
+  return qn([(M[1][0]-M[0][1])/s,(M[0][2]+M[2][0])/s,(M[1][2]+M[2][1])/s,0.25*s]);};
+ const o=[];for(const x of AX)for(const y of AX){if(Math.abs(dot(x,y))>1e-9)continue;
+  const z=cr(x,y);o.push(mq([[x[0],y[0],z[0]],[x[1],y[1],z[1]],[x[2],y[2],z[2]]]));}
+ return o;})();
+const near=q=>{let b=CANON[0],bd=-1;for(const c of CANON){
+ const d=Math.abs(q[0]*c[0]+q[1]*c[1]+q[2]*c[2]+q[3]*c[3]);if(d>bd){bd=d;b=c;}}return b;};
+const D=Math.PI/180, R=180/Math.PI;
+const CORNER=qmul(qaxis([0,1,0],-38*D),qaxis([1,0,0],-28*D));
+
+const P={gain:6.0, cap:1.6, damp:1.0};        // gain is in thousandths of a rad per px
+const PRESETS={
+  "Previous":{gain:7.5,cap:99,damp:0.42},
+  "Heavy":   {gain:6.0,cap:1.6,damp:1.0},
+  "Heavier": {gain:5.0,cap:1.1,damp:1.4},
+  "Anvil":   {gain:4.0,cap:0.75,damp:1.9}
+};
+const SLOW=0.25, IDLE=0.30, HOVER_DRAG=4.0;
+
+const rig=document.querySelector(".rig"), cube=document.querySelector("[data-faces]");
+const nowEl=document.querySelector("[data-now]"), peakEl=document.querySelector("[data-peak]"),
+      restEl=document.querySelector("[data-rest]"), outEl=document.querySelector("[data-out]");
+const SIZE=250; cube.style.width=cube.style.height=SIZE+"px";
+FD.forEach(f=>{const p=PAIRS[f.i];
+ const el=document.createElement("button");el.type="button";
+ el.className="face "+(f.s?"svc-f":"wrk "+p.cls);
+ el.style.transform=`rotateX(${f.fx}deg) rotateY(${f.fy}deg) translateZ(${SIZE/2}px)`;
+ el.innerHTML=`<span class="pad">`+(f.s?`<span class="big">${p.n}</span>`
+  :`<span class="f__n">${p.demo}</span><span class="f__t">${p.demoName}</span>`)+`</span>`;
+ el.setAttribute("aria-label",`${p.n}. ${p.title}. Opens ${p.demoName}.`);
+ el.addEventListener("focus",()=>{if(el.matches(":focus-visible"))S.focused=true;});
+ el.addEventListener("blur",()=>S.focused=false);
+ el.addEventListener("click",e=>{e.preventDefault();if(!S.swallow)alert("Opens: "+p.demoName);});
+ cube.appendChild(el);});
+
+const S={q:qn([1,.22,.35,.12]),om:[0,0,0],t:0,hovered:false,focused:false,
+         dragging:false,swallow:false,peak:0,throwAt:0,rest:null};
+const apply=()=>{const M=qmat(S.q);
+ cube.style.transform=`matrix3d(${M[0][0]},${M[1][0]},${M[2][0]},0,`+
+ `${M[0][1]},${M[1][1]},${M[2][1]},0,${M[0][2]},${M[1][2]},${M[2][2]},0,0,0,0,1)`;};
+
+// ---- controls ----
+const pres=document.querySelector("[data-presets]");
+Object.keys(PRESETS).forEach(nm=>{
+  const b=document.createElement("button");b.type="button";b.textContent=nm;
+  b.setAttribute("aria-pressed", nm==="Heavy"?"true":"false");
+  b.addEventListener("click",()=>{Object.assign(P,PRESETS[nm]);
+    [...pres.children].forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false"));
+    sync();});
+  pres.appendChild(b);});
+const ctls={};
+document.querySelectorAll("[data-ctl]").forEach(el=>{
+  const key=el.dataset.ctl, inp=el.querySelector("input"), vl=el.querySelector(".vl");
+  ctls[key]={inp,vl};
+  inp.addEventListener("input",()=>{P[key]=+inp.value;
+    [...pres.children].forEach(x=>x.setAttribute("aria-pressed","false")); write();});
+});
+const write=()=>{
+  ctls.gain.inp.value=P.gain; ctls.cap.inp.value=Math.min(P.cap,3.2); ctls.damp.inp.value=P.damp;
+  ctls.gain.vl.textContent=(P.gain/1000).toFixed(4)+" rad/px";
+  ctls.cap.vl.textContent = P.cap>=99 ? "uncapped" : P.cap.toFixed(2)+" rad/s ("+Math.round(P.cap*R)+"°/s)";
+  ctls.damp.vl.textContent=P.damp.toFixed(2)+" /s";
+  const ttl = P.cap>=99 ? "—" : (Math.log(P.cap/SLOW)/P.damp).toFixed(1)+"s";
+  outEl.textContent =
+`DRAG_GAIN  ${(P.gain/1000).toFixed(4)} rad/px
+MAX_SPIN   ${P.cap>=99?"uncapped":P.cap.toFixed(2)+" rad/s"}
+FRICTION   ${P.damp.toFixed(2)} /s
+coast from top speed to rest: ${ttl}`;
+};
+const sync=()=>write();
+write();
+
+// ---- pointer ----
+let px=0,py=0,pt=0,down=0,moved=0;
+rig.addEventListener("pointerenter",()=>S.hovered=true);
+rig.addEventListener("pointerleave",()=>S.hovered=false);
+rig.addEventListener("pointerdown",e=>{S.dragging=true;moved=0;down=performance.now();pt=down;
+ px=e.clientX;py=e.clientY;S.om=[0,0,0];S.peak=0;S.rest=null;restEl.textContent="—";
+ rig.classList.add("dragging");rig.setPointerCapture(e.pointerId);});
+rig.addEventListener("pointermove",e=>{
+ if(!S.dragging)return;
+ const now=performance.now(), dt=Math.max((now-pt)/1000,1/240); pt=now;
+ const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY;
+ moved+=Math.hypot(dx,dy);
+ const k=P.gain/1000;
+ S.q=qn(qmul(qmul(qaxis([0,1,0],dx*k),qaxis([1,0,0],dy*k)),S.q));
+ const inst=[dy*k/dt, dx*k/dt, 0];
+ S.om=[S.om[0]+(inst[0]-S.om[0])*0.35, S.om[1]+(inst[1]-S.om[1])*0.35, 0];});
+const end=()=>{if(!S.dragging)return;S.dragging=false;rig.classList.remove("dragging");
+ const click=moved<7&&performance.now()-down<320;
+ if(click){S.om=[0,0,0];return;}
+ S.swallow=true;setTimeout(()=>S.swallow=false,60);
+ /* The cap is the whole idea of weight. However hard the pointer was moving,
+    the object cannot be turning faster than this when it leaves your hand. */
+ const sp=Math.hypot(...S.om);
+ if(sp>P.cap && sp>1e-6) S.om=S.om.map(v=>v*P.cap/sp);
+ S.throwAt=performance.now();};
+rig.addEventListener("pointerup",end);
+rig.addEventListener("pointercancel",end);
+
+// ---- loop ----
+let last=performance.now();
+const loop=now=>{
+ const dt=Math.min((now-last)/1000,.05); last=now; S.t+=dt;
+ if(!S.dragging){
+  const k=Math.exp(-P.damp*(S.hovered?HOVER_DRAG:1)*dt);
+  S.om=S.om.map(v=>v*k);
+  const sp=Math.hypot(...S.om);
+  if(sp>1e-4) S.q=qn(qmul(qaxis(S.om.map(v=>v/sp),sp*dt),S.q));
+  if(sp<SLOW){
+   if(S.throwAt && S.rest===null){S.rest=(now-S.throwAt)/1000;
+     restEl.textContent=S.rest.toFixed(1)+"s";}
+   if(S.hovered||S.focused){ S.q=slerp(S.q,qmul(CORNER,near(S.q)),1-Math.exp(-4.4*dt)); }
+   else{ const blend=1-sp/SLOW, a=S.t*.15;
+     const ax=[Math.sin(a)*.5,.82,Math.cos(a)*.45], m=Math.hypot(...ax);
+     S.q=qn(qmul(qaxis([ax[0]/m,ax[1]/m,ax[2]/m],IDLE*dt*blend),S.q)); }
+  }
+ }
+ const cur=Math.hypot(...S.om);
+ /* Peak is measured after the throw leaves your hand, not during it. While
+    you hold the cube you drive it directly and it goes as fast as your hand;
+    the cap is what it is allowed to keep once you let go. */
+ if(!S.dragging && cur>S.peak){S.peak=cur;peakEl.textContent=Math.round(S.peak*R)+"°/s";}
+ nowEl.textContent=Math.round(cur*R)+"°/s";
+ apply();requestAnimationFrame(loop);};
+apply();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+/* Frequency Alignment Tracker - design tokens */
+/* Generated from project/tokens.json. Source: production-tracker-site.vercel.app — :root variables, body and h1 rules as pasted from DevTools, 2026-10-04 */
+
+:root {
+  /* color */
+  --void: #080808; /* Page background (body). The ground everything sits on; carries the grid-line pattern. */
+  --card-deep: #141414; /* Recessed panels and inset areas inside a card. text 15.6:1, green 13.6:1. */
+  --card: #2B2B2B; /* Raised card surface. text 12:1, silver 7.8:1. Pink on card is only 4.0:1 — use pink here at 24px+ or for non-text marks only. */
+  --text: #EEECEA; /* Primary text on void, card-deep and card (17:1 on void). */
+  --silver: #C0C0C0; /* Secondary text, metadata and labels on any surface (11:1 on void). */
+  --border: rgba(192, 192, 192, 0.1); /* Hairlines and card outlines — silver at 10%. Decorative only; not a control border (too faint for 3:1). */
+  --green: #39FF14; /* Signal / primary accent: live, cleared, go. As text or icon on void or cards (14.8:1); void text on a green fill reads 14.8:1. */
+  --green-dim: rgba(57, 255, 20, 0.08); /* Tinted background behind green content (badges, active rows). */
+  --green-ring: rgba(57, 255, 20, 0.22); /* Outline / ring around green-tinted elements. Decorative, not a 3:1 focus ring on its own. */
+  --grid-line: rgba(57, 255, 20, 0.028); /* The 1px lines of the page-background grid (body background-image), repeated every grid-64. */
+  --purple: #7B2CBF; /* Secondary brand hue, for fills and large shapes. FAILS as text on void (2.8:1) and cards — never use it for text; text on a purple fill reads 6:1. */
+  --purple-dim: rgba(123, 44, 191, 0.18); /* Tinted background for purple-coded areas. */
+  --purple-mid: rgba(123, 44, 191, 0.55); /* Stronger purple tint: borders, highlights, hover fills. */
+  --pink: #FF00BD; /* Hot accent: attention, alerts, emphasis. As text on void 5.7:1 and card-deep 5.3:1; on card 4.0:1 (large text only). void text on a pink fill reads 5.7:1. */
+  --pink-dim: rgba(255, 0, 189, 0.1); /* Tinted background behind pink content. */
+  --pink-ring: rgba(255, 0, 189, 0.3); /* Outline / ring around pink-tinted elements. */
+
+  /* type */
+  --font-sans: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --h1-size: 52px;
+  --h1-leading: 1.07;
+  --h1-weight: 900;
+  --h1-tracking: -0.036em;
+  --body-size: 16px;
+  --body-leading: 1.65;
+  --body-weight: 400;
+
+  /* spacing */
+  --hero-h1-gap: 26px; /* Space below the hero h1 (.hero h1 margin-bottom). */
+  --h1-gap: 52px; /* Default space below an h1 outside the hero. */
+  --grid-64: 64px; /* Background grid cell (body background-size). The page's base module. */
+  --h1-measure: 840px; /* Max width of an h1 line. */
+}

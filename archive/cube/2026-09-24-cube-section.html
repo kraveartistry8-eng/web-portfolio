@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Section</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4;
+  --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px;
+  --demo-1:#C4511F;  /* helmet, placeholder */
+  --demo-2:#E3D5BE;  /* fragrance, placeholder */
+  --demo-3:#A82A20;  /* story, placeholder */
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.042em;line-height:.99}
+h3{font-size:21px}
+p{margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.intro{padding-block:64px 44px}
+.intro h1{max-width:17ch;margin-bottom:20px}
+.intro p{max-width:58ch;font-size:19px;line-height:1.45;letter-spacing:-.012em}
+
+/* ---------- the section, four times ---------- */
+.dir{border-top:1px solid var(--accent);padding-block:30px 78px}
+.dir__bar{display:flex;gap:18px;align-items:baseline;margin-bottom:34px;flex-wrap:wrap}
+.dir__bar .n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:4px 9px;border-radius:2px}
+.dir__bar .nm{font-weight:700;font-size:17px;letter-spacing:-.02em}
+.dir__bar .pr{color:var(--ink-2);font-size:14.5px;max-width:58ch}
+
+.split{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;align-items:center}
+.copy{grid-column:1 / 7}
+.svc{border-top:1px solid var(--line);padding-block:20px 22px}
+.svc:first-child{border-top:1px solid var(--ink)}
+.svc .n{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  color:var(--accent);display:block;margin-bottom:10px}
+.svc h3{margin-bottom:8px}
+.svc p{font-size:15px;line-height:1.55;color:var(--ink-2);max-width:40ch}
+.rig{grid-column:8 / 13;display:grid;place-items:center;min-height:430px;
+  perspective:1200px}
+
+/* ---------- cube ---------- */
+.cube{width:220px;height:220px;position:relative;transform-style:preserve-3d;
+  animation:tumble 27s cubic-bezier(.62,.02,.28,1) infinite}
+.rig:hover .cube{animation-play-state:paused}
+.face{position:absolute;inset:0;display:flex;flex-direction:column;
+  justify-content:space-between;padding:18px}
+.f-front {transform:rotateY(0deg)   translateZ(110px)}
+.f-right {transform:rotateY(90deg)  translateZ(110px)}
+.f-back  {transform:rotateY(180deg) translateZ(110px)}
+.f-left  {transform:rotateY(-90deg) translateZ(110px)}
+.f-top   {transform:rotateX(90deg)  translateZ(110px)}
+.f-bottom{transform:rotateX(-90deg) translateZ(110px)}
+@keyframes tumble{
+  0%,10%      {transform:rotateX(0deg)    rotateY(0deg)}
+  16.6%,26.6% {transform:rotateX(0deg)    rotateY(-90deg)}
+  33.3%,43.3% {transform:rotateX(0deg)    rotateY(-180deg)}
+  50%,60%     {transform:rotateX(0deg)    rotateY(-270deg)}
+  66.6%,76.6% {transform:rotateX(-90deg)  rotateY(-360deg)}
+  83.3%,93.3% {transform:rotateX(-270deg) rotateY(-360deg)}
+  100%        {transform:rotateX(-360deg) rotateY(-360deg)}
+}
+.f__n{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase}
+.f__t{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.14}
+
+/* A — solid */
+.a .face{background:var(--surface);border:1px solid var(--line);backface-visibility:hidden}
+.a .svc-f .f__n{color:var(--accent)}
+.a .wrk{border:none;color:#fff;justify-content:flex-end}
+.a .w1{background:var(--demo-1)} .a .w2{background:var(--demo-2);color:var(--ink)} .a .w3{background:var(--demo-3)}
+
+/* B — frame */
+.b .face{background:rgba(255,255,255,.10);border:1px solid var(--accent)}
+.b .wrk{display:grid;place-items:center;padding:0}
+.b .plate{width:78px;height:78px;border-radius:3px}
+.b .w1 .plate{background:var(--demo-1)} .b .w2 .plate{background:var(--demo-2)} .b .w3 .plate{background:var(--demo-3)}
+
+/* C — net */
+.net{display:grid;grid-template-columns:repeat(4,92px);grid-template-rows:repeat(3,92px);gap:2px}
+.net>div{border:1px solid var(--line);background:var(--surface);
+  display:flex;flex-direction:column;justify-content:space-between;padding:10px}
+.net .n1{grid-column:2;grid-row:1} .net .n2{grid-column:1;grid-row:2}
+.net .n3{grid-column:2;grid-row:2} .net .n4{grid-column:3;grid-row:2}
+.net .n5{grid-column:4;grid-row:2} .net .n6{grid-column:2;grid-row:3}
+.net .wk{border:none;color:#fff}
+.net .k1{background:var(--demo-1)} .net .k2{background:var(--demo-2);color:var(--ink)} .net .k3{background:var(--demo-3)}
+.net .f__n{color:var(--accent)} .net .wk .f__n{color:inherit}
+.net .f__t{font-size:12px;line-height:1.12}
+
+/* D — plate */
+.d .face{background:var(--surface);border:1px solid var(--line);backface-visibility:hidden}
+.d .f__n{color:var(--accent)}
+.d .glyph{flex:1;display:grid;place-items:center}
+.d .glyph svg{width:62px;height:62px}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr;gap:34px}
+  .copy,.rig{grid-column:1}
+  .rig{min-height:340px;order:-1}
+}
+@media (max-width:620px){:root{--gutter:16px}
+  .net{grid-template-columns:repeat(4,68px);grid-template-rows:repeat(3,68px)}}
+@media (prefers-reduced-motion:reduce){
+  .cube{animation:none;transform:rotateX(-20deg) rotateY(-32deg)}
+}
+</style>
+</head>
+<body>
+
+<div class="mast"><div class="page mast__in">
+  <strong>Aaron Streets</strong>
+  <p class="label">The services section &middot; four directions &middot; 24 Sep 2026</p>
+</div></div>
+
+<div class="page">
+  <section class="intro">
+    <h1>Same section, four cubes.</h1>
+    <p class="muted">Cards left, cube right, at the real page width. Each cube holds about four
+      seconds on a face. Hover a cube to stop it. Every coloured plate is a placeholder for a
+      palette, not a screenshot &mdash; no demo exists yet.</p>
+  </section>
+
+  <!-- ===== A ===== -->
+  <section class="dir">
+    <div class="dir__bar"><span class="n">A</span><span class="nm">The Solid</span>
+      <span class="pr">Opaque die. Work faces full-bleed in the demo&rsquo;s colour, service faces white.</span></div>
+    <div class="split a">
+      <div class="copy">
+        <div class="svc"><span class="n">01</span><h3>A brand&rsquo;s main site</h3>
+          <p>The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.</p></div>
+        <div class="svc"><span class="n">02</span><h3>A launch site with a date on it</h3>
+          <p>One product, one moment, one page that has to be live before the drop. Everything on it points at the date.</p></div>
+        <div class="svc"><span class="n">03</span><h3>A page that tells one story</h3>
+          <p>For the one thing that deserves more than a grid tile and three bullet points.</p></div>
+      </div>
+      <div class="rig"><div class="cube">
+        <div class="face svc-f f-front"><p class="f__n">01</p><p class="f__t">A brand&rsquo;s main site</p></div>
+        <div class="face wrk w1 f-back"><p class="f__n">Demo 01 &middot; helmet</p></div>
+        <div class="face svc-f f-right"><p class="f__n">02</p><p class="f__t">A launch site with a date on it</p></div>
+        <div class="face wrk w2 f-left"><p class="f__n">Demo 02 &middot; fragrance</p></div>
+        <div class="face svc-f f-top"><p class="f__n">03</p><p class="f__t">A page that tells one story</p></div>
+        <div class="face wrk w3 f-bottom"><p class="f__n">Demo 03 &middot; story</p></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ===== B ===== -->
+  <section class="dir">
+    <div class="dir__bar"><span class="n">B</span><span class="nm">The Frame</span>
+      <span class="pr">Hairline edges, see-through faces, each work a small plate on its plane.</span></div>
+    <div class="split b">
+      <div class="copy">
+        <div class="svc"><span class="n">01</span><h3>A brand&rsquo;s main site</h3>
+          <p>The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.</p></div>
+        <div class="svc"><span class="n">02</span><h3>A launch site with a date on it</h3>
+          <p>One product, one moment, one page that has to be live before the drop. Everything on it points at the date.</p></div>
+        <div class="svc"><span class="n">03</span><h3>A page that tells one story</h3>
+          <p>For the one thing that deserves more than a grid tile and three bullet points.</p></div>
+      </div>
+      <div class="rig"><div class="cube">
+        <div class="face f-front"><p class="f__n">01</p><p class="f__t">A brand&rsquo;s main site</p></div>
+        <div class="face wrk w1 f-back"><span class="plate"></span></div>
+        <div class="face f-right"><p class="f__n">02</p><p class="f__t">A launch site with a date on it</p></div>
+        <div class="face wrk w2 f-left"><span class="plate"></span></div>
+        <div class="face f-top"><p class="f__n">03</p><p class="f__t">A page that tells one story</p></div>
+        <div class="face wrk w3 f-bottom"><span class="plate"></span></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ===== C ===== -->
+  <section class="dir">
+    <div class="dir__bar"><span class="n">C</span><span class="nm">The Net</span>
+      <span class="pr">Flat and fully readable at rest. Folds into a cube when you grab it, unfolds when you let go.</span></div>
+    <div class="split c">
+      <div class="copy">
+        <div class="svc"><span class="n">01</span><h3>A brand&rsquo;s main site</h3>
+          <p>The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.</p></div>
+        <div class="svc"><span class="n">02</span><h3>A launch site with a date on it</h3>
+          <p>One product, one moment, one page that has to be live before the drop. Everything on it points at the date.</p></div>
+        <div class="svc"><span class="n">03</span><h3>A page that tells one story</h3>
+          <p>For the one thing that deserves more than a grid tile and three bullet points.</p></div>
+      </div>
+      <div class="rig"><div class="net">
+        <div class="n1"><p class="f__n">03</p><p class="f__t">One story</p></div>
+        <div class="n2 wk k1"><p class="f__n">Demo 01</p><p class="f__t">Helmet</p></div>
+        <div class="n3"><p class="f__n">01</p><p class="f__t">Main site</p></div>
+        <div class="n4 wk k2"><p class="f__n">Demo 02</p><p class="f__t">Fragrance</p></div>
+        <div class="n5"><p class="f__n">02</p><p class="f__t">Launch site</p></div>
+        <div class="n6 wk k3"><p class="f__n">Demo 03</p><p class="f__t">Story</p></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ===== D ===== -->
+  <section class="dir">
+    <div class="dir__bar"><span class="n">D</span><span class="nm">The Plate</span>
+      <span class="pr">Neutral faces, drawn marks, no screenshots. Colour arrives only when the overlay opens.</span></div>
+    <div class="split d">
+      <div class="copy">
+        <div class="svc"><span class="n">01</span><h3>A brand&rsquo;s main site</h3>
+          <p>The one people land on when they look you up. Built once, properly, so it stops being the thing you apologize for.</p></div>
+        <div class="svc"><span class="n">02</span><h3>A launch site with a date on it</h3>
+          <p>One product, one moment, one page that has to be live before the drop. Everything on it points at the date.</p></div>
+        <div class="svc"><span class="n">03</span><h3>A page that tells one story</h3>
+          <p>For the one thing that deserves more than a grid tile and three bullet points.</p></div>
+      </div>
+      <div class="rig"><div class="cube">
+        <div class="face f-front"><p class="f__n">01</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#575260" stroke-width="1.4">
+            <rect x="6" y="9" width="36" height="30"/><path d="M6 17h36"/><path d="M15 25h18M15 31h12"/></svg></span>
+          <p class="f__t">Main site</p></div>
+        <div class="face f-back"><p class="f__n">Demo 01</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#C4511F" stroke-width="1.4">
+            <path d="M24 7c9 0 15 6 15 15v9H9v-9C9 13 15 7 24 7Z"/><path d="M9 26h30"/><circle cx="24" cy="19" r="5"/></svg></span>
+          <p class="f__t">Helmet</p></div>
+        <div class="face f-right"><p class="f__n">02</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#575260" stroke-width="1.4">
+            <rect x="8" y="11" width="32" height="30"/><path d="M8 19h32M17 7v8M31 7v8"/><rect x="20" y="26" width="8" height="8"/></svg></span>
+          <p class="f__t">Launch site</p></div>
+        <div class="face f-left"><p class="f__n">Demo 02</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#A98A55" stroke-width="1.4">
+            <path d="M19 6h10v6h-10z"/><path d="M15 18c0-3 3-6 6-6h6c3 0 6 3 6 6v20a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4Z"/><path d="M15 26h18"/></svg></span>
+          <p class="f__t">Fragrance</p></div>
+        <div class="face f-top"><p class="f__n">03</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#575260" stroke-width="1.4">
+            <path d="M11 8h26v32H11z"/><path d="M17 16h14M17 23h14M17 30h8"/></svg></span>
+          <p class="f__t">One story</p></div>
+        <div class="face f-bottom"><p class="f__n">Demo 03</p>
+          <span class="glyph"><svg viewBox="0 0 48 48" fill="none" stroke="#A82A20" stroke-width="1.4">
+            <path d="M8 12h14v28H8zM26 12h14v28H26z"/><path d="M8 12c0-3 6-5 14-4M40 12c0-3-6-5-14-4"/></svg></span>
+          <p class="f__t">Story</p></div>
+      </div></div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
