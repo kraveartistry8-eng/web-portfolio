@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afterglow stage two, naming candidates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600&family=Azeret+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--void:#080808;--deep:#141414;--text:#EEECEA;--muted:#C0C0C0;
+    --line:rgba(192,192,192,.22);--gold:#D8B260;--pad:clamp(20px,5vw,72px)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Archivo',system-ui,sans-serif;font-weight:300;background:var(--void);
+    color:var(--text);-webkit-font-smoothing:antialiased}
+  .mono,.cmeas,.sh,.sched{font-family:'Azeret Mono',ui-monospace,monospace}
+  .pad{padding-inline:var(--pad)}
+  header.top{padding-block:clamp(56px,9vh,104px) 44px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:'Azeret Mono',monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--muted)}
+  h1{font-weight:500;font-size:clamp(30px,5vw,54px);letter-spacing:-.03em;line-height:1.04;
+    margin:18px 0 0;max-width:20ch}
+  h2{font-weight:500;font-size:clamp(20px,2.6vw,28px);letter-spacing:-.025em}
+  .lede{max-width:66ch;font-size:16px;line-height:1.65;color:var(--muted);margin-top:16px}
+  .lede + .lede{margin-top:12px}
+  .lede b{color:var(--text);font-weight:400}
+
+  .process{margin-top:32px;padding:20px 22px;background:var(--deep);border-left:2px solid var(--gold)}
+  .process p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:72ch;margin:0}
+  .process p + p{margin-top:9px}
+  .process b{color:var(--text);font-weight:400}
+  .process a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(216,178,96,.35)}
+
+  /* the ramp, fixed, so every name is read against the sequence it joins */
+  .ramp{display:flex;border-block:1px solid var(--line)}
+  .ramp div{flex:1;height:76px;display:flex;align-items:flex-end;padding:9px 12px;
+    font-family:'Azeret Mono',monospace;font-size:10px;letter-spacing:.05em}
+
+  section.cands{padding-block:clamp(40px,6vh,72px) 0}
+  .cand{margin-bottom:34px;border-top:1px solid var(--line);padding-top:0}
+  .field{padding:30px var(--pad) 22px;display:flex;flex-direction:column;gap:16px}
+  .cname{font-size:clamp(26px,4.4vw,48px);font-weight:500;letter-spacing:-.03em;line-height:1}
+  .cmeas{font-size:11px;letter-spacing:.05em;opacity:.85}
+  .body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);
+    gap:clamp(18px,3vw,44px);padding:22px var(--pad) 0;align-items:start}
+  .note{font-size:14.5px;line-height:1.7;color:var(--muted);max-width:58ch}
+  .seq{display:flex;flex-direction:column;gap:7px}
+  .seqrow{display:grid;grid-template-columns:16px 1fr auto;gap:11px;align-items:center;font-size:13px}
+  .sw{width:16px;height:16px;border-radius:1px}
+  .sn{color:var(--muted)} .sn.is-pick{color:var(--text)}
+  .sh{font-size:11px;color:var(--muted)}
+
+  section.aside{padding-block:clamp(40px,6vh,72px);border-top:1px solid var(--line)}
+  .set{margin-top:24px;max-width:70ch}
+  .sname{font-size:17px;font-weight:500;letter-spacing:-.02em;margin-bottom:6px}
+  footer{padding-block:38px 72px;font-size:12px;letter-spacing:.05em;color:var(--muted);
+    border-top:1px solid var(--line)}
+  @media (max-width:760px){.body{grid-template-columns:1fr}.ramp{flex-direction:column}
+    .ramp div{height:52px}}
+</style>
+</head>
+<body>
+
+<header class="top pad">
+  <p class="kicker">Afterglow &middot; working artifact &middot; 9 October 2026</p>
+  <h1>Stage two, six names in the corridor direction</h1>
+  <p class="lede">The ramp is settled. <b>Ramp E</b> was picked on 9 October: chroma flat at 0.110,
+    lightness falling in even steps, the arc running furthest into the cool end. Stage two is the
+    last null in the colour system.</p>
+  <p class="lede"><b>What the corridor direction means here.</b> The other three stages are named
+    for light or for colour. The corridor names the passage instead, the bit between two rooms
+    where nothing is being shown. Every candidate below keeps that idea and draws at least one word
+    from the list in <span class="mono">voice-tone.md</span>, which is not a style preference: the
+    <span class="mono">stage_named</span> check reads that list from the file and fails a name
+    built from anything else.</p>
+  <div class="process">
+    <p><b>Where this came from.</b> Pass 2 offered three names alongside the ramps. Aaron picked
+      ramp E and said the corridor was the right direction for the name but wanted more of them.
+      This page explores only that direction; it does not revisit the ramp.</p>
+    <p><a href="2026-10-07-stage-palette-pass-2.html">&larr; Palette pass 2</a></p>
+  </div>
+</header>
+
+<div class="ramp"><div style="background:#D8B260;color:#080808">Gold of last light &middot; #D8B260</div><div style="background:#BC6F4C;color:#080808">stage two &middot; #BC6F4C</div><div style="background:#893A50;color:#EEECEA">Rose &middot; #893A50</div><div style="background:#341D5E;color:#EEECEA">Deep violet &middot; #341D5E</div></div>
+
+<section class="cands">
+
+<article class="cand">
+  <div class="field" style="background:#BC6F4C;color:#080808">
+    <p class="cname">Corridor</p>
+    <p class="cmeas">#080808 on #BC6F4C &middot; 5.26:1 &middot; draws on corridor</p>
+  </div>
+  <div class="body">
+    <p class="note">No article, so it sits in the sequence the way Rose and Deep violet do. The passage between two rooms, named as a thing rather than pointed at.</p>
+    <div class="seq"><div class="seqrow"><span class="sw" style="background:#D8B260"></span>
+      <span class="sn">Gold of last light</span><span class="sh">#D8B260</span></div><div class="seqrow"><span class="sw" style="background:#BC6F4C"></span>
+      <span class="sn is-pick">Corridor</span><span class="sh">#BC6F4C</span></div><div class="seqrow"><span class="sw" style="background:#893A50"></span>
+      <span class="sn">Rose</span><span class="sh">#893A50</span></div><div class="seqrow"><span class="sw" style="background:#341D5E"></span>
+      <span class="sn">Deep violet</span><span class="sh">#341D5E</span></div></div>
+  </div>
+</article>
+<article class="cand">
+  <div class="field" style="background:#BC6F4C;color:#080808">
+    <p class="cname">The corridor</p>
+    <p class="cmeas">#080808 on #BC6F4C &middot; 5.26:1 &middot; draws on corridor</p>
+  </div>
+  <div class="body">
+    <p class="note">The version already on the table. The article makes it particular, one corridor rather than a kind of place, which is warmer but breaks the pattern the other three keep.</p>
+    <div class="seq"><div class="seqrow"><span class="sw" style="background:#D8B260"></span>
+      <span class="sn">Gold of last light</span><span class="sh">#D8B260</span></div><div class="seqrow"><span class="sw" style="background:#BC6F4C"></span>
+      <span class="sn is-pick">The corridor</span><span class="sh">#BC6F4C</span></div><div class="seqrow"><span class="sw" style="background:#893A50"></span>
+      <span class="sn">Rose</span><span class="sh">#893A50</span></div><div class="seqrow"><span class="sw" style="background:#341D5E"></span>
+      <span class="sn">Deep violet</span><span class="sh">#341D5E</span></div></div>
+  </div>
+</article>
+<article class="cand">
+  <div class="field" style="background:#BC6F4C;color:#080808">
+    <p class="cname">Room two</p>
+    <p class="cmeas">#080808 on #BC6F4C &middot; 5.26:1 &middot; draws on room</p>
+  </div>
+  <div class="body">
+    <p class="note">Flat and counted. Against the poetry either side of it, the plainness reads as restraint rather than as a gap waiting to be filled.</p>
+    <div class="seq"><div class="seqrow"><span class="sw" style="background:#D8B260"></span>
+      <span class="sn">Gold of last light</span><span class="sh">#D8B260</span></div><div class="seqrow"><span class="sw" style="background:#BC6F4C"></span>
+      <span class="sn is-pick">Room two</span><span class="sh">#BC6F4C</span></div><div class="seqrow"><span class="sw" style="background:#893A50"></span>
+      <span class="sn">Rose</span><span class="sh">#893A50</span></div><div class="seqrow"><span class="sw" style="background:#341D5E"></span>
+      <span class="sn">Deep violet</span><span class="sh">#341D5E</span></div></div>
+  </div>
+</article>
+<article class="cand">
+  <div class="field" style="background:#BC6F4C;color:#080808">
+    <p class="cname">The room after</p>
+    <p class="cmeas">#080808 on #BC6F4C &middot; 5.26:1 &middot; draws on after, room</p>
+  </div>
+  <div class="body">
+    <p class="note">Names it by its position rather than its colour, which is the only stage where that is true. Carries the sequence in the name itself.</p>
+    <div class="seq"><div class="seqrow"><span class="sw" style="background:#D8B260"></span>
+      <span class="sn">Gold of last light</span><span class="sh">#D8B260</span></div><div class="seqrow"><span class="sw" style="background:#BC6F4C"></span>
+      <span class="sn is-pick">The room after</span><span class="sh">#BC6F4C</span></div><div class="seqrow"><span class="sw" style="background:#893A50"></span>
+      <span class="sn">Rose</span><span class="sh">#893A50</span></div><div class="seqrow"><span class="sw" style="background:#341D5E"></span>
+      <span class="sn">Deep violet</span><span class="sh">#341D5E</span></div></div>
+  </div>
+</article>
+<article class="cand">
+  <div class="field" style="background:#BC6F4C;color:#080808">
+    <p class="cname">After gold</p>
+    <p class="cmeas">#080808 on #BC6F4C &middot; 5.26:1 &middot; draws on after, gold</p>
+  </div>
+  <div class="body">
+    <p class="note">The same idea with the vocabulary doing the work. Reads as a time rather than a place, which fits a brand about an hour more than a venue.</p>
+    <div class="seq"><div class="seqrow"><span class="sw" style="background:#D8B260"></span>
+      <span class="sn">Gold of last light</span><span class="sh">#D8B260</span></div><div class="seqrow"><span class="sw" style="background:#BC6F4C"></span>
+      <span class="sn is-pick">After gold</span><span class="sh">#BC6F4C</span></div><div class="seqrow"><span class="sw" style="background:#893A50"></span>
+      <span class="sn">Rose</span><span class="sh">#893A50</span></div><div class="seqrow"><span class="sw" style="background:#341D5E"></span>
+      <span class="sn">Deep violet</span><span class="sh">#341D5E</span></div></div>
+  </div>
+</article>
+<article class="cand">
+  <div class="field" style="background:#BC6F4C;color:#080808">
+    <p class="cname">Breath between</p>
+    <p class="cmeas">#080808 on #BC6F4C &middot; 5.26:1 &middot; draws on breath</p>
+  </div>
+  <div class="body">
+    <p class="note">The most sensory of the six and the least architectural. Keeps the corridor's job, the pause between two things, without borrowing the building.</p>
+    <div class="seq"><div class="seqrow"><span class="sw" style="background:#D8B260"></span>
+      <span class="sn">Gold of last light</span><span class="sh">#D8B260</span></div><div class="seqrow"><span class="sw" style="background:#BC6F4C"></span>
+      <span class="sn is-pick">Breath between</span><span class="sh">#BC6F4C</span></div><div class="seqrow"><span class="sw" style="background:#893A50"></span>
+      <span class="sn">Rose</span><span class="sh">#893A50</span></div><div class="seqrow"><span class="sw" style="background:#341D5E"></span>
+      <span class="sn">Deep violet</span><span class="sh">#341D5E</span></div></div>
+  </div>
+</article>
+</section>
+
+<section class="aside pad">
+  <h2>Considered and set aside</h2>
+  <div class="set"><p class="sname">The warm room</p><p class="note">Draws on the brief's line that each room runs warmer than the last. That line was corrected on 7 Oct: it is about air temperature for scent diffusion and was scoped event-only, and the stages are explicitly not required to warm in hue. Naming a stage for it would quietly put the correction back.</p></div><div class="set"><p class="sname">The turn</p><p class="note">Reads well and means the right thing, but turn is not in the words that belong to Afterglow, so it would fail the stage_named check rather than merely be a matter of taste.</p></div>
+</section>
+
+<footer class="pad">
+  Afterglow / stage two / naming candidates &middot; ramp E fixed &middot; every ratio computed
+</footer>
+
+</body>
+</html>
