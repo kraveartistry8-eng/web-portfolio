@@ -123,20 +123,40 @@
     }
   },
   "spacing": {
-    "_status": "Week 2",
-    "base": null,
-    "scale": null
+    "_status": "Base 8px, every step a whole multiple. 8 divides the 16px type base, so spacing and text sit on one grid rather than two that nearly agree. Authored in rem in CSS, same as type.",
+    "base": 8,
+    "unit": "px",
+    "scale": {
+      "2xs": 4,
+      "xs": 8,
+      "sm": 12,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "2xl": 48,
+      "3xl": 64
+    }
   },
   "radius": {
-    "_status": "Week 2"
+    "_status": "Near-zero, per the spec. Restraint and a void ground point there and nothing in the source material argues otherwise. `subtle` exists only for a control that would otherwise look cut from paper; it is not a card style.",
+    "default": 0,
+    "subtle": 1,
+    "unit": "px"
   },
   "shadow": {
-    "_status": "Week 2. On a void ground, elevation reads through surface steps more than shadow."
+    "_status": "Absent. On a void ground elevation reads through the surface steps, #141414 recessed and #2B2B2B raised, not through a shadow that has nothing to fall on. `hairline` is the border token drawn as a ring, for the rare case where two surfaces at the same step must be told apart.",
+    "default": "none",
+    "hairline": "0 0 0 1px rgba(192,192,192,0.22)"
   },
   "motion": {
-    "_status": "Week 2 for values. Personality is locked.",
+    "_status": "Personality was locked by the brand; these are the two numbers it was missing. The curve ends at its destination and never passes it, which is what 'deepening, never snapping' means in a timing function. Note this governs interactive states only: the guideline document's ground is a mapping from scroll position, not a transition, so it has no duration at all.",
     "personality": "Deepening, never snapping. The scent is met as a journey, not a cloud.",
-    "duration": null,
-    "ease": null
+    "duration": {
+      "fast": 200,
+      "base": 450,
+      "slow": 700,
+      "unit": "ms"
+    },
+    "ease": "cubic-bezier(0.2, 0, 0.2, 1)"
   }
 }

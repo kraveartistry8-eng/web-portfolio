@@ -310,6 +310,54 @@ def main():
         % ("  :: " + "; ".join(wrong) if wrong
            else "  :: display %(display)s, body %(body)s" % routes))
 
+    # ---------- spacing_measured
+    sp = get(tokens, "spacing")
+    if not isinstance(sp, dict):
+        chk(False, "spacing_measured every step is a whole multiple of the base  :: spacing not set")
+    else:
+        sbase, sscale = sp.get("base"), sp.get("scale")
+        issues = []
+        if not isinstance(sbase, (int, float)) or sbase <= 0:
+            issues.append("base is %r" % (sbase,))
+        elif not isinstance(sscale, dict) or not sscale:
+            issues.append("no scale")
+        else:
+            for name, value in sorted(sscale.items()):
+                if not isinstance(value, (int, float)):
+                    issues.append("%s is %r" % (name, value)); continue
+                # half steps are allowed, arbitrary numbers are not
+                k = value / float(sbase)
+                if abs(k * 2 - round(k * 2)) > 1e-6:
+                    issues.append("%s=%g is base x %.3f, not a whole or half step" % (name, value, k))
+        chk(not issues,
+            "spacing_measured every step is a multiple of the base%s"
+            % ("  :: " + "; ".join(issues) if issues
+               else "  :: %g px base, %d steps" % (sbase, len(sscale))))
+
+    # ---------- motion_no_overshoot
+    # "Deepening, never snapping" is a Global Constraint with no other test. A curve
+    # whose control points leave the unit square passes its destination and comes back,
+    # which is exactly the bounce the brand rules out.
+    ease = get(tokens, "motion.ease")
+    m = re.match(r"\s*cubic-bezier\(([^)]*)\)\s*$", str(ease))
+    if not m:
+        chk(False, "motion_no_overshoot the easing curve never overshoots  :: ease is %r" % (ease,))
+    else:
+        try:
+            pts = [float(x) for x in m.group(1).split(",")]
+        except ValueError:
+            pts = []
+        if len(pts) != 4:
+            chk(False, "motion_no_overshoot the easing curve never overshoots  :: cannot read %r" % (ease,))
+        else:
+            x1, y1, x2, y2 = pts
+            out_of_square = [n for n, v in (("y1", y1), ("y2", y2)) if not 0.0 <= v <= 1.0]
+            bad_x = [n for n, v in (("x1", x1), ("x2", x2)) if not 0.0 <= v <= 1.0]
+            chk(not out_of_square and not bad_x,
+                "motion_no_overshoot the easing curve settles, never passes its value%s"
+                % ("  :: " + ", ".join(out_of_square + bad_x) + " outside 0..1"
+                   if (out_of_square or bad_x) else "  :: %s" % ease))
+
     # ---------- neutrals_locked
     wrong = [
         "%s is %r, expected %r" % (p, get(tokens, p), want)
