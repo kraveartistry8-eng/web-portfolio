@@ -260,6 +260,56 @@ def main():
         "stage_named      stage 2 is named from the Afterglow vocabulary%s"
         % ("" if drawn else "  :: name is %r" % (name2,)))
 
+    # ---------- type_set
+    typo = get(tokens, "typography")
+    fams = {f: get(tokens, "typography.%s.family" % f) for f in ("display", "body")}
+    unset = sorted(f for f, v in fams.items() if not isinstance(v, str) or not v.strip())
+    chk(not unset,
+        "type_set         both faces are chosen%s"
+        % ("  :: " + ", ".join(fams.get(f) and f or f for f in unset) + " unset"
+           if unset else "  :: display %(display)s, body %(body)s" % fams))
+
+    # ---------- scale_measured
+    scale = get(tokens, "typography.scale")
+    if not isinstance(scale, dict):
+        chk(False, "scale_measured   the scale is a measured ratio, not eyeballed  :: scale not set")
+    else:
+        ratio, base = scale.get("ratio"), scale.get("base")
+        steps = scale.get("steps")
+        problems = []
+        if not isinstance(ratio, (int, float)) or ratio <= 1:
+            problems.append("ratio is %r" % (ratio,))
+        if not isinstance(base, (int, float)) or base <= 0:
+            problems.append("base is %r" % (base,))
+        if not isinstance(steps, dict) or not steps:
+            problems.append("no named steps")
+        if not problems:
+            for name, value in sorted(steps.items()):
+                if not isinstance(value, (int, float)):
+                    problems.append("%s is %r" % (name, value)); continue
+                # every step has to be base * ratio ** n for a whole n, or the scale
+                # is a list of sizes someone liked rather than a scale
+                n = math.log(value / base) / math.log(ratio)
+                if abs(n - round(n)) > 0.02:
+                    problems.append("%s=%g is base*ratio**%.3f, not a whole step"
+                                    % (name, value, n))
+        chk(not problems,
+            "scale_measured   every step derives from ratio and base%s"
+            % ("  :: " + "; ".join(problems) if problems
+               else "  :: %g from %g, %d steps" % (ratio, base, len(steps))))
+
+    # ---------- delivery_recorded
+    routes = {}
+    for f in ("display", "body"):
+        v = get(tokens, "typography.%s.delivery" % f)
+        routes[f] = "not set" if v is MISSING else v
+    allowed = ("shopify_library", "self_hosted")
+    wrong = ["%s is %r" % (f, v) for f, v in sorted(routes.items()) if v not in allowed]
+    chk(not wrong,
+        "delivery_recorded each face records how it ships%s"
+        % ("  :: " + "; ".join(wrong) if wrong
+           else "  :: display %(display)s, body %(body)s" % routes))
+
     # ---------- neutrals_locked
     wrong = [
         "%s is %r, expected %r" % (p, get(tokens, p), want)

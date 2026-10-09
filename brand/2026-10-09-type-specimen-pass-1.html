@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afterglow type specimen, pass 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..700&family=Fraunces:opsz,wght@9..144,300..700&family=Instrument+Serif&family=Inter:wght@300..700&family=Marcellus&family=Work+Sans:wght@300..600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400&family=Archivo:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--void:#080808;--deep:#141414;--text:#EEECEA;--muted:#C0C0C0;--gold:#D8B260;
+    --line:rgba(192,192,192,.22);--pad:clamp(20px,5vw,72px)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Archivo',system-ui,sans-serif;font-weight:300;background:var(--void);
+    color:var(--text);-webkit-font-smoothing:antialiased}
+  .mono,.kicker,.route,.sn,.sl{font-family:'Azeret Mono',ui-monospace,monospace}
+  .pad{padding-inline:var(--pad)}
+  header.top{padding-block:clamp(56px,9vh,104px) 44px;border-bottom:1px solid var(--line)}
+  .kicker{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  h1{font-weight:500;font-size:clamp(30px,5vw,54px);letter-spacing:-.03em;line-height:1.04;
+    margin:18px 0 0;max-width:20ch}
+  h2{font-weight:500;font-size:clamp(20px,2.6vw,30px);letter-spacing:-.025em;margin:9px 0 0}
+  .slash{color:var(--muted);font-weight:300}
+  .lede{max-width:66ch;font-size:16px;line-height:1.65;color:var(--muted);margin-top:16px}
+  .lede + .lede{margin-top:12px}
+  .lede b,.process b{color:var(--text);font-weight:400}
+  .process{margin-top:32px;padding:20px 22px;background:var(--deep);border-left:2px solid var(--gold)}
+  .process p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:72ch}
+  .process p + p{margin-top:9px}
+  .process a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(216,178,96,.35)}
+
+  .pair{padding-block:clamp(44px,7vh,80px);border-bottom:1px solid var(--line);
+    padding-inline:var(--pad)}
+  .phead{margin-bottom:30px}
+  .route{font-size:11px;letter-spacing:.05em;color:var(--muted);margin-top:12px}
+  .route b{color:var(--gold);font-weight:400}
+  .wm{font-size:clamp(40px,9vw,112px);line-height:1;letter-spacing:.06em;margin-bottom:26px}
+  .hero{font-size:clamp(24px,4.2vw,50px);line-height:1.12;letter-spacing:-.02em;
+    max-width:21ch;margin-bottom:28px}
+  .copy{font-size:16px;line-height:1.75;max-width:62ch;color:var(--text);margin-bottom:20px}
+  .note{font-size:14px;line-height:1.7;color:var(--muted);max-width:60ch}
+  .scale{margin-top:30px;border-top:1px solid var(--line);padding-top:22px;
+    display:flex;flex-direction:column;gap:13px}
+  .st{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:18px;align-items:baseline}
+  .sl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .sv{line-height:1.1;letter-spacing:-.02em}
+  .sn{font-size:10.5px;color:var(--muted);text-align:right;letter-spacing:.03em;white-space:nowrap}
+  .sn sup{font-size:8px}
+
+  section.aside{padding-block:clamp(40px,6vh,72px)}
+  .set{margin-top:22px;max-width:70ch}
+  .sname{font-size:17px;font-weight:500;letter-spacing:-.02em;margin-bottom:6px}
+  footer{padding-block:38px 72px;font-size:12px;letter-spacing:.05em;color:var(--muted);
+    border-top:1px solid var(--line)}
+  @media (max-width:760px){
+    .st{grid-template-columns:44px 1fr;row-gap:4px}
+    .sn{grid-column:1 / -1;text-align:left}
+  }
+</style>
+</head>
+<body>
+
+<header class="top pad">
+  <p class="kicker">Afterglow &middot; working artifact &middot; pass 1 &middot; 9 October 2026</p>
+  <h1>Three pairings, one display face and one body face</h1>
+  <p class="lede">Each pairing sets the wordmark, a hero line from the brief, and a paragraph of
+    the voice as it is written in <span class="mono">voice-tone.md</span>, all on the real
+    <span class="mono">#080808</span> ground. The scale under each one is the same in all three,
+    so the faces are the only variable.</p>
+  <p class="lede"><b>The scale is a ratio, not a list.</b> Base 16px, ratio 1.25, every step
+    derived. The <span class="mono">scale_measured</span> check recomputes each step from the
+    ratio and fails any size that was chosen by eye instead.</p>
+  <p class="lede"><b>Build cost.</b> All six faces are in Shopify's font library, checked against
+    the library table in the theme settings documentation on 9 October 2026. None needs a webfont
+    in <span class="mono">assets/</span>. The cost of a two-face system is one added
+    <span class="mono">font_picker</span> in <span class="mono">config/settings_schema.json</span>,
+    since the theme ships with exactly one.</p>
+  <div class="process">
+    <p><b>Where this came from.</b> The colour system is settled: ramp E, with stage two named
+      After gold. Type is the second of the two picks the spec defers to a visual artifact,
+      because neither can be settled in prose.</p>
+    <p><a href="2026-10-09-stage-two-names.html">&larr; Stage two names</a></p>
+  </div>
+</header>
+
+
+<article class="pair">
+  <div class="phead">
+    <p class="kicker">Pairing A</p>
+    <h2>Instrument Serif <span class="slash">/</span> Inter</h2>
+    <p class="route"><b>Instrument Serif</b> shopify_library &middot; <b>Inter</b> shopify_library
+      &middot; no webfont in assets, one added font_picker in the schema</p>
+  </div>
+  <p class="wm" style="font-family:'Instrument Serif',serif;font-weight:400">AFTERGLOW</p>
+  <p class="hero" style="font-family:'Instrument Serif',serif;font-weight:400">The light only ever deepens, never brightens.</p>
+  <p class="copy" style="font-family:'Inter',sans-serif;font-weight:380">Unhurried and physical. It names heat, light, breath and skin. It describes a sequence, because the product is a sequence. Certain without pushing. The brand does not argue for itself. It assumes you will understand it if you are shown it in the right order.</p>
+  <p class="note">Editorial and high contrast. The thin strokes go very thin on a void ground, which is either the point or the problem. Inter underneath says nothing at all, which lets the display carry the whole voice.</p>
+  <div class="scale" style="font-family:'Inter',sans-serif"><div class="st"><span class="sl">xs</span>
+        <span class="sv" style="font-size:12.8px">Deepening</span>
+        <span class="sn">12.8 px &middot; 0.8 rem &middot; base x 1.25<sup>-1</sup></span></div><div class="st"><span class="sl">base</span>
+        <span class="sv" style="font-size:16px">Deepening</span>
+        <span class="sn">16 px &middot; 1 rem &middot; base x 1.25<sup>0</sup></span></div><div class="st"><span class="sl">md</span>
+        <span class="sv" style="font-size:20px">Deepening</span>
+        <span class="sn">20 px &middot; 1.25 rem &middot; base x 1.25<sup>1</sup></span></div><div class="st"><span class="sl">lg</span>
+        <span class="sv" style="font-size:25px">Deepening</span>
+        <span class="sn">25 px &middot; 1.562 rem &middot; base x 1.25<sup>2</sup></span></div><div class="st"><span class="sl">xl</span>
+        <span class="sv" style="font-size:31.25px">Deepening</span>
+        <span class="sn">31.25 px &middot; 1.953 rem &middot; base x 1.25<sup>3</sup></span></div><div class="st"><span class="sl">2xl</span>
+        <span class="sv" style="font-size:39.06px">Deepening</span>
+        <span class="sn">39.06 px &middot; 2.441 rem &middot; base x 1.25<sup>4</sup></span></div><div class="st"><span class="sl">3xl</span>
+        <span class="sv" style="font-size:48.83px">Deepening</span>
+        <span class="sn">48.83 px &middot; 3.052 rem &middot; base x 1.25<sup>5</sup></span></div><div class="st"><span class="sl">4xl</span>
+        <span class="sv" style="font-size:61.04px">Deepening</span>
+        <span class="sn">61.04 px &middot; 3.815 rem &middot; base x 1.25<sup>6</sup></span></div></div>
+</article>
+<article class="pair">
+  <div class="phead">
+    <p class="kicker">Pairing B</p>
+    <h2>Fraunces <span class="slash">/</span> DM Sans</h2>
+    <p class="route"><b>Fraunces</b> shopify_library &middot; <b>DM Sans</b> shopify_library
+      &middot; no webfont in assets, one added font_picker in the schema</p>
+  </div>
+  <p class="wm" style="font-family:'Fraunces',serif;font-weight:400">AFTERGLOW</p>
+  <p class="hero" style="font-family:'Fraunces',serif;font-weight:400">The light only ever deepens, never brightens.</p>
+  <p class="copy" style="font-family:'DM Sans',sans-serif;font-weight:380">Unhurried and physical. It names heat, light, breath and skin. It describes a sequence, because the product is a sequence. Certain without pushing. The brand does not argue for itself. It assumes you will understand it if you are shown it in the right order.</p>
+  <p class="note">Soft serif with an optical size axis, so the wordmark can be cut differently from the hero without changing face. The warmest and most physical of the three, which is the word the voice uses about itself.</p>
+  <div class="scale" style="font-family:'DM Sans',sans-serif"><div class="st"><span class="sl">xs</span>
+        <span class="sv" style="font-size:12.8px">Deepening</span>
+        <span class="sn">12.8 px &middot; 0.8 rem &middot; base x 1.25<sup>-1</sup></span></div><div class="st"><span class="sl">base</span>
+        <span class="sv" style="font-size:16px">Deepening</span>
+        <span class="sn">16 px &middot; 1 rem &middot; base x 1.25<sup>0</sup></span></div><div class="st"><span class="sl">md</span>
+        <span class="sv" style="font-size:20px">Deepening</span>
+        <span class="sn">20 px &middot; 1.25 rem &middot; base x 1.25<sup>1</sup></span></div><div class="st"><span class="sl">lg</span>
+        <span class="sv" style="font-size:25px">Deepening</span>
+        <span class="sn">25 px &middot; 1.562 rem &middot; base x 1.25<sup>2</sup></span></div><div class="st"><span class="sl">xl</span>
+        <span class="sv" style="font-size:31.25px">Deepening</span>
+        <span class="sn">31.25 px &middot; 1.953 rem &middot; base x 1.25<sup>3</sup></span></div><div class="st"><span class="sl">2xl</span>
+        <span class="sv" style="font-size:39.06px">Deepening</span>
+        <span class="sn">39.06 px &middot; 2.441 rem &middot; base x 1.25<sup>4</sup></span></div><div class="st"><span class="sl">3xl</span>
+        <span class="sv" style="font-size:48.83px">Deepening</span>
+        <span class="sn">48.83 px &middot; 3.052 rem &middot; base x 1.25<sup>5</sup></span></div><div class="st"><span class="sl">4xl</span>
+        <span class="sv" style="font-size:61.04px">Deepening</span>
+        <span class="sn">61.04 px &middot; 3.815 rem &middot; base x 1.25<sup>6</sup></span></div></div>
+</article>
+<article class="pair">
+  <div class="phead">
+    <p class="kicker">Pairing C</p>
+    <h2>Marcellus <span class="slash">/</span> Work Sans</h2>
+    <p class="route"><b>Marcellus</b> shopify_library &middot; <b>Work Sans</b> shopify_library
+      &middot; no webfont in assets, one added font_picker in the schema</p>
+  </div>
+  <p class="wm" style="font-family:'Marcellus',serif;font-weight:400">AFTERGLOW</p>
+  <p class="hero" style="font-family:'Marcellus',serif;font-weight:400">The light only ever deepens, never brightens.</p>
+  <p class="copy" style="font-family:'Work Sans',sans-serif;font-weight:380">Unhurried and physical. It names heat, light, breath and skin. It describes a sequence, because the product is a sequence. Certain without pushing. The brand does not argue for itself. It assumes you will understand it if you are shown it in the right order.</p>
+  <p class="note">Inscriptional, closer to carved than drawn, with almost no thin strokes to lose on the dark. Work Sans is already the theme default, so this is the only pairing that changes nothing about what the theme already loads.</p>
+  <div class="scale" style="font-family:'Work Sans',sans-serif"><div class="st"><span class="sl">xs</span>
+        <span class="sv" style="font-size:12.8px">Deepening</span>
+        <span class="sn">12.8 px &middot; 0.8 rem &middot; base x 1.25<sup>-1</sup></span></div><div class="st"><span class="sl">base</span>
+        <span class="sv" style="font-size:16px">Deepening</span>
+        <span class="sn">16 px &middot; 1 rem &middot; base x 1.25<sup>0</sup></span></div><div class="st"><span class="sl">md</span>
+        <span class="sv" style="font-size:20px">Deepening</span>
+        <span class="sn">20 px &middot; 1.25 rem &middot; base x 1.25<sup>1</sup></span></div><div class="st"><span class="sl">lg</span>
+        <span class="sv" style="font-size:25px">Deepening</span>
+        <span class="sn">25 px &middot; 1.562 rem &middot; base x 1.25<sup>2</sup></span></div><div class="st"><span class="sl">xl</span>
+        <span class="sv" style="font-size:31.25px">Deepening</span>
+        <span class="sn">31.25 px &middot; 1.953 rem &middot; base x 1.25<sup>3</sup></span></div><div class="st"><span class="sl">2xl</span>
+        <span class="sv" style="font-size:39.06px">Deepening</span>
+        <span class="sn">39.06 px &middot; 2.441 rem &middot; base x 1.25<sup>4</sup></span></div><div class="st"><span class="sl">3xl</span>
+        <span class="sv" style="font-size:48.83px">Deepening</span>
+        <span class="sn">48.83 px &middot; 3.052 rem &middot; base x 1.25<sup>5</sup></span></div><div class="st"><span class="sl">4xl</span>
+        <span class="sv" style="font-size:61.04px">Deepening</span>
+        <span class="sn">61.04 px &middot; 3.815 rem &middot; base x 1.25<sup>6</sup></span></div></div>
+</article>
+
+<section class="aside pad">
+  <h2>Considered and set aside</h2>
+  <div class="set"><p class="sname">Spectral</p><p class="note">Absent from Shopify's font library. It would have to ship as a webfont in assets with its own @font-face rule, so it costs a build change the other six do not.</p></div><div class="set"><p class="sname">Cormorant Garamond</p><p class="note">Absent from the library for the same reason, and its hairlines are the thinnest of any candidate considered, which is the worst case on a void ground.</p></div>
+</section>
+
+<footer class="pad">
+  Afterglow / type specimen / pass 1 &middot; scale 1.25 from 16px &middot; availability checked
+  against Shopify's font library
+</footer>
+
+</body>
+</html>
