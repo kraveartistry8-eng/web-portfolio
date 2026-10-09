@@ -78,6 +78,23 @@ its end, passing through stages 2 and 3 at their positions. Lightness falls mono
 OKLCH. The void `#080808` is not the document ground here; it is the colour of the rail strip
 and of any surface that must sit outside the fall.
 
+**Banding.** No mitigation. Settled by a throwaway spike on 9 October 2026 and recorded here
+because it is the one risk that could have invalidated this direction.
+
+The arithmetic says it should band. Rounded to 8 bits, the four-stage fall over a 16000px
+document resolves to 346 distinct tones, and the longest run of a single tone is 101px, around
+`#A3554E` near the crossover. A 101px band of one colour on a quiet page is visible.
+
+It does not band, because the browser does not round. Chromium dithers the gradient: the same
+regions measure a median run of 1px, 35 to 46 distinct tones per 1000px, and 2 to 4 distinct
+tones across a single horizontal row, which is the dither noise. Inspected by eye at the violet
+end, the darkest and therefore the worst case, the fall is smooth.
+
+Two limits on that answer. It was verified on screen in Chromium, which is the render target for
+the HTML but not for the PDF, so Task 9 re-checks the printed artifact rather than assuming the
+dithering survives rasterisation. And it holds at a document height of 16000px; a substantially
+longer document lengthens every run and the spike would need rerunning.
+
 **The ledger.** A void column at the right edge of the measure, carrying the document's readings.
 Each row sits at the exact height where the fall equals the value it describes, with a leader rule
 joining the row to the ground it was taken from. A row carries the hex, the OKLCH triple, the ratio
