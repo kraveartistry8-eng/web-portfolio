@@ -85,18 +85,42 @@
     }
   },
   "typography": {
-    "_status": "Week 2. Set the scale measured, not eyeballed.",
+    "_status": "Pairing D, picked 9 October 2026 from brand/2026-10-09-type-specimen-pass-2.html. Both faces are in Shopify's font library, checked against the font table in the theme settings documentation on 9 October 2026, so neither needs a webfont in assets. The theme ships with one font_picker (type_primary_font, default work_sans_n4), so a second picker is a schema addition during the build. The scale is a ratio, not a list: every step is base times ratio to a whole power and brand_audit recomputes it.",
     "display": {
-      "family": null,
-      "use": "Wordmark and hero only"
+      "family": "Instrument Serif",
+      "use": "Wordmark and hero only",
+      "delivery": "shopify_library"
     },
     "body": {
-      "family": null,
-      "use": "All UI, headings, body, labels"
+      "family": "Space Grotesk",
+      "use": "All UI, headings, body, labels",
+      "delivery": "shopify_library"
     },
-    "scale": null,
-    "tracking": null,
-    "leading": null
+    "scale": {
+      "ratio": 1.25,
+      "base": 16,
+      "unit": "px",
+      "_note": "Sizes are authored in rem in CSS: divide by the 16px root so browser font-size preferences are respected, per WCAG.",
+      "steps": {
+        "xs": 12.8,
+        "base": 16.0,
+        "md": 20.0,
+        "lg": 25.0,
+        "xl": 31.25,
+        "2xl": 39.06,
+        "3xl": 48.83,
+        "4xl": 61.04
+      }
+    },
+    "tracking": {
+      "wordmark": "0.06em",
+      "display": "-0.02em",
+      "body": "0"
+    },
+    "leading": {
+      "display": 1.12,
+      "body": 1.75
+    }
   },
   "spacing": {
     "_status": "Week 2",
