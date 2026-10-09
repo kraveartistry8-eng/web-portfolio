@@ -104,6 +104,32 @@ def get(tree, dotted):
 MISSING = object()
 
 
+TEXT_PROBE = """() => {
+            const doc = document.querySelector('.doc').getBoundingClientRect();
+            const top = doc.top + window.scrollY, h = doc.height;
+            const out = [];
+            document.querySelectorAll('.measure *, .crossover em').forEach(e => {
+                if (!e.textContent.trim()) return;
+                if (e.children.length && !['P','H1','H2','SPAN','B','EM','DT','DD','A'].includes(e.tagName)) return;
+                const b = e.getBoundingClientRect();
+                if (!b.height) return;
+                const cs = getComputedStyle(e);
+                // the nearest ancestor that actually paints decides the background
+                let node = e, bg = null;
+                while (node && node !== document.documentElement) {
+                    const c = getComputedStyle(node).backgroundColor;
+                    if (c && !/rgba\\(0, 0, 0, 0\\)|transparent/.test(c)) { bg = c; break; }
+                    if (node.classList && node.classList.contains('doc')) break;
+                    node = node.parentElement;
+                }
+                out.push({tag: e.tagName, text: e.textContent.trim().slice(0, 34),
+                          color: cs.color, size: parseFloat(cs.fontSize),
+                          weight: cs.fontWeight, bg: bg,
+                          t: ((b.top + window.scrollY + b.height / 2) - top) / h});
+            });
+            return out;
+        }"""
+
 DOC = ROOT / "brand" / "2026-10-07-afterglow-guidelines.html"
 
 _HEX = re.compile(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b")
@@ -210,7 +236,9 @@ def document_checks(chk, tokens):
         for name in ("fall_monotonic", "no_brightening", "rail_is_folio",
                      "ledger_is_void", "svh_not_vh", "specimen_truth",
                      "ledger_anchored", "text_on_fall", "ledger_clear",
-                     "crossover_in_fall"):
+                     "crossover_in_fall", "no_h_scroll_390", "ledger_inline",
+                     "no_dead_leaders", "fall_survives", "ratios_recomputed",
+                     "touch_targets"):
             chk(False, "%-16s %s  :: %s does not exist yet"
                 % (name, "needs the document", DOC.name))
         return
@@ -460,31 +488,7 @@ def document_checks(chk, tokens):
         # ---------- text_on_fall
         # Contrast here is a function of position, not a constant. Every text element is
         # measured against the ground at its own place in the document.
-        els = pg.evaluate("""() => {
-            const doc = document.querySelector('.doc').getBoundingClientRect();
-            const top = doc.top + window.scrollY, h = doc.height;
-            const out = [];
-            document.querySelectorAll('.measure *, .crossover em').forEach(e => {
-                if (!e.textContent.trim()) return;
-                if (e.children.length && !['P','H1','H2','SPAN','B','EM','DT','DD','A'].includes(e.tagName)) return;
-                const b = e.getBoundingClientRect();
-                if (!b.height) return;
-                const cs = getComputedStyle(e);
-                // the nearest ancestor that actually paints decides the background
-                let node = e, bg = null;
-                while (node && node !== document.documentElement) {
-                    const c = getComputedStyle(node).backgroundColor;
-                    if (c && !/rgba\\(0, 0, 0, 0\\)|transparent/.test(c)) { bg = c; break; }
-                    if (node.classList && node.classList.contains('doc')) break;
-                    node = node.parentElement;
-                }
-                out.push({tag: e.tagName, text: e.textContent.trim().slice(0, 34),
-                          color: cs.color, size: parseFloat(cs.fontSize),
-                          weight: cs.fontWeight, bg: bg,
-                          t: ((b.top + window.scrollY + b.height / 2) - top) / h});
-            });
-            return out;
-        }""")
+        els = pg.evaluate(TEXT_PROBE)
         ramp = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
 
         def fall_at(t):
@@ -518,6 +522,125 @@ def document_checks(chk, tokens):
             "text_on_fall     every text element clears its floor where it sits%s"
             % ("  :: " + "; ".join(fails[:6]) if fails
                else "  :: %d elements measured against their own ground" % measured))
+
+        # ================= 390px =================
+        mp = br.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+        mp.goto(DOC.resolve().as_uri())
+        mp.wait_for_timeout(700)
+
+        sw = mp.evaluate("() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]")
+        chk(sw[0] <= sw[1] + 1,
+            "no_h_scroll_390  no horizontal scroll at 390px  :: %d vs %d" % tuple(sw))
+
+        # ---------- ledger_inline
+        rows390 = mp.evaluate("""() => {
+            const m = document.querySelector('.measure').getBoundingClientRect();
+            return [...document.querySelectorAll('.lrow')].map(e => {
+                const b = e.getBoundingClientRect();
+                return {top: b.top + window.scrollY, bottom: b.bottom + window.scrollY,
+                        width: b.width, measure: m.width,
+                        pos: getComputedStyle(e).position,
+                        label: (e.querySelector('.lk') || {}).textContent || ''};
+            });
+        }""")
+        bad = []
+        for r in rows390:
+            if r["pos"] != "static":
+                bad.append("%s is still %s" % (" ".join(r["label"].split())[:22], r["pos"]))
+            if r["width"] < r["measure"] * 0.75:
+                bad.append("%s is %.0fpx wide in a %.0fpx measure"
+                           % (" ".join(r["label"].split())[:22], r["width"], r["measure"]))
+        order = [r["top"] for r in rows390]
+        if order != sorted(order):
+            bad.append("rows are not in document order")
+        for i in range(len(rows390) - 1):
+            if rows390[i + 1]["top"] < rows390[i]["bottom"] - 0.5:
+                bad.append("rows sit side by side")
+                break
+        chk(rows390 and not bad,
+            "ledger_inline    at 390px rows are full width and in document order%s"
+            % ("  :: " + "; ".join(bad[:4]) if bad else "  :: %d rows stacked" % len(rows390)))
+
+        # ---------- no_dead_leaders
+        leaders = mp.evaluate("""() => [...document.querySelectorAll('.lrow.anchored')]
+            .map(e => getComputedStyle(e, '::before').display)
+            .filter(d => d !== 'none').length""")
+        chk(leaders == 0,
+            "no_dead_leaders  no leader rule points at nothing at 390px%s"
+            % ("" if leaders == 0 else "  :: %d still rendered" % leaders))
+
+        # ---------- fall_survives
+        geo390 = mp.evaluate("""() => {
+            const d = document.querySelector('.doc').getBoundingClientRect();
+            const m = document.querySelector('.measure').getBoundingClientRect();
+            return {top: d.top + window.scrollY, height: d.height,
+                    x: m.right + window.scrollX - 10};
+        }""")
+        ls390 = []
+        for i in range(10):
+            y = geo390["top"] + (geo390["height"] - 3) * i / 9.0
+            mp.screenshot(path=str(tmp), full_page=True,
+                          clip={"x": max(0, geo390["x"]), "y": y, "width": 3, "height": 3})
+            ls390.append(oklch("#%02X%02X%02X"
+                               % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0])
+        rises390 = ["position %d (%.4f) is not below %d (%.4f)"
+                    % (i + 1, ls390[i + 1], i, ls390[i])
+                    for i in range(9) if ls390[i + 1] >= ls390[i]]
+        strays390 = ["position %d sampled L %.4f, the fall is L %.4f there"
+                     % (i, ls390[i], oklch(_fall(i / 9.0))[0])
+                     for i in range(10) if abs(ls390[i] - oklch(_fall(i / 9.0))[0]) > 0.01]
+        chk(not rises390 and not strays390,
+            "fall_survives    the fall still deepens at 390px%s"
+            % ("  :: " + "; ".join(rises390 + strays390) if (rises390 or strays390)
+               else "  :: %s" % " > ".join("%.3f" % x for x in ls390)))
+
+        # ---------- ratios_recomputed
+        # Elements move at this width, so the ground under them changes. Nothing printed
+        # may be carried over from the wide layout without being true here too.
+        claims390 = mp.evaluate("""() => [...document.querySelectorAll('[data-fg][data-bg]')]
+            .map(e => [e.dataset.fg, e.dataset.bg, e.textContent.trim()])""")
+        els390 = mp.evaluate(TEXT_PROBE)
+        bad390 = []
+        for fg, bg, shown in claims390:
+            try:
+                printed = float(shown.split(":")[0])
+            except ValueError:
+                bad390.append("%r is not a ratio" % shown); continue
+            if abs(printed - contrast(fg, bg)) > 0.005:
+                bad390.append("%s on %s printed %.2f, computed %.2f"
+                              % (fg, bg, printed, contrast(fg, bg)))
+        n390 = 0
+        for e in els390:
+            fg = css_colour(e["color"], {})
+            if fg is None:
+                continue
+            bg = css_colour(e["bg"], {}) if e["bg"] else _fall(e["t"])
+            pt = e["size"] * 72.0 / 96.0
+            large = pt >= 18 or (pt >= 14 and e["weight"] in ("700", "bold", "800", "900"))
+            floor = 3.0 if large else 4.5
+            r = contrast(fg, bg)
+            n390 += 1
+            if r < floor - 0.005:
+                bad390.append("%s %r at t=%.3f: %s on %s is %.2f:1, needs %.1f:1"
+                              % (e["tag"], e["text"], e["t"], fg, bg, r, floor))
+        chk(not bad390,
+            "ratios_recomputed every ratio and every element holds at 390px%s"
+            % ("  :: " + "; ".join(bad390[:5]) if bad390
+               else "  :: %d ratios and %d elements rechecked" % (len(claims390), n390)))
+        # ---------- touch_targets
+        # A Global Constraint that nothing was testing. The one link in the document
+        # was 22px tall before this check existed.
+        small = mp.evaluate("""() => [...document.querySelectorAll('a,button,[role=button],input,select')]
+            .map(e => { const b = e.getBoundingClientRect();
+                        return {t: e.tagName, w: Math.round(b.width), h: Math.round(b.height),
+                                s: (e.textContent||'').trim().slice(0,20)}; })
+            .filter(x => x.h < 44 || x.w < 44)""")
+        chk(not small,
+            "touch_targets    every interactive target is at least 44 by 44px%s"
+            % ("  :: " + "; ".join("%s %r is %dx%d" % (x["t"], x["s"], x["w"], x["h"])
+                                   for x in small[:4]) if small else "  :: all clear"))
+
+        mp.close()
 
         br.close()
         try:

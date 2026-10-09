@@ -100,7 +100,11 @@
   .ledger{grid-column:2;position:relative;background:var(--void);
     border-left:1px solid var(--border)}
 
-  .lrow{position:absolute;left:0;right:0;top:calc(var(--at) * 100%);
+  /* A row carries its own void ground. On the wide layout it sits over the ledger
+     column, which is the same colour; at 390px the column is gone and the row brings
+     the void with it, which is the only way its labels stay readable on the fall. */
+  .lrow{position:absolute;left:calc(100% - var(--rail) - var(--ledger));
+    width:var(--ledger);top:calc(var(--at) * 100%);background:var(--void);
     transform:translateY(-50%);padding:var(--sp-sm) var(--sp-md)}
   .lrow.first{transform:none;top:var(--sp-md)}
   .lrow.last{transform:none;top:auto;bottom:var(--sp-md)}
@@ -145,14 +149,33 @@
   .crossover em{font-style:normal;font-size:var(--xs);letter-spacing:.14em;
     text-transform:uppercase;color:var(--text);white-space:nowrap}
 
-  a{color:var(--s1);text-decoration:none;border-bottom:1px solid rgba(216,178,96,.35);
-    transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
-  a:hover,a:focus-visible{color:#A8832F;border-color:rgba(168,131,47,.3)}
+  /* Underlined by text-decoration rather than a border, so the vertical padding that
+     brings the tap target past 44px does not drag the rule away from the text. Padding on
+     an inline box grows the hit area without changing the line it sits in. */
+  a{color:var(--s1);text-decoration:underline;text-underline-offset:3px;
+    text-decoration-thickness:1px;text-decoration-color:rgba(216,178,96,.45);
+    padding-block:12px;
+    transition:color var(--dur) var(--ease),text-decoration-color var(--dur) var(--ease)}
+  a:hover,a:focus-visible{color:#A8832F;text-decoration-color:rgba(168,131,47,.45)}
 
   @media (max-width:860px){
     .doc{grid-template-columns:1fr}
-    .measure{grid-column:1;padding:calc(var(--sp-2xl) * 2) var(--gut) var(--sp-2xl)}
-    .ledger{grid-column:1;border-left:0}
+    .above{padding:calc(var(--sp-2xl) * 2) var(--gut) 14%}
+    .below{padding:var(--sp-2xl) var(--gut) calc(var(--sp-2xl) * 2)}
+    /* The ledger stops being a column. Its rows move inline, directly under the
+       passage they annotate, each carrying the void with it. */
+    /* The slug stops being fixed so it does not eat a short viewport, and loses its
+       second field, which the document title already carries in the tab. */
+    .slug{position:static;border-right:0}
+    .slug span{display:none}
+    .ledger{display:none}
+    .lrow{position:static;width:auto;transform:none;
+      margin:var(--sp-lg) 0;padding:var(--sp-md)}
+    .lrow.first,.lrow.last{position:static;transform:none;top:auto;bottom:auto}
+    /* An inline row is no longer at the height of the value it describes, so a leader
+       would point at nothing. It is dropped, and the row names its position instead. */
+    .lrow.anchored::before{display:none}
+    .lrow dl{grid-template-columns:auto minmax(0,1fr)}
     .rail{grid-column:1;position:fixed;top:0;left:0;right:0;height:3px;
       border-left:0;background:transparent;z-index:6}
     .rm,.rail .tick{display:none}
@@ -178,14 +201,44 @@
         <p class="statement quiet">This page is obeying that rule. The ground beneath this
           line is darker than the ground you started on, and it will not return.</p>
         <p class="stagemark">Stage one. Gold of last light.</p>
+      <div class="lrow anchored first" data-at="0.000000" style="--at:0.000000;">
+        <p class="lk"><span class="lsw" style="background:#D8B260"></span>Stage 1 &middot; Gold of last light</p>
+        <dl><dt>Hex</dt><dd>#D8B260</dd><dt>OKLCH</dt><dd>0.781 &nbsp;0.110 &nbsp;84.9</dd><dt>On void</dt><dd><b class="num" data-fg="#D8B260" data-bg="#080808">9.97:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#D8B260">1.70:1</b></dd><dt>Role</dt><dd>Text, marks and rules on the void</dd></dl>
+        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+      </div>
         <p class="stagemark">Stage two. After gold.</p>
+      <div class="lrow anchored" data-at="0.333333" style="--at:0.333333;">
+        <p class="lk"><span class="lsw" style="background:#BC6F4C"></span>Stage 2 &middot; After gold</p>
+        <dl><dt>Hex</dt><dd>#BC6F4C</dd><dt>OKLCH</dt><dd>0.619 &nbsp;0.110 &nbsp;44.7</dd><dt>On void</dt><dd><b class="num" data-fg="#BC6F4C" data-bg="#080808">5.26:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#BC6F4C">3.23:1</b></dd><dt>Role</dt><dd>Large text or fills. Borderline as text</dd></dl>
+        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+      </div>
       </section>
       <section class="below">
+      <div class="lrow anchored" data-at="0.500000" style="--at:0.500000;">
+        <p class="lk"><span class="lsw" style="background:#A2554E"></span>Crossover</p>
+        <dl><dt>Ground</dt><dd>#A2554E</dd><dt>OKLCH L</dt><dd>0.540</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#A2554E">4.52:1</b></dd></dl>
+        <p class="lnote">The first position in the document that carries body copy.</p>
+      </div>
         <section class="sec" data-folio="03">
           <p class="secnum">03</p>
           <h2 class="sechead">The surface map</h2>
           <p class="copy">Void is the page. #141414 is recessed, #2B2B2B is raised, and the hairline is the border token at rgba(192,192,192,0.22). Shadow is absent from this list on purpose: on a void ground, elevation reads through the surface steps, because a shadow has nothing to fall on.</p>
           <p class="copy">Those three are not on the ramp, so they cannot be read off the page the way a stage can. They are specified in the column to the right, which is the void and steps through them, so the family is demonstrated by the thing reporting it.</p>
+      <div class="lrow" style="--at:0.540000;">
+        <p class="lk"><span class="lsw" style="background:#080808"></span>Ground</p>
+        <dl><dt>Hex</dt><dd>#080808</dd><dt>OKLCH L</dt><dd>0.134</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#080808">17.00:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#080808">11.01:1</b></dd><dt>Use</dt><dd>Page ground. Required by the deepening-light rule, not borrowed</dd></dl>
+        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
+      </div>
+      <div class="lrow" style="--at:0.580000;background:#141414;">
+        <p class="lk"><span class="lsw" style="background:#141414"></span>Surface, recessed</p>
+        <dl><dt>Hex</dt><dd>#141414</dd><dt>OKLCH L</dt><dd>0.191</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#141414">15.63:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#141414">10.13:1</b></dd><dt>Use</dt><dd>Recessed panels</dd></dl>
+        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
+      </div>
+      <div class="lrow" style="--at:0.620000;background:#2B2B2B;">
+        <p class="lk"><span class="lsw" style="background:#2B2B2B"></span>Surface, raised</p>
+        <dl><dt>Hex</dt><dd>#2B2B2B</dd><dt>OKLCH L</dt><dd>0.289</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#2B2B2B">12.02:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#2B2B2B">7.78:1</b></dd><dt>Use</dt><dd>Cards and raised panels</dd></dl>
+        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
+      </div>
         </section>
         <section class="sec" data-folio="04">
           <p class="secnum">04</p>
@@ -213,6 +266,16 @@
             <p class="rolemeas">On void <b class="num" data-fg="#341D5E" data-bg="#080808">1.41:1</b> &middot; fails 3:1 &middot; text on it <b class="num" data-fg="#EEECEA" data-bg="#341D5E">12.01:1</b></p>
           </div>
           </div>
+      <div class="lrow anchored" data-at="0.666667" style="--at:0.666667;">
+        <p class="lk"><span class="lsw" style="background:#893A50"></span>Stage 3 &middot; Rose</p>
+        <dl><dt>Hex</dt><dd>#893A50</dd><dt>OKLCH</dt><dd>0.461 &nbsp;0.110 &nbsp;5.0</dd><dt>On void</dt><dd><b class="num" data-fg="#893A50" data-bg="#080808">2.66:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#893A50">6.40:1</b></dd><dt>Role</dt><dd>Ground, never a letterform</dd></dl>
+        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+      </div>
+      <div class="lrow anchored last" data-at="1.000000" style="--at:1.000000;">
+        <p class="lk"><span class="lsw" style="background:#341D5E"></span>Stage 4 &middot; Deep violet</p>
+        <dl><dt>Hex</dt><dd>#341D5E</dd><dt>OKLCH</dt><dd>0.301 &nbsp;0.110 &nbsp;295.2</dd><dt>On void</dt><dd><b class="num" data-fg="#341D5E" data-bg="#080808">1.41:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#341D5E">12.01:1</b></dd><dt>Role</dt><dd>Ground, never a letterform</dd></dl>
+        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+      </div>
         </section>
         <section class="sec" data-folio="05">
           <p class="secnum">05</p>
@@ -275,49 +338,7 @@
       </section>
     </main>
 
-    <aside class="ledger" aria-label="Measurements">
-      <div class="lrow anchored first" data-at="0.000000" style="--at:0.000000;">
-        <p class="lk"><span class="lsw" style="background:#D8B260"></span>Stage 1 &middot; Gold of last light</p>
-        <dl><dt>Hex</dt><dd>#D8B260</dd><dt>OKLCH</dt><dd>0.781 &nbsp;0.110 &nbsp;84.9</dd><dt>On void</dt><dd><b class="num" data-fg="#D8B260" data-bg="#080808">9.97:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#D8B260">1.70:1</b></dd><dt>Role</dt><dd>Text, marks and rules on the void</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
-      </div>
-      <div class="lrow anchored" data-at="0.333333" style="--at:0.333333;">
-        <p class="lk"><span class="lsw" style="background:#BC6F4C"></span>Stage 2 &middot; After gold</p>
-        <dl><dt>Hex</dt><dd>#BC6F4C</dd><dt>OKLCH</dt><dd>0.619 &nbsp;0.110 &nbsp;44.7</dd><dt>On void</dt><dd><b class="num" data-fg="#BC6F4C" data-bg="#080808">5.26:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#BC6F4C">3.23:1</b></dd><dt>Role</dt><dd>Large text or fills. Borderline as text</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
-      </div>
-      <div class="lrow anchored" data-at="0.666667" style="--at:0.666667;">
-        <p class="lk"><span class="lsw" style="background:#893A50"></span>Stage 3 &middot; Rose</p>
-        <dl><dt>Hex</dt><dd>#893A50</dd><dt>OKLCH</dt><dd>0.461 &nbsp;0.110 &nbsp;5.0</dd><dt>On void</dt><dd><b class="num" data-fg="#893A50" data-bg="#080808">2.66:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#893A50">6.40:1</b></dd><dt>Role</dt><dd>Ground, never a letterform</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
-      </div>
-      <div class="lrow anchored last" data-at="1.000000" style="--at:1.000000;">
-        <p class="lk"><span class="lsw" style="background:#341D5E"></span>Stage 4 &middot; Deep violet</p>
-        <dl><dt>Hex</dt><dd>#341D5E</dd><dt>OKLCH</dt><dd>0.301 &nbsp;0.110 &nbsp;295.2</dd><dt>On void</dt><dd><b class="num" data-fg="#341D5E" data-bg="#080808">1.41:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#341D5E">12.01:1</b></dd><dt>Role</dt><dd>Ground, never a letterform</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
-      </div>
-      <div class="lrow anchored" data-at="0.500000" style="--at:0.500000;">
-        <p class="lk"><span class="lsw" style="background:#A2554E"></span>Crossover</p>
-        <dl><dt>Ground</dt><dd>#A2554E</dd><dt>OKLCH L</dt><dd>0.540</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#A2554E">4.52:1</b></dd></dl>
-        <p class="lnote">The first position in the document that carries body copy.</p>
-      </div>
-      <div class="lrow" style="--at:0.540000;">
-        <p class="lk"><span class="lsw" style="background:#080808"></span>Ground</p>
-        <dl><dt>Hex</dt><dd>#080808</dd><dt>OKLCH L</dt><dd>0.134</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#080808">17.00:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#080808">11.01:1</b></dd><dt>Use</dt><dd>Page ground. Required by the deepening-light rule, not borrowed</dd></dl>
-        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
-      </div>
-      <div class="lrow" style="--at:0.580000;background:#141414;">
-        <p class="lk"><span class="lsw" style="background:#141414"></span>Surface, recessed</p>
-        <dl><dt>Hex</dt><dd>#141414</dd><dt>OKLCH L</dt><dd>0.191</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#141414">15.63:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#141414">10.13:1</b></dd><dt>Use</dt><dd>Recessed panels</dd></dl>
-        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
-      </div>
-      <div class="lrow" style="--at:0.620000;background:#2B2B2B;">
-        <p class="lk"><span class="lsw" style="background:#2B2B2B"></span>Surface, raised</p>
-        <dl><dt>Hex</dt><dd>#2B2B2B</dd><dt>OKLCH L</dt><dd>0.289</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#2B2B2B">12.02:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#2B2B2B">7.78:1</b></dd><dt>Use</dt><dd>Cards and raised panels</dd></dl>
-        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
-      </div>
-    </aside>
-
+    <aside class="ledger" aria-hidden="true"></aside>
     <nav class="rail" aria-label="Position in the fall">
       <b class="rm first" style="--at:0.0000"><i>Top</i>0.781<u>L</u></b>
       <b class="rm" style="--at:0.5000"><i>Crossover</i>0.540<u>L</u></b>

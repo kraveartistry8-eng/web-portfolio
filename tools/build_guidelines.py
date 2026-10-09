@@ -104,9 +104,10 @@ def ledger_row(at, kicker, pairs, note, anchored=True, swatch=None, style=""):
                      sw, kicker, rows, note))
 
 
-def stage_rows():
-    out = []
-    for i, st in enumerate(STAGES):
+def stage_row(i):
+    for j, st in enumerate(STAGES):
+        if j != i:
+            continue
         at = (0.0, 1 / 3.0, 2 / 3.0, 1.0)[i]
         hexv = st["value"]
         o = st["oklch"]
@@ -114,7 +115,7 @@ def stage_rows():
                 "Large text or fills. Borderline as text",
                 "Ground, never a letterform",
                 "Ground, never a letterform")[i]
-        out.append(ledger_row(
+        return ledger_row(
             at, "Stage %d &middot; %s" % (i + 1, st["name"]),
             [("Hex", hexv),
              ("OKLCH", "%.3f &nbsp;%.3f &nbsp;%.1f" % (o["l"], o["c"], o["h"])),
@@ -122,8 +123,8 @@ def stage_rows():
              ("Text on it", ratio(TEXT, hexv)),
              ("Role", role)],
             "Read off the ground at this line, where the fall passes through it.",
-            swatch=hexv))
-    return "".join(out)
+            swatch=hexv)
+    return ""
 
 
 def crossover_row():
@@ -173,8 +174,9 @@ def measure_above():
         <p class="statement quiet">This page is obeying that rule. The ground beneath this
           line is darker than the ground you started on, and it will not return.</p>
         <p class="stagemark">Stage one. %(n1)s.</p>
-        <p class="stagemark">Stage two. %(n2)s.</p>
-      </section>\n""" % dict(n1=stage1["name"], n2=stage2["name"])
+%(r1)s        <p class="stagemark">Stage two. %(n2)s.</p>
+%(r2)s      </section>\n""" % dict(n1=stage1["name"], n2=stage2["name"],
+                                   r1=stage_row(0), r2=stage_row(1))
 
 
 def sec(folio, title, inner):
@@ -205,6 +207,7 @@ def measure_below():
         p("Those three are not on the ramp, so they cannot be read off the page the way a "
           "stage can. They are specified in the column to the right, which is the void and "
           "steps through them, so the family is demonstrated by the thing reporting it."),
+        surface_rows(),
     ])))
 
     roles = "".join(
@@ -227,6 +230,7 @@ def measure_below():
           "it is what the rule implies. The failing numbers are printed because they are the "
           "reason for the restriction."),
         '          <div class="roles">\n' + roles + "          </div>\n",
+        stage_row(2), stage_row(3),
     ])))
 
     specimen = "".join(
@@ -284,7 +288,8 @@ def measure_below():
           "duplicate."),
     ])))
 
-    return '      <section class="below">\n' + "".join(out) + "      </section>\n"
+    return ('      <section class="below">\n' + crossover_row()
+            + "".join(out) + "      </section>\n")
 
 
 def build():
@@ -399,7 +404,11 @@ def build():
   .ledger{grid-column:2;position:relative;background:var(--void);
     border-left:1px solid var(--border)}
 
-  .lrow{position:absolute;left:0;right:0;top:calc(var(--at) * 100%%);
+  /* A row carries its own void ground. On the wide layout it sits over the ledger
+     column, which is the same colour; at 390px the column is gone and the row brings
+     the void with it, which is the only way its labels stay readable on the fall. */
+  .lrow{position:absolute;left:calc(100%% - var(--rail) - var(--ledger));
+    width:var(--ledger);top:calc(var(--at) * 100%%);background:var(--void);
     transform:translateY(-50%%);padding:var(--sp-sm) var(--sp-md)}
   .lrow.first{transform:none;top:var(--sp-md)}
   .lrow.last{transform:none;top:auto;bottom:var(--sp-md)}
@@ -444,14 +453,33 @@ def build():
   .crossover em{font-style:normal;font-size:var(--xs);letter-spacing:.14em;
     text-transform:uppercase;color:var(--text);white-space:nowrap}
 
-  a{color:var(--s1);text-decoration:none;border-bottom:1px solid rgba(216,178,96,.35);
-    transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease)}
-  a:hover,a:focus-visible{color:%(link_hover)s;border-color:rgba(168,131,47,.3)}
+  /* Underlined by text-decoration rather than a border, so the vertical padding that
+     brings the tap target past 44px does not drag the rule away from the text. Padding on
+     an inline box grows the hit area without changing the line it sits in. */
+  a{color:var(--s1);text-decoration:underline;text-underline-offset:3px;
+    text-decoration-thickness:1px;text-decoration-color:rgba(216,178,96,.45);
+    padding-block:12px;
+    transition:color var(--dur) var(--ease),text-decoration-color var(--dur) var(--ease)}
+  a:hover,a:focus-visible{color:%(link_hover)s;text-decoration-color:rgba(168,131,47,.45)}
 
   @media (max-width:860px){
     .doc{grid-template-columns:1fr}
-    .measure{grid-column:1;padding:calc(var(--sp-2xl) * 2) var(--gut) var(--sp-2xl)}
-    .ledger{grid-column:1;border-left:0}
+    .above{padding:calc(var(--sp-2xl) * 2) var(--gut) 14%%}
+    .below{padding:var(--sp-2xl) var(--gut) calc(var(--sp-2xl) * 2)}
+    /* The ledger stops being a column. Its rows move inline, directly under the
+       passage they annotate, each carrying the void with it. */
+    /* The slug stops being fixed so it does not eat a short viewport, and loses its
+       second field, which the document title already carries in the tab. */
+    .slug{position:static;border-right:0}
+    .slug span{display:none}
+    .ledger{display:none}
+    .lrow{position:static;width:auto;transform:none;
+      margin:var(--sp-lg) 0;padding:var(--sp-md)}
+    .lrow.first,.lrow.last{position:static;transform:none;top:auto;bottom:auto}
+    /* An inline row is no longer at the height of the value it describes, so a leader
+       would point at nothing. It is dropped, and the row names its position instead. */
+    .lrow.anchored::before{display:none}
+    .lrow dl{grid-template-columns:auto minmax(0,1fr)}
     .rail{grid-column:1;position:fixed;top:0;left:0;right:0;height:3px;
       border-left:0;background:transparent;z-index:6}
     .rm,.rail .tick{display:none}
@@ -471,9 +499,7 @@ def build():
     <main class="measure">
 %(body)s    </main>
 
-    <aside class="ledger" aria-label="Measurements">
-%(ledger)s    </aside>
-
+    <aside class="ledger" aria-hidden="true"></aside>
     <nav class="rail" aria-label="Position in the fall">
 %(rail)s      <span class="tick" style="--at:%(xo_frac).4f"></span>
       <span class="marker"></span>
@@ -505,8 +531,7 @@ def build():
         xo_ratio=B.contrast(TEXT, ground(CROSSOVER)),
         inv=INVERSION * 100.0, inv_ratio=B.contrast(TEXT, ground(INVERSION)),
         link_hover="#A8832F",
-        body=body, rail=rail,
-        ledger=stage_rows() + crossover_row() + surface_rows())
+        body=body, rail=rail)
 
 
 if __name__ == "__main__":
