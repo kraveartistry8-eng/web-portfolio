@@ -32,7 +32,7 @@
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{margin:0;background:var(--void);color:var(--text);
-    font-family:var(--body);font-weight:350;font-size:var(--base);line-height:1.75}
+    font-family:var(--body);font-weight:400;font-size:var(--base);line-height:1.75}
 
   /* The slug. Fixed, on the void, outside the fall. It replaces a four-field footer
      because the rail already carries position and two indicators would compete. */
@@ -121,6 +121,9 @@
   .lrow dt{color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
   .lrow dd{margin:0;color:var(--text);font-variant-numeric:tabular-nums}
   .lnote{margin:6px 0 0;font-size:var(--xs);line-height:1.45;color:var(--muted);max-width:28ch}
+  /* "Read off the ground at this line" is true only while the row is at that line.
+     Inline, it is not, so the row names its own position instead. */
+  .lnote.narrow{display:none}
 
   /* The rail. A void strip outside the ledger. It is the folio; there is no page number. */
   .rail{grid-column:3;position:relative;background:var(--void);
@@ -154,7 +157,7 @@
      an inline box grows the hit area without changing the line it sits in. */
   a{color:var(--s1);text-decoration:underline;text-underline-offset:3px;
     text-decoration-thickness:1px;text-decoration-color:rgba(216,178,96,.45);
-    padding-block:12px;
+    padding-block:14px;
     transition:color var(--dur) var(--ease),text-decoration-color var(--dur) var(--ease)}
   a:hover,a:focus-visible{color:#A8832F;text-decoration-color:rgba(168,131,47,.45)}
 
@@ -175,11 +178,20 @@
     /* An inline row is no longer at the height of the value it describes, so a leader
        would point at nothing. It is dropped, and the row names its position instead. */
     .lrow.anchored::before{display:none}
+    .lnote.wide{display:none}
+    .lnote.narrow{display:block}
     .lrow dl{grid-template-columns:auto minmax(0,1fr)}
     .rail{grid-column:1;position:fixed;top:0;left:0;right:0;height:3px;
       border-left:0;background:transparent;z-index:6}
     .rm,.rail .tick{display:none}
-    .marker{display:block;position:fixed;top:0;left:0;width:0;height:3px;margin:0}
+    /* The bar fills left to right as the reader descends. Scroll-driven animation
+       where the browser has it; where it does not, the bar simply stays empty, which
+       is no worse than before and never wrong. */
+    .marker{display:block;position:fixed;top:0;left:0;height:3px;margin:0;
+      width:0;background:var(--s1);opacity:1}
+    @supports (animation-timeline:scroll()){
+      .marker{animation:railfill linear both;animation-timeline:scroll(root block)}
+    }
     .crossover{width:100%}
   }
   @media (prefers-reduced-motion:reduce){
@@ -190,6 +202,8 @@
      printed artifact carries the same fall as the screen one. Nothing here sets a
      lighter value: a print stylesheet that reintroduced a white page would break the
      brand's central rule in the one place nobody looks. */
+  @keyframes railfill{from{width:0}to{width:100%}}
+
   @page{margin:0;size:Letter}
   @media print{
     .slug{position:static;border-right:0}
@@ -205,6 +219,8 @@
       padding:var(--sp-md)}
     .lrow.first,.lrow.last{position:static;transform:none;top:auto;bottom:auto}
     .lrow.anchored::before{display:none}
+    .lnote.wide{display:none}
+    .lnote.narrow{display:block}
     .crossover{width:calc(100% - var(--rail))}
     /* a reading split across two sheets loses the thing it demonstrates */
     .lrow,.role,.tstep,.crossover{break-inside:avoid;page-break-inside:avoid}
@@ -229,20 +245,23 @@
       <div class="lrow anchored first" data-at="0.000000" style="--at:0.000000;">
         <p class="lk"><span class="lsw" style="background:#D8B260"></span>Stage 1 &middot; Gold of last light</p>
         <dl><dt>Hex</dt><dd>#D8B260</dd><dt>OKLCH</dt><dd>0.781 &nbsp;0.110 &nbsp;84.9</dd><dt>On void</dt><dd><b class="num" data-fg="#D8B260" data-bg="#080808">9.97:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#D8B260">1.70:1</b></dd><dt>Role</dt><dd>Text, marks and rules on the void</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote wide">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote narrow">The fall reaches this value at 0.0 per cent of the document.</p>
       </div>
         <p class="stagemark">Stage two. After gold.</p>
       <div class="lrow anchored" data-at="0.333333" style="--at:0.333333;">
         <p class="lk"><span class="lsw" style="background:#BC6F4C"></span>Stage 2 &middot; After gold</p>
         <dl><dt>Hex</dt><dd>#BC6F4C</dd><dt>OKLCH</dt><dd>0.619 &nbsp;0.110 &nbsp;44.7</dd><dt>On void</dt><dd><b class="num" data-fg="#BC6F4C" data-bg="#080808">5.26:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#BC6F4C">3.23:1</b></dd><dt>Role</dt><dd>Large text or fills. Borderline as text</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote wide">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote narrow">The fall reaches this value at 33.3 per cent of the document.</p>
       </div>
       </section>
       <section class="below">
       <div class="lrow anchored" data-at="0.500000" style="--at:0.500000;">
-        <p class="lk"><span class="lsw" style="background:#A2554E"></span>Crossover</p>
-        <dl><dt>Ground</dt><dd>#A2554E</dd><dt>OKLCH L</dt><dd>0.540</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#A2554E">4.52:1</b></dd></dl>
-        <p class="lnote">The first position in the document that carries body copy.</p>
+        <p class="lk"><span class="lsw" style="background:#A2544E"></span>Crossover</p>
+        <dl><dt>Ground</dt><dd>#A2544E</dd><dt>OKLCH L</dt><dd>0.538</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#A2544E">4.55:1</b></dd></dl>
+        <p class="lnote wide">The first position in the document that carries body copy.</p>
+        <p class="lnote narrow">The fall reaches this value at 50.0 per cent of the document.</p>
       </div>
         <section class="sec" data-folio="03">
           <p class="secnum">03</p>
@@ -252,17 +271,17 @@
       <div class="lrow" style="--at:0.540000;">
         <p class="lk"><span class="lsw" style="background:#080808"></span>Ground</p>
         <dl><dt>Hex</dt><dd>#080808</dd><dt>OKLCH L</dt><dd>0.134</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#080808">17.00:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#080808">11.01:1</b></dd><dt>Use</dt><dd>Page ground. Required by the deepening-light rule, not borrowed</dd></dl>
-        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
+        <p class="lnote wide">Not on the ramp, so it is read off this column rather than the page.</p>
       </div>
       <div class="lrow" style="--at:0.580000;background:#141414;">
         <p class="lk"><span class="lsw" style="background:#141414"></span>Surface, recessed</p>
         <dl><dt>Hex</dt><dd>#141414</dd><dt>OKLCH L</dt><dd>0.191</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#141414">15.63:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#141414">10.13:1</b></dd><dt>Use</dt><dd>Recessed panels</dd></dl>
-        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
+        <p class="lnote wide">Not on the ramp, so it is read off this column rather than the page.</p>
       </div>
       <div class="lrow" style="--at:0.620000;background:#2B2B2B;">
         <p class="lk"><span class="lsw" style="background:#2B2B2B"></span>Surface, raised</p>
         <dl><dt>Hex</dt><dd>#2B2B2B</dd><dt>OKLCH L</dt><dd>0.289</dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#2B2B2B">12.02:1</b></dd><dt>Muted on it</dt><dd><b class="num" data-fg="#C0C0C0" data-bg="#2B2B2B">7.78:1</b></dd><dt>Use</dt><dd>Cards and raised panels</dd></dl>
-        <p class="lnote">Not on the ramp, so it is read off this column rather than the page.</p>
+        <p class="lnote wide">Not on the ramp, so it is read off this column rather than the page.</p>
       </div>
         </section>
         <section class="sec" data-folio="04">
@@ -294,12 +313,14 @@
       <div class="lrow anchored" data-at="0.666667" style="--at:0.666667;">
         <p class="lk"><span class="lsw" style="background:#893A50"></span>Stage 3 &middot; Rose</p>
         <dl><dt>Hex</dt><dd>#893A50</dd><dt>OKLCH</dt><dd>0.461 &nbsp;0.110 &nbsp;5.0</dd><dt>On void</dt><dd><b class="num" data-fg="#893A50" data-bg="#080808">2.66:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#893A50">6.40:1</b></dd><dt>Role</dt><dd>Ground, never a letterform</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote wide">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote narrow">The fall reaches this value at 66.7 per cent of the document.</p>
       </div>
       <div class="lrow anchored last" data-at="1.000000" style="--at:1.000000;">
         <p class="lk"><span class="lsw" style="background:#341D5E"></span>Stage 4 &middot; Deep violet</p>
         <dl><dt>Hex</dt><dd>#341D5E</dd><dt>OKLCH</dt><dd>0.301 &nbsp;0.110 &nbsp;295.2</dd><dt>On void</dt><dd><b class="num" data-fg="#341D5E" data-bg="#080808">1.41:1</b></dd><dt>Text on it</dt><dd><b class="num" data-fg="#EEECEA" data-bg="#341D5E">12.01:1</b></dd><dt>Role</dt><dd>Ground, never a letterform</dd></dl>
-        <p class="lnote">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote wide">Read off the ground at this line, where the fall passes through it.</p>
+        <p class="lnote narrow">The fall reaches this value at 100.0 per cent of the document.</p>
       </div>
         </section>
         <section class="sec" data-folio="05">
@@ -366,14 +387,14 @@
     <aside class="ledger" aria-hidden="true"></aside>
     <nav class="rail" aria-label="Position in the fall">
       <b class="rm first" style="--at:0.0000"><i>Top</i>0.781<u>L</u></b>
-      <b class="rm" style="--at:0.5000"><i>Crossover</i>0.540<u>L</u></b>
+      <b class="rm" style="--at:0.5000"><i>Crossover</i>0.538<u>L</u></b>
       <b class="rm last" style="--at:1.0000"><i>End</i>0.301<u>L</u></b>
       <span class="tick" style="--at:0.5000"></span>
       <span class="marker"></span>
     </nav>
 
     <div class="crossover" aria-hidden="true">
-      <em>Body copy may begin</em><span></span><em>4.52:1</em>
+      <em>Body copy may begin</em><span></span><em>4.55:1</em>
     </div>
   </div>
 

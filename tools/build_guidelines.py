@@ -63,7 +63,11 @@ def solve(fn, target, rising=True):
     return hi
 
 
-CROSSOVER = solve(lambda t: B.contrast(TEXT, ground(t)), 4.5)
+# Rounded to the precision the document writes into data-at, so the ground computed
+# here and the ground recomputed from the attribute are the same colour. Left at full
+# bisection precision the two land either side of a .5 rounding and the document prints
+# a hex one unit off the fall it claims to be reading.
+CROSSOVER = round(solve(lambda t: B.contrast(TEXT, ground(t)), 4.5), 6)
 # where dark and light display type read exactly the same, so the inversion
 # never accepts a worse ratio than it must
 _lo, _hi = 0.0, 1.0
@@ -73,7 +77,7 @@ for _ in range(60):
         _lo = _m
     else:
         _hi = _m
-INVERSION = _hi
+INVERSION = round(_hi, 6)
 
 
 def ratio(fg, bg):
@@ -99,9 +103,11 @@ def ledger_row(at, kicker, pairs, note, anchored=True, swatch=None, style=""):
     return ("""      <div class="lrow%s"%s style="--at:%.6f;%s">
         <p class="lk">%s%s</p>
         <dl>%s</dl>
-        <p class="lnote">%s</p>
+        <p class="lnote wide">%s</p>%s
       </div>\n""" % (("" if not anchored else " anchored") + edge, attrs, at, style,
-                     sw, kicker, rows, note))
+                     sw, kicker, rows, note,
+                     ('\n        <p class="lnote narrow">The fall reaches this value at '
+                      '%.1f per cent of the document.</p>' % (at * 100)) if anchored else ""))
 
 
 def stage_row(i):
@@ -336,7 +342,7 @@ def build():
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%%}
   body{margin:0;background:var(--void);color:var(--text);
-    font-family:var(--body);font-weight:350;font-size:var(--base);line-height:%(lead_body)s}
+    font-family:var(--body);font-weight:%(w_body)s;font-size:var(--base);line-height:%(lead_body)s}
 
   /* The slug. Fixed, on the void, outside the fall. It replaces a four-field footer
      because the rail already carries position and two indicators would compete. */
@@ -425,6 +431,9 @@ def build():
   .lrow dt{color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
   .lrow dd{margin:0;color:var(--text);font-variant-numeric:tabular-nums}
   .lnote{margin:6px 0 0;font-size:var(--xs);line-height:1.45;color:var(--muted);max-width:28ch}
+  /* "Read off the ground at this line" is true only while the row is at that line.
+     Inline, it is not, so the row names its own position instead. */
+  .lnote.narrow{display:none}
 
   /* The rail. A void strip outside the ledger. It is the folio; there is no page number. */
   .rail{grid-column:3;position:relative;background:var(--void);
@@ -458,7 +467,7 @@ def build():
      an inline box grows the hit area without changing the line it sits in. */
   a{color:var(--s1);text-decoration:underline;text-underline-offset:3px;
     text-decoration-thickness:1px;text-decoration-color:rgba(216,178,96,.45);
-    padding-block:12px;
+    padding-block:14px;
     transition:color var(--dur) var(--ease),text-decoration-color var(--dur) var(--ease)}
   a:hover,a:focus-visible{color:%(link_hover)s;text-decoration-color:rgba(168,131,47,.45)}
 
@@ -479,11 +488,20 @@ def build():
     /* An inline row is no longer at the height of the value it describes, so a leader
        would point at nothing. It is dropped, and the row names its position instead. */
     .lrow.anchored::before{display:none}
+    .lnote.wide{display:none}
+    .lnote.narrow{display:block}
     .lrow dl{grid-template-columns:auto minmax(0,1fr)}
     .rail{grid-column:1;position:fixed;top:0;left:0;right:0;height:3px;
       border-left:0;background:transparent;z-index:6}
     .rm,.rail .tick{display:none}
-    .marker{display:block;position:fixed;top:0;left:0;width:0;height:3px;margin:0}
+    /* The bar fills left to right as the reader descends. Scroll-driven animation
+       where the browser has it; where it does not, the bar simply stays empty, which
+       is no worse than before and never wrong. */
+    .marker{display:block;position:fixed;top:0;left:0;height:3px;margin:0;
+      width:0;background:var(--s1);opacity:1}
+    @supports (animation-timeline:scroll()){
+      .marker{animation:railfill linear both;animation-timeline:scroll(root block)}
+    }
     .crossover{width:100%%}
   }
   @media (prefers-reduced-motion:reduce){
@@ -494,6 +512,8 @@ def build():
      printed artifact carries the same fall as the screen one. Nothing here sets a
      lighter value: a print stylesheet that reintroduced a white page would break the
      brand's central rule in the one place nobody looks. */
+  @keyframes railfill{from{width:0}to{width:100%%}}
+
   @page{margin:0;size:Letter}
   @media print{
     .slug{position:static;border-right:0}
@@ -509,6 +529,8 @@ def build():
       padding:var(--sp-md)}
     .lrow.first,.lrow.last{position:static;transform:none;top:auto;bottom:auto}
     .lrow.anchored::before{display:none}
+    .lnote.wide{display:none}
+    .lnote.narrow{display:block}
     .crossover{width:calc(100%% - var(--rail))}
     /* a reading split across two sheets loses the thing it demonstrates */
     .lrow,.role,.tstep,.crossover{break-inside:avoid;page-break-inside:avoid}
@@ -551,6 +573,7 @@ def build():
         radius=TOKENS["radius"]["default"], shadow=TOKENS["shadow"]["default"],
         dur=MOTION["duration"]["base"], ease=MOTION["ease"],
         lead_body=TYPO["leading"]["body"], lead_disp=TYPO["leading"]["display"],
+        w_body=TYPO["body"]["weight"], w_display=TYPO["display"]["weight"],
         track_disp=TYPO["tracking"]["display"], track_wm=TYPO["tracking"]["wordmark"],
         xo=CROSSOVER * 100.0, xo_frac=CROSSOVER,
         xo_ratio=B.contrast(TEXT, ground(CROSSOVER)),

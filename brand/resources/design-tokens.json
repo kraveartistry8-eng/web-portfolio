@@ -85,16 +85,18 @@
     }
   },
   "typography": {
-    "_status": "Pairing D, picked 9 October 2026 from brand/2026-10-09-type-specimen-pass-2.html. Both faces are in Shopify's font library, checked against the font table in the theme settings documentation on 9 October 2026, so neither needs a webfont in assets. The theme ships with one font_picker (type_primary_font, default work_sans_n4), so a second picker is a schema addition during the build. The scale is a ratio, not a list: every step is base times ratio to a whole power and brand_audit recomputes it.",
+    "_status": "Pairing D, picked 9 October 2026 from brand/2026-10-09-type-specimen-pass-2.html. Both faces are in Shopify's font library, checked against the font table in the theme settings documentation on 9 October 2026, so neither needs a webfont in assets. The theme ships with one font_picker (type_primary_font, default work_sans_n4), so a second picker is a schema addition during the build. The scale is a ratio, not a list: every step is base times ratio to a whole power and brand_audit recomputes it. Weights are static: Shopify serves Instrument Serif as instrument_serif_n4 and Space Grotesk as space_grotesk_n3 to n7, with no variable axis, so a value like 350 would snap in the theme and stop matching this specimen.",
     "display": {
       "family": "Instrument Serif",
       "use": "Wordmark and hero only",
-      "delivery": "shopify_library"
+      "delivery": "shopify_library",
+      "weight": 400
     },
     "body": {
       "family": "Space Grotesk",
       "use": "All UI, headings, body, labels",
-      "delivery": "shopify_library"
+      "delivery": "shopify_library",
+      "weight": 400
     },
     "scale": {
       "ratio": 1.25,

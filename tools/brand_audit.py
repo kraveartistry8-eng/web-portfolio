@@ -101,6 +101,8 @@ def get(tree, dotted):
     return cur
 
 
+PRINT_BLOCKS = []
+
 MISSING = object()
 
 
@@ -234,8 +236,8 @@ def document_checks(chk, tokens):
     """Checks that need the rendered document. They fail loudly while it does not exist."""
     if not DOC.exists():
         for name in ("fall_monotonic", "no_brightening", "rail_is_folio",
-                     "ledger_is_void", "svh_not_vh", "specimen_truth",
-                     "ledger_anchored", "text_on_fall", "ledger_clear",
+                     "ledger_is_void", "svh_not_vh", "specimen_truth", "faces_loaded",
+                     "ledger_anchored", "text_on_fall", "ledger_clear", "ground_truth",
                      "crossover_in_fall", "no_h_scroll_390", "ledger_inline",
                      "no_dead_leaders", "fall_survives", "ratios_recomputed",
                      "touch_targets", "print_ground"):
@@ -243,11 +245,30 @@ def document_checks(chk, tokens):
                 % (name, "needs the document", DOC.name))
         return
 
+    ramp0 = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
+
+    def _fall(t):
+        """The fall at document position t, interpolated in sRGB the way an
+        unprefixed CSS gradient interpolates."""
+        t = max(0.0, min(1.0, t))
+        stops = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), ramp0))
+        for i in range(3):
+            (p0, c0), (p1, c1) = stops[i], stops[i + 1]
+            if p0 <= t <= p1:
+                f = (t - p0) / (p1 - p0)
+                a_, b_ = rgb(c0), rgb(c1)
+                return "#%02X%02X%02X" % tuple(
+                    int(round(a_[j] + (b_[j] - a_[j]) * f)) for j in range(3))
+        return ramp0[-1]
+
     html = io.open(DOC, encoding="utf-8").read()
     css = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S))
 
     # ---------- svh_not_vh
-    units = re.findall(r"[\d.]+((?:[sdl])?vh)\b", css)
+    # case-insensitive, and inline style attributes count as stylesheet rules
+    inline_styles = " ".join(re.findall(r'style="([^"]*)"', html))
+    units = re.findall(r"[\d.]+((?:[sdl])?vh)\b", (css + " " + inline_styles), re.I)
+    units = [u.lower() for u in units]
     wrong = sorted(set(u for u in units if u != "svh"))
     chk(not wrong,
         "svh_not_vh       full-height values use svh only%s"
@@ -268,12 +289,21 @@ def document_checks(chk, tokens):
         return [p.strip() for p in sel.split(",") if p.strip()]
 
     STATE = r":(hover|focus-visible|focus|active)"
+    # Every property through which a state can get lighter. Comparing only color and
+    # background let filter:brightness(2.2) and a white border through.
+    COLOUR_PROPS = ("color", "background-color", "background", "border-color",
+                    "border-bottom-color", "border-top-color", "border-left-color",
+                    "border-right-color", "border-bottom", "border-top", "border",
+                    "outline-color", "outline", "text-decoration-color",
+                    "caret-color", "box-shadow", "text-shadow")
     resting = {}
     for sel, decls in rules:
         for one in selectors(sel):
             if re.search(STATE, one):
                 continue
-            for prop in ("color", "background-color", "background"):
+            if "opacity" in decls:
+                resting.setdefault(one, {})["opacity"] = decls["opacity"]
+            for prop in COLOUR_PROPS:
                 if prop in decls:
                     resting.setdefault(one, {})[prop] = decls[prop]
     brighter = []
@@ -284,7 +314,21 @@ def document_checks(chk, tokens):
             if not re.search(STATE, one):
                 continue
             base = re.sub(STATE, "", one).strip()
-            for prop in ("color", "background-color", "background"):
+            # a filter or a blend mode can brighten anything, and the brand uses none
+            for prop in ("filter", "backdrop-filter", "mix-blend-mode"):
+                v = decls.get(prop)
+                if v and v.strip().lower() not in ("none", "normal"):
+                    brighter.append("%s sets %s:%s, which can lighten anything"
+                                    % (one, prop, v.strip()))
+            if "opacity" in decls:
+                try:
+                    new_o = float(decls["opacity"])
+                    old_o = float(resting.get(base, {}).get("opacity", 1.0))
+                    if new_o > old_o + 1e-6:
+                        brighter.append("%s raises opacity from %g to %g" % (one, old_o, new_o))
+                except ValueError:
+                    pass
+            for prop in COLOUR_PROPS:
                 if prop not in decls:
                     continue
                 new_c = css_colour(decls[prop], variables)
@@ -321,6 +365,29 @@ def document_checks(chk, tokens):
         pg = br.new_page(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
         pg.goto(DOC.resolve().as_uri())
         pg.wait_for_timeout(700)
+
+        # ---------- faces_loaded
+        # "It is set in the chosen faces" is a stated form requirement. Offline, or if
+        # the font host fails, the document silently renders in Georgia and system-ui
+        # and the requirement is false with nothing to show for it.
+        pg.evaluate("() => document.fonts.ready")
+        pg.wait_for_timeout(900)
+        want_faces = [get(tokens, "typography.display.family"),
+                      get(tokens, "typography.body.family")]
+        loaded = pg.evaluate("""(f) => f.map(n => {
+            const c = document.createElement('canvas').getContext('2d');
+            c.font = '400 48px serif';
+            const base = c.measureText('Afterglow Hamburgefonstiv').width;
+            c.font = '400 48px "' + n + '", serif';
+            const got = c.measureText('Afterglow Hamburgefonstiv').width;
+            return [n, document.fonts.check('400 48px "' + n + '"'),
+                    Math.abs(got - base) > 0.5];
+        })""", want_faces)
+        missing = ["%s did not load" % n for n, ok, distinct in loaded if not (ok and distinct)]
+        chk(not missing,
+            "faces_loaded     the document is set in the chosen faces%s"
+            % ("  :: " + "; ".join(missing) if missing
+               else "  :: %s" % ", ".join(n for n, _, _ in loaded)))
 
         # ---------- rail_is_folio
         rail = pg.query_selector(".rail")
@@ -374,20 +441,6 @@ def document_checks(chk, tokens):
                  for i in range(9) if ls[i + 1] >= ls[i]]
         # A sample that landed on a rule or a glyph instead of the ground would make
         # this check meaningless, so each one must also match the fall it claims to be.
-        ramp0 = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
-
-        def _fall(t):
-            t = max(0.0, min(1.0, t))
-            stops = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), ramp0))
-            for i in range(3):
-                (p0, c0), (p1, c1) = stops[i], stops[i + 1]
-                if p0 <= t <= p1:
-                    f = (t - p0) / (p1 - p0)
-                    a_, b_ = rgb(c0), rgb(c1)
-                    return "#%02X%02X%02X" % tuple(
-                        int(round(a_[j] + (b_[j] - a_[j]) * f)) for j in range(3))
-            return ramp0[-1]
-
         strays = ["position %d sampled L %.4f, the fall is L %.4f there"
                   % (i, ls[i], oklch(_fall(i / 9.0))[0])
                   for i in range(10) if abs(ls[i] - oklch(_fall(i / 9.0))[0]) > 0.01]
@@ -396,26 +449,71 @@ def document_checks(chk, tokens):
             % ("  :: " + "; ".join(rises + strays) if (rises or strays)
                else "  :: %s" % " > ".join("%.3f" % x for x in ls)))
         # ---------- specimen_truth
-        # A specification document that prints a number it did not measure is worse
-        # than one that prints none. Every printed ratio carries the two colours it
-        # claims to describe, so this recomputes rather than trusts.
+        # Recomputing contrast(data-fg, data-bg) only proves the arithmetic is
+        # self-consistent: any internally consistent lie passes. So the colours
+        # themselves must also be ones the document measured, not ones it invented.
         claims = pg.evaluate("""() => [...document.querySelectorAll('[data-fg][data-bg]')]
-            .map(e => [e.dataset.fg, e.dataset.bg, e.textContent.trim()])""")
+            .map(e => {
+                const row = e.closest('[data-at]');
+                const dt = e.closest('dd') && e.closest('dd').previousElementSibling;
+                return {fg: e.dataset.fg, bg: e.dataset.bg, shown: e.textContent.trim(),
+                        at: row ? parseFloat(row.dataset.at) : null,
+                        label: dt ? dt.textContent.trim() : ''};
+            })""")
+        palette = set()
+        for path in ("color.ground.value", "color.surface-deep.value", "color.surface.value",
+                     "color.text.value", "color.muted.value"):
+            v = get(tokens, path)
+            if isinstance(v, str):
+                palette.add(v.upper())
+        for n in (1, 2, 3, 4):
+            palette.add(get(tokens, "color.stages.%d.value" % n).upper())
+        ats = sorted({c["at"] for c in claims if c["at"] is not None})
+        for a_ in ats:
+            palette.add(_fall(a_).upper())
+
         wrong = []
-        for fg, bg, shown in claims:
+        for c in claims:
             try:
-                # rstrip takes a character set, not a suffix: "1.41:1".rstrip(":1")
-                # is "1.4". Split on the colon instead.
-                printed = float(shown.split(":")[0])
+                printed = float(c["shown"].split(":")[0])
             except ValueError:
-                wrong.append("%r is not a ratio" % shown); continue
-            real = contrast(fg, bg)
+                wrong.append("%r is not a ratio" % c["shown"]); continue
+            real = contrast(c["fg"], c["bg"])
             if abs(printed - real) > 0.005:
-                wrong.append("%s on %s printed %.2f, computed %.2f" % (fg, bg, printed, real))
+                wrong.append("%s on %s printed %.2f, computed %.2f"
+                             % (c["fg"], c["bg"], printed, real))
+            for role, col in (("fg", c["fg"]), ("bg", c["bg"])):
+                if col.upper() not in palette:
+                    wrong.append("%s is not a colour this document measured; the "
+                                 "palette is %s" % (col, ", ".join(sorted(palette))))
+            # a row anchored in the fall must name the ground the fall actually reaches
+            if c["at"] is not None and c["label"].lower() == "ground":
+                want = _fall(c["at"]).upper()
+                if c["bg"].upper() != want:
+                    wrong.append("the row at t=%.4f names ground %s; the fall reaches %s"
+                                 % (c["at"], c["bg"], want))
         chk(claims and not wrong,
-            "specimen_truth   every printed ratio equals the computed one%s"
-            % ("  :: " + "; ".join(wrong) if wrong
-               else "  :: %d ratios recomputed" % len(claims)))
+            "specimen_truth   every printed ratio describes colours the document measured%s"
+            % ("  :: " + "; ".join(sorted(set(wrong))[:4]) if wrong
+               else "  :: %d ratios recomputed against a %d colour palette"
+                    % (len(claims), len(palette))))
+
+        # the declared ground of every anchored row, checked against the fall itself
+        grounds = pg.evaluate("""() => [...document.querySelectorAll('.lrow[data-at]')]
+            .map(e => {
+                const dts = [...e.querySelectorAll('dt')];
+                const g = dts.find(d => d.textContent.trim().toLowerCase() === 'ground');
+                return {at: parseFloat(e.dataset.at),
+                        ground: g && g.nextElementSibling
+                                ? g.nextElementSibling.textContent.trim() : null};
+            }).filter(x => x.ground)""")
+        gbad = ["the row at t=%.4f prints ground %s; the fall reaches %s"
+                % (g["at"], g["ground"], _fall(g["at"]))
+                for g in grounds if g["ground"].upper() != _fall(g["at"]).upper()]
+        chk(not gbad,
+            "ground_truth     a named ground equals the fall at that position%s"
+            % ("  :: " + "; ".join(gbad) if gbad
+               else "  :: %d named grounds checked" % len(grounds)))
 
         # ---------- ledger_anchored
         rows = pg.evaluate("""() => {
@@ -431,35 +529,29 @@ def document_checks(chk, tokens):
                         label: (e.querySelector('.lk') || {}).textContent || ''};
             });
         }""")
-        off = []
+        off, edges = [], 0
         for r in rows:
-            # an edge row is clamped so it does not hang off the column; it is measured
-            # against the edge it is pinned to rather than its centre
-            tol = 4.0
+            # an endpoint row is clamped so it does not hang off the column; it is held
+            # to the edge it is pinned to instead of to its own centre
             if r["at"] <= 0.001 or r["at"] >= 0.999:
+                edges += 1
+                want = 0.0 if r["at"] <= 0.001 else 1.0
+                near = r["actual_px"] if want == 0.0 else r["actual_px"]
+                limit = 0.06 * (r["wanted_px"] if want else 1) or 0.06
+                frac = r["actual"]
+                if (want == 0.0 and frac > 0.06) or (want == 1.0 and frac < 0.94):
+                    off.append("%s is clamped to the %s edge but sits at %.1f%% of the fall"
+                               % (r["label"].strip()[:24], "top" if want == 0.0 else "bottom",
+                                  frac * 100))
                 continue
-            if abs(r["actual_px"] - r["wanted_px"]) > tol:
+            if abs(r["actual_px"] - r["wanted_px"]) > 4.0:
                 off.append("%s sits at %.1fpx, the fall reaches its value at %.1fpx"
                            % (r["label"].strip()[:28], r["actual_px"], r["wanted_px"]))
         chk(rows and not off,
             "ledger_anchored  each row sits where the fall reaches its value%s"
             % ("  :: " + "; ".join(off) if off
-               else "  :: %d anchored rows within 4px" % len(rows)))
-
-        # ---------- crossover_in_fall
-        # The crossover is a rule drawn in the fall. If it reaches into the void column
-        # its label lands on top of a reading, which is how it was first built.
-        over = pg.evaluate("""() => {
-            const c = document.querySelector('.crossover');
-            const l = document.querySelector('.ledger');
-            if (!c || !l) return null;
-            const cb = c.getBoundingClientRect(), lb = l.getBoundingClientRect();
-            return {overlap: Math.round(cb.right - lb.left)};
-        }""")
-        chk(over is not None and over["overlap"] <= 0,
-            "crossover_in_fall the crossover rule stops before the void column%s"
-            % ("  :: reaches %dpx into the ledger" % over["overlap"]
-               if over and over["overlap"] > 0 else "  :: clear"))
+               else "  :: %d rows within 4px, %d endpoint rows held to their edge"
+                    % (len(rows) - edges, edges)))
 
         # ---------- ledger_clear
         # Rows are positioned by the value they describe, not by flow, so nothing stops
@@ -489,27 +581,13 @@ def document_checks(chk, tokens):
         # Contrast here is a function of position, not a constant. Every text element is
         # measured against the ground at its own place in the document.
         els = pg.evaluate(TEXT_PROBE)
-        ramp = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
-
-        def fall_at(t):
-            t = max(0.0, min(1.0, t))
-            stops = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), ramp))
-            for i in range(3):
-                (p0, c0), (p1, c1) = stops[i], stops[i + 1]
-                if p0 <= t <= p1:
-                    f = (t - p0) / (p1 - p0)
-                    a, b2 = rgb(c0), rgb(c1)
-                    return "#%02X%02X%02X" % tuple(
-                        int(round(a[j] + (b2[j] - a[j]) * f)) for j in range(3))
-            return ramp[-1]
-
         fails = []
         measured = 0
         for e in els:
             fg = css_colour(e["color"], {})
             if fg is None:
                 continue
-            bg = css_colour(e["bg"], {}) if e["bg"] else fall_at(e["t"])
+            bg = css_colour(e["bg"], {}) if e["bg"] else _fall(e["t"])
             pt = e["size"] * 72.0 / 96.0
             large = pt >= 18 or (pt >= 14 and e["weight"] in ("700", "bold", "800", "900"))
             floor = 3.0 if large else 4.5
@@ -562,12 +640,31 @@ def document_checks(chk, tokens):
             % ("  :: " + "; ".join(bad[:4]) if bad else "  :: %d rows stacked" % len(rows390)))
 
         # ---------- no_dead_leaders
-        leaders = mp.evaluate("""() => [...document.querySelectorAll('.lrow.anchored')]
-            .map(e => getComputedStyle(e, '::before').display)
-            .filter(d => d !== 'none').length""")
-        chk(leaders == 0,
-            "no_dead_leaders  no leader rule points at nothing at 390px%s"
-            % ("" if leaders == 0 else "  :: %d still rendered" % leaders))
+        # Binding this to .lrow.anchored::before only asserted that a display:none rule
+        # exists for that exact selector; any other painted leader sailed through.
+        leaders = mp.evaluate("""() => {
+            const out = [];
+            document.querySelectorAll('.lrow').forEach(e => {
+                const cs = getComputedStyle(e);
+                for (const side of ['Left', 'Right']) {
+                    if (parseFloat(cs['border' + side + 'Width']) > 0) {
+                        out.push('border-' + side.toLowerCase() + ' on ' + e.className);
+                    }
+                }
+                for (const pseudo of ['::before', '::after']) {
+                    const p = getComputedStyle(e, pseudo);
+                    if (p.display === 'none' || p.content === 'none') continue;
+                    const w = parseFloat(p.width) || 0, h = parseFloat(p.height) || 0;
+                    if (w > 0 && h > 0) out.push(pseudo + ' paints ' + w + 'x' + h +
+                                                 ' on ' + e.className);
+                }
+            });
+            return out;
+        }""")
+        chk(not leaders,
+            "no_dead_leaders  nothing paints a leader at 390px%s"
+            % ("  :: " + "; ".join(leaders[:4]) if leaders
+               else "  :: no borders and no painted pseudo-elements on any row"))
 
         # ---------- fall_survives
         geo390 = mp.evaluate("""() => {
@@ -628,17 +725,26 @@ def document_checks(chk, tokens):
             % ("  :: " + "; ".join(bad390[:5]) if bad390
                else "  :: %d ratios and %d elements rechecked" % (len(claims390), n390)))
         # ---------- touch_targets
-        # A Global Constraint that nothing was testing. The one link in the document
-        # was 22px tall before this check existed.
-        small = mp.evaluate("""() => [...document.querySelectorAll('a,button,[role=button],input,select')]
+        # The Global Constraint names no viewport, and the one link measured 42px tall
+        # at the default desktop width while this check ran only at 390.
+        TARGETS = """() => [...document.querySelectorAll('a,button,[role=button],input,select')]
             .map(e => { const b = e.getBoundingClientRect();
                         return {t: e.tagName, w: Math.round(b.width), h: Math.round(b.height),
-                                s: (e.textContent||'').trim().slice(0,20)}; })
-            .filter(x => x.h < 44 || x.w < 44)""")
+                                s: (e.textContent||'').trim().slice(0,18)}; })
+            .filter(x => x.h < 44 || x.w < 44)"""
+        small = []
+        for width in (1440, 1024, 860, 390, 320):
+            tp = br.new_page(viewport={"width": width, "height": 900})
+            tp.goto(DOC.resolve().as_uri())
+            tp.wait_for_timeout(350)
+            small += [(width, x) for x in tp.evaluate(TARGETS)]
+            tp.close()
         chk(not small,
             "touch_targets    every interactive target is at least 44 by 44px%s"
-            % ("  :: " + "; ".join("%s %r is %dx%d" % (x["t"], x["s"], x["w"], x["h"])
-                                   for x in small[:4]) if small else "  :: all clear"))
+            % ("  :: " + "; ".join("at %dpx, %s %r is %dx%d"
+                                   % (w, x["t"], x["s"], x["w"], x["h"])
+                                   for w, x in small[:3]) if small
+               else "  :: clear at 1440, 1024, 860, 390 and 320"))
 
         mp.close()
 
@@ -649,22 +755,50 @@ def document_checks(chk, tokens):
         pp.wait_for_timeout(700)
 
         # ---------- print_ground
+        # Asserting that the background-image string merely contains "gradient" passes
+        # on a white gradient. Every stop the print stylesheet paints has to be a colour
+        # from the ramp, and no painted surface may be lighter than the void.
         grounds = pp.evaluate("""() => {
             const cs = n => getComputedStyle(document.querySelector(n));
             return {doc: cs('.doc').backgroundImage,
                     docColor: cs('.doc').backgroundColor,
                     body: cs('body').backgroundColor,
-                    ledger: cs('.ledger').backgroundColor};
+                    ledger: cs('.ledger').backgroundColor,
+                    measure: cs('.measure').backgroundColor};
         }""")
         bad_print = []
-        if "gradient" not in (grounds["doc"] or ""):
-            bad_print.append("the fall is not painted under print: %r" % grounds["doc"])
-        body_c = css_colour(grounds["body"] or "", {})
-        if body_c is None or oklch(body_c)[0] > oklch(get(tokens, "color.ground.value"))[0] + 0.002:
-            bad_print.append("body background under print is %r" % grounds["body"])
+        img = grounds["doc"] or ""
+        if "gradient" not in img:
+            bad_print.append("the fall is not painted under print: %r" % img)
+        else:
+            stops = re.findall(r"rgba?\(([^)]*)\)", img)
+            ramp_up = {c.upper() for c in ramp0}
+            for st in stops:
+                parts = [p.strip() for p in re.split(r"[ ,]+", st) if p.strip()]
+                try:
+                    hexv = "#%02X%02X%02X" % tuple(int(float(parts[i])) for i in range(3))
+                except (ValueError, IndexError):
+                    continue
+                if hexv not in ramp_up:
+                    bad_print.append("print paints %s, which is not a stage colour" % hexv)
+        void_l = oklch(get(tokens, "color.ground.value"))[0]
+        for name in ("docColor", "body", "ledger", "measure"):
+            c = css_colour(grounds[name] or "", {})
+            if c is not None and oklch(c)[0] > void_l + 0.002:
+                bad_print.append("%s under print is %s, lighter than the void" % (name, c))
         chk(not bad_print,
             "print_ground     the fall survives print emulation%s"
-            % ("  :: " + "; ".join(bad_print) if bad_print else "  :: gradient intact, body on the void"))
+            % ("  :: " + "; ".join(sorted(set(bad_print))[:4]) if bad_print
+               else "  :: %d gradient stops, all from the ramp" % len(
+                   re.findall(r"rgba?\(", img))))
+
+        # block texts taken from the DOM rather than scraped out of the HTML with a
+        # regex that mis-nests across section boundaries; no_cut_row reads these.
+        global PRINT_BLOCKS
+        PRINT_BLOCKS = pp.evaluate("""() => [...document.querySelectorAll('.lrow, .role, .tstep')]
+            .map(e => ({cls: e.className.split(' ')[0],
+                        text: (e.innerText || '').replace(/\\s+/g, ' ').trim()}))
+            .filter(b => b.text.length > 12)""")
 
         pp.close()
 
@@ -679,7 +813,7 @@ def pdf_checks(chk, tokens):
     """The printed artifact, not the page that produced it."""
     pdf = ROOT / "brand" / "2026-10-07-afterglow-guidelines.pdf"
     if not pdf.exists():
-        for n in ("pdf_edges", "no_cut_row"):
+        for n in ("pdf_edges", "no_cut_row", "pdf_current", "pdf_banding"):
             chk(False, "%-16s needs the rendered PDF  :: %s does not exist yet"
                 % (n, pdf.name))
         return
@@ -689,53 +823,123 @@ def pdf_checks(chk, tokens):
         chk(False, "pdf_edges        the PDF's corners are the ground, not white margin"
                    "  :: PyMuPDF is not installed, so this cannot be verified")
         return
+    # A check that reads a committed artifact proves nothing about the document as it
+    # stands now. Both print checks were validating a PDF older than the HTML.
+    stale = pdf.stat().st_mtime < DOC.stat().st_mtime - 1
+    chk(not stale,
+        "pdf_current      the PDF is newer than the document it renders%s"
+        % ("  :: the PDF predates the HTML; re-run tools/render.py" if stale
+           else "  :: rendered after the last change"))
+
     doc = fitz.open(str(pdf))
     white = []
     sampled = 0
     for i in range(doc.page_count):
         pix = doc[i].get_pixmap(dpi=36)
         w, h = pix.width, pix.height
+        # The top corners of page 1 are the void slug, not the fall, so corners alone
+        # proved less than the pass line claimed. The mid-height edges are always ground.
         for name, (x, y) in (("top left", (2, 2)), ("top right", (w - 3, 2)),
-                             ("bottom left", (2, h - 3)), ("bottom right", (w - 3, h - 3))):
+                             ("bottom left", (2, h - 3)), ("bottom right", (w - 3, h - 3)),
+                             ("left edge", (2, h // 2)), ("right edge", (w - 3, h // 2))):
             r, g, b = pix.pixel(x, y)[:3]
             sampled += 1
             # a Letter margin prints white; the fall never reaches L 0.9
             if oklch("#%02X%02X%02X" % (r, g, b))[0] > 0.9:
                 white.append("page %d %s is #%02X%02X%02X" % (i + 1, name, r, g, b))
-    doc.close()
-    chk(not white,
-        "pdf_edges        every page corner carries the ground, not white margin%s"
-        % ("  :: " + "; ".join(white[:4]) if white
-           else "  :: %d corners across %d pages" % (sampled, sampled // 4)))
-
-    # ---------- no_cut_row
-    # Measuring this in a viewport simulates pagination by dividing continuous
-    # coordinates, which ignores the break-inside the PDF actually applies. The only
-    # honest place to check it is the printed artifact: if a block were split, its
-    # first line and its last would land on different sheets.
-    doc = fitz.open(str(pdf))
     pages = [" ".join(doc[i].get_text().split()) for i in range(doc.page_count)]
     doc.close()
-    html = io.open(DOC, encoding="utf-8").read()
-    blocks = []
-    for cls in ("lrow", "role", "tstep"):
-        for m in re.finditer(r'<div class="%s[^"]*"[^>]*>(.*?)</div>\s*(?=<div|</div>|<p|$)'
-                             % cls, html, re.S):
-            text = " ".join(re.sub(r"<[^>]+>", " ", m.group(1))
-                            .replace("&middot;", "·").replace("&nbsp;", " ").split())
-            if len(text) > 12:
-                blocks.append((cls, text))
-    split = []
-    for cls, text in blocks:
-        words = text.split()
-        head, tail_ = " ".join(words[:4]), " ".join(words[-4:])
-        hp = {i for i, pg in enumerate(pages) if head in pg}
-        tp = {i for i, pg in enumerate(pages) if tail_ in pg}
+    chk(not white,
+        "pdf_edges        every page edge carries the ground, not white margin%s"
+        % ("  :: " + "; ".join(white[:4]) if white
+           else "  :: %d points across %d pages, corners and mid-height edges"
+                % (sampled, sampled // 6)))
+
+    # ---------- pdf_banding
+    # The screen answer rested on Chromium's gradient dithering. The PDF has no dither:
+    # the fall is emitted as flat vector fills, one per quantisation step.
+    #
+    # The step between adjacent fills is therefore always about one sRGB unit whatever
+    # the ramp does, so measuring it proves nothing. What varies, and what an eye would
+    # actually catch, is how TALL each flat is: a shallower ramp or a longer document
+    # stretches every band until it reads as a stripe. That is what this holds.
+    ramp_pdf = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
+    LOCUS = []
+    for k in range(2001):
+        t = k / 2000.0
+        stops = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), ramp_pdf))
+        for i in range(3):
+            (p0, c0), (p1, c1) = stops[i], stops[i + 1]
+            if p0 <= t <= p1:
+                f = (t - p0) / (p1 - p0)
+                a_, b_ = rgb(c0), rgb(c1)
+                LOCUS.append(tuple(a_[j] + (b_[j] - a_[j]) * f for j in range(3)))
+                break
+
+    def on_fall(c):
+        return min(max(abs(c[j] - q[j]) for j in range(3)) for q in LOCUS) <= 1.5
+
+    # A flat taller than this is wide enough on a Letter sheet to read as a stripe
+    # rather than as a gradient. Measured at 150 dpi.
+    MAX_BAND_IN = 1.0
+    doc2 = fitz.open(str(pdf))
+    n_pages = doc2.page_count
+    wide, measured, longest = [], 0, 0.0
+    for i in range(n_pages):
+        pix = doc2[i].get_pixmap(dpi=150)
+        x = int(pix.width * 0.25)
+        col = [pix.pixel(x, y)[:3] for y in range(pix.height)]
+        runs, prev, st = [], None, 0
+        for k, c in enumerate(col):
+            if c != prev:
+                if prev is not None:
+                    runs.append((st, k - st, prev))
+                prev, st = c, k
+        runs.append((st, len(col) - st, prev))
+        for y, length, c in runs:
+            if not on_fall(c):
+                continue
+            measured += 1
+            inches = length / 150.0
+            longest = max(longest, inches)
+            if inches > MAX_BAND_IN:
+                wide.append("page %d: a flat band of %.2f in at #%02X%02X%02X"
+                            % (i + 1, inches, c[0], c[1], c[2]))
+    doc2.close()
+    chk(measured and not wide,
+        "pdf_banding      no flat band in the printed fall exceeds %.2f in%s"
+        % (MAX_BAND_IN,
+           "  :: " + "; ".join(sorted(set(wide))[:3]) if wide
+           else "  :: %d bands measured, longest %.2f in" % (measured, longest)))
+
+    # ---------- no_cut_row
+    # Text in the PDF is uppercased by text-transform, so matching the HTML's mixed
+    # case silently found nothing and the check skipped every ledger row while
+    # reporting that it had examined them.
+    # Whitespace is not comparable between the two: the DOM runs adjacent elements
+    # together ("Ground#A2544E") where the PDF separates them, and text-transform
+    # uppercases one side only. Strip both to letters and digits.
+    def norm(x):
+        return re.sub(r"[^0-9A-Z]", "", x.upper())
+
+    pages_n = [norm(p) for p in pages]
+    split, unresolved = [], []
+    for b in PRINT_BLOCKS:
+        flat = norm(b["text"])
+        if len(flat) < 24:
+            continue
+        head, tail_ = flat[:20], flat[-20:]
+        hp = {i for i, pg_ in enumerate(pages_n) if head in pg_}
+        tp = {i for i, pg_ in enumerate(pages_n) if tail_ in pg_}
         if not hp or not tp:
-            continue          # not extractable as text; nothing to conclude
+            unresolved.append("%s %r could not be located in the PDF"
+                              % (b["cls"], b["text"][:26]))
+            continue
         if not (hp & tp):
             split.append("%s %r starts on page %d and ends on page %d"
-                         % (cls, text[:26], min(hp) + 1, min(tp) + 1))
+                         % (b["cls"], b["text"][:26], min(hp) + 1, min(tp) + 1))
+    blocks = PRINT_BLOCKS
+    split += unresolved
     chk(blocks and not split,
         "no_cut_row       no row, role or step is split across a sheet%s"
         % ("  :: " + "; ".join(split[:4]) if split

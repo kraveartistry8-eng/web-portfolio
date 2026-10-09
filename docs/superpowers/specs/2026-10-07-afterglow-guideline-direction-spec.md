@@ -108,10 +108,27 @@ regions measure a median run of 1px, 35 to 46 distinct tones per 1000px, and 2 t
 tones across a single horizontal row, which is the dither noise. Inspected by eye at the violet
 end, the darkest and therefore the worst case, the fall is smooth.
 
-Two limits on that answer. It was verified on screen in Chromium, which is the render target for
-the HTML but not for the PDF, so Task 9 re-checks the printed artifact rather than assuming the
-dithering survives rasterisation. And it holds at a document height of 16000px; a substantially
-longer document lengthens every run and the spike would need rerunning.
+**The printed artifact does not get the dither, and that was checked rather than assumed.**
+Chromium emits the fall into the PDF as flat vector fills, not as a dithered raster: a clear
+column of ground measures 26 to 27 distinct tones per sheet with flat bands up to 0.79 inches,
+where the same region on screen gives a median run of one pixel. The mechanism the screen answer
+rested on is simply absent on paper.
+
+The step between adjacent bands is **1 sRGB unit**, which is why this is recorded rather than
+mitigated: a 0.79 inch flat whose neighbour differs by one unit is near the limit of what an eye
+can find on a printed page. Whether it reads as banding on stock is a judgement from a proof, and
+it is Aaron's to make, not a number's.
+
+That step is not worth guarding, because it is a constant of the renderer rather than a property
+of the ramp: Chromium emits one flat fill per quantisation step, so adjacent fills always differ
+by about one unit however the ramp is drawn. What varies is the **height** of each flat. A
+shallower ramp or a longer document stretches every band until it reads as a stripe, so
+`pdf_banding` in `tools/brand_audit.py` holds the tallest flat under one inch. It currently
+measures 368 bands with the tallest at 0.79 in, and it fails at 1.31 in if two stages are moved
+close together.
+
+One limit remains. This holds at a document height of 16000px and the document currently runs
+about 7100px; a substantially longer one lengthens every run and the spike would need rerunning.
 
 **The ledger.** A void column at the right edge of the measure, carrying the document's readings.
 Each row sits at the exact height where the fall equals the value it describes, with a leader rule
