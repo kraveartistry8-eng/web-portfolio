@@ -11,9 +11,9 @@ This spec covers the document's form. What it says is fixed by the content spec 
 ## Overview
 
 A brand guideline document for Afterglow that demonstrates the brand while describing it. It is
-one continuous fall from the gold of last light to deep violet. The ground deepens across the
-whole document and never resets, so how far through the reader is can be read from how dark the
-page has become. Every rule in it is proved where it is stated, on a field of the colour being
+one fall from the gold of last light to deep violet, cut into twelve pages. The ground deepens
+across the whole document and never resets, so how far through the reader is can be read from
+how dark the page has become. Every rule in it is proved where it is stated, on a field of the colour being
 specified, carrying its own measured numbers.
 
 The descent gives the document its structure. The specimens are how any claim is proved. The
@@ -26,10 +26,39 @@ reason: the fall passes through the stages, so a panel of a stage colour placed 
 measures about 1.15:1 against it and has no edge of its own. An inset needs a hairline to exist,
 and a border the document requires in order to work is a rule the brand never asked for.
 
+## Paging
+
+The document is **twelve pages**, not one scroll. Each page is at least one screen tall, snaps to
+its own top, and carries one twelfth of the fall.
+
+**Why twelve.** The crossover sits at exactly 50% of the fall. Twelve pages puts that boundary
+between page 06 and page 07, so the inversion from void text to light text happens at a page turn
+instead of in the middle of a scroll. Six pages state and six pages specify. Any odd count, or any
+count that does not divide evenly at the crossover, puts the inversion mid-page, where a reader
+meets two text colours on one ground.
+
+**The fall is indexed to pages, not to pixels.** Page N runs from its own start colour to its own
+end colour, and page N+1 begins on exactly the colour page N ended on. A page that runs longer
+than the viewport deepens over its own length rather than faster than its neighbours. This is the
+rule that makes a break survivable: the descent is continuous in value even though it is
+discontinuous in layout.
+
+**Pages may exceed one screen.** A page is a minimum of one screen, not a maximum. Content is
+never clipped to make a page fit; the snap point is the page's top and a long page simply scrolls.
+Using a fixed screen height would silently cut the specification pages, which are the longest.
+
+**One numbering system.** The page number is the only number in the document. The specification
+pages carry their page number as their section folio, and every cross-reference in the copy is
+computed from the page index, so a reference cannot drift from what it points at.
+
+**The rail reads both.** It carries the page, `07 / 12`, and the lightness at that page's start.
+The lightness is still what the folio is for; the page number exists now because pages do.
+
 ## Trigger
 
-Scroll position, and nothing else. There is no entry animation, no reveal on load, no scroll
-hijack. The document's one behaviour is that its ground value is a function of how far down the
+Scroll position, and nothing else. There is no entry animation and no reveal on load. Scroll
+snapping is not hijacking: the reader's scroll is never cancelled, redirected or animated, and
+a snap point only decides where a free scroll comes to rest. The document's one behaviour is that its ground value is a function of how far down the
 reader has moved. A reader who loads the page halfway through, from a deep link or a restored
 scroll position, sees the correct ground value for that position immediately.
 

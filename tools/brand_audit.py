@@ -106,9 +106,26 @@ PRINT_BLOCKS = []
 MISSING = object()
 
 
-TEXT_PROBE = """() => {
-            const doc = document.querySelector('.doc').getBoundingClientRect();
-            const top = doc.top + window.scrollY, h = doc.height;
+PAGE_T = """
+            const __pgs = [...document.querySelectorAll('.page')].map(p => {
+                const r = p.getBoundingClientRect();
+                return {top: r.top + window.scrollY, h: r.height};
+            });
+            // The fall runs page by page: page i carries the slice from i/n to (i+1)/n,
+            // whatever each page's height turns out to be.
+            function __t(y) {
+                const n = __pgs.length;
+                if (!n) return 0;
+                for (let i = 0; i < n; i++) {
+                    const g = __pgs[i];
+                    if (y >= g.top - 0.5 && y <= g.top + g.h + 0.5)
+                        return (i + Math.min(1, Math.max(0, (y - g.top) / g.h))) / n;
+                }
+                return y < __pgs[0].top ? 0 : 1;
+            }
+"""
+
+TEXT_PROBE = """() => {""" + PAGE_T + """
             const out = [];
             document.querySelectorAll('.measure *, .crossover em').forEach(e => {
                 if (!e.textContent.trim()) return;
@@ -121,13 +138,14 @@ TEXT_PROBE = """() => {
                 while (node && node !== document.documentElement) {
                     const c = getComputedStyle(node).backgroundColor;
                     if (c && !/rgba\\(0, 0, 0, 0\\)|transparent/.test(c)) { bg = c; break; }
-                    if (node.classList && node.classList.contains('doc')) break;
+                    if (node.classList && (node.classList.contains('doc')
+                        || node.classList.contains('page'))) break;
                     node = node.parentElement;
                 }
                 out.push({tag: e.tagName, text: e.textContent.trim().slice(0, 34),
                           color: cs.color, size: parseFloat(cs.fontSize),
                           weight: cs.fontWeight, bg: bg,
-                          t: ((b.top + window.scrollY + b.height / 2) - top) / h});
+                          t: __t(b.top + window.scrollY + b.height / 2)});
             });
             return out;
         }"""
@@ -240,7 +258,8 @@ def document_checks(chk, tokens):
                      "ledger_anchored", "text_on_fall", "ledger_clear", "ground_truth",
                      "crossover_in_fall", "no_h_scroll_390", "ledger_inline",
                      "no_dead_leaders", "fall_survives", "ratios_recomputed",
-                     "touch_targets", "print_ground"):
+                     "touch_targets", "print_ground", "pages_snap", "pages_join",
+                     "crossover_on_break", "one_numbering"):
             chk(False, "%-16s %s  :: %s does not exist yet"
                 % (name, "needs the document", DOC.name))
         return
@@ -391,18 +410,18 @@ def document_checks(chk, tokens):
 
         # ---------- rail_is_folio
         rail = pg.query_selector(".rail")
-        folios = pg.evaluate("""() => {
-            const bad = [];
-            document.querySelectorAll('.rail *, .slug *, .folio, .page-number').forEach(e => {
-                const t = (e.textContent || '').trim();
-                if (/^\\d{1,4}$/.test(t)) bad.push(t);
-            });
-            return bad;
-        }""")
-        chk(rail is not None and not folios,
-            "rail_is_folio    the rail exists and no page number does%s"
-            % ("" if rail is not None and not folios
-               else "  :: rail %s, page numbers %s" % (rail is not None, folios)))
+        # The rail reads position in the fall. Now that pages exist it reads the page
+        # too, and a mark that gave one without the other would be half a folio.
+        marks = pg.evaluate("""() => [...document.querySelectorAll('.rail .rm')]
+            .map(e => (e.textContent || '').replace(/\\s+/g, ' ').trim())""")
+        no_l = [m for m in marks if "L" not in m]
+        no_page = [m for m in marks if not re.search(r"\d{2}\s*/\s*\d{2}", m)]
+        ok_rail = rail is not None and marks and not no_l and not no_page
+        chk(ok_rail,
+            "rail_is_folio    every rail mark carries its page and its lightness%s"
+            % ("  :: %d marks" % len(marks) if ok_rail
+               else "  :: rail %s, without lightness %s, without page %s"
+                    % (rail is not None, no_l, no_page)))
 
         # ---------- ledger_is_void
         bg = pg.evaluate("""() => {
@@ -419,47 +438,168 @@ def document_checks(chk, tokens):
             % ("  :: %s" % got if got and got.upper() in {a.upper() for a in allowed}
                else "  :: ledger background is %r" % (bg,)))
 
-        # ---------- fall_monotonic
-        geo = pg.evaluate("""() => {
-            const d = document.querySelector('.doc').getBoundingClientRect();
-            const m = document.querySelector('.measure').getBoundingClientRect();
-            return {top: d.top + window.scrollY, height: d.height,
-                    x: m.right + window.scrollX - 40};
+        # ---------- pages_snap
+        # The document is twelve pages, each at least one screen, each a snap point.
+        # A page that is exactly one screen tall would clip the long specification
+        # pages, so the check requires a minimum and forbids a maximum.
+        pages = pg.evaluate("""() => {
+            const ps = [...document.querySelectorAll('.page')];
+            const host = document.scrollingElement;
+            return {
+                n: ps.length,
+                snapType: getComputedStyle(host).scrollSnapType
+                          || getComputedStyle(document.body).scrollSnapType,
+                rows: ps.map(p => {
+                    const r = p.getBoundingClientRect(), cs = getComputedStyle(p);
+                    const m = p.querySelector('.measure');
+                    const mr = m ? m.getBoundingClientRect() : r;
+                    return {top: r.top + window.scrollY, height: r.height,
+                            align: cs.scrollSnapAlign,
+                            minh: cs.minHeight,
+                            overflow: cs.overflow,
+                            x: mr.right + window.scrollX - 40,
+                            folio: (p.querySelector('.secnum') || {}).textContent || null,
+                            page: p.getAttribute('data-page')};
+                })};
         }""")
-        # Sample inside the measure's right padding: the fall is there, no glyph is,
-        # and the fixed slug never reaches it. Clip in page coordinates, never
+        vh = pg.evaluate("window.innerHeight")
+        bad = []
+        if pages["n"] != 12:
+            bad.append("%d pages, not 12" % pages["n"])
+        if "y" not in (pages["snapType"] or ""):
+            bad.append("the scroll container has no y snap type (%r)" % pages["snapType"])
+        for r in pages["rows"]:
+            if r["align"] != "start":
+                bad.append("page %s aligns %s, not start" % (r["page"], r["align"]))
+            if r["height"] < vh - 1:
+                bad.append("page %s is %.0fpx, under one screen of %dpx"
+                           % (r["page"], r["height"], vh))
+            if r["overflow"] in ("hidden", "clip"):
+                bad.append("page %s clips its content" % r["page"])
+        chk(not bad,
+            "pages_snap       twelve pages, each a screen or more, each a snap point%s"
+            % ("  :: " + "; ".join(bad) if bad
+               else "  :: 12 pages, shortest %.0fpx against a %dpx screen"
+                    % (min(r["height"] for r in pages["rows"]), vh)))
+
+        def _page_fall(index, frac):
+            """The fall inside page `index`, which carries the slice of the ramp from
+            index/12 to (index+1)/12. The ramp is indexed to pages, not to pixels."""
+            n = max(1, pages["n"])
+            return _fall((index + max(0.0, min(1.0, frac))) / float(n))
+
+        # ---------- fall_monotonic
+        # Sampled inside the measure's right padding: the fall is there, no glyph is,
+        # and the fixed slug never reaches it. Clipped in page coordinates, never
         # viewport coordinates, or every sample lands on whatever is pinned at y=0.
         tmp = pathlib.Path(tempfile.gettempdir()) / "afterglow-fall.png"
-        ls = []
-        for i in range(10):
-            y = geo["top"] + (geo["height"] - 3) * i / 9.0
+
+        def sample(x, y):
             pg.screenshot(path=str(tmp), full_page=True,
-                          clip={"x": geo["x"], "y": y, "width": 3, "height": 3})
-            ls.append(oklch("#%02X%02X%02X"
-                            % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0])
-        rises = ["position %d (%.4f) is not below %d (%.4f)" % (i + 1, ls[i + 1], i, ls[i])
-                 for i in range(9) if ls[i + 1] >= ls[i]]
+                          clip={"x": x, "y": y, "width": 3, "height": 3})
+            return oklch("#%02X%02X%02X"
+                         % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0]
+
+        ls, want, where = [], [], []
+        for idx, r in enumerate(pages["rows"]):
+            for frac in (0.0, 1.0):
+                y = r["top"] + (r["height"] - 3) * frac
+                ls.append(sample(r["x"], y))
+                want.append(oklch(_page_fall(idx, frac))[0])
+                where.append("page %s %s" % (r["page"], "top" if frac == 0.0 else "foot"))
+        if not ls:
+            rises, strays = ["no page carried a sample: the document has no pages"], []
+        rises = ["%s (%.4f) is not below %s (%.4f)" % (where[i + 1], ls[i + 1], where[i], ls[i])
+                 for i in range(len(ls) - 1) if ls[i + 1] > ls[i] + 0.0005] or (
+                 ["no page carried a sample: the document has no pages"] if not ls else [])
         # A sample that landed on a rule or a glyph instead of the ground would make
         # this check meaningless, so each one must also match the fall it claims to be.
-        strays = ["position %d sampled L %.4f, the fall is L %.4f there"
-                  % (i, ls[i], oklch(_fall(i / 9.0))[0])
-                  for i in range(10) if abs(ls[i] - oklch(_fall(i / 9.0))[0]) > 0.01]
+        strays = ["%s sampled L %.4f, the fall is L %.4f there" % (where[i], ls[i], want[i])
+                  for i in range(len(ls)) if abs(ls[i] - want[i]) > 0.01]
         chk(not rises and not strays,
-            "fall_monotonic   ground lightness falls across ten positions%s"
+            "fall_monotonic   ground lightness falls across every page%s"
             % ("  :: " + "; ".join(rises + strays) if (rises or strays)
-               else "  :: %s" % " > ".join("%.3f" % x for x in ls)))
+               else "  :: %d samples, %.3f down to %.3f" % (len(ls), ls[0], ls[-1])))
+
+        # ---------- pages_join
+        # The break is survivable only if page N ends on the colour page N+1 begins on.
+        # Measured from the rendered pixels, not from the CSS that was asked for.
+        seams = []
+        for i in range(len(pages["rows"]) - 1):
+            foot, top = ls[i * 2 + 1], ls[(i + 1) * 2]
+            if abs(foot - top) > 0.004:
+                seams.append("page %s foots at L %.4f, page %s opens at L %.4f"
+                             % (pages["rows"][i]["page"], foot,
+                                pages["rows"][i + 1]["page"], top))
+        if len(pages["rows"]) < 2:
+            seams.append("fewer than two pages to join")
+        chk(not seams,
+            "pages_join       every page opens on the value the one before it closed on%s"
+            % ("  :: " + "; ".join(seams) if seams
+               else "  :: %d seams, widest %.4f L"
+                    % (len(pages["rows"]) - 1,
+                       max(abs(ls[i * 2 + 1] - ls[(i + 1) * 2])
+                           for i in range(len(pages["rows"]) - 1)))))
+
+        # ---------- crossover_on_break
+        # Twelve pages exist so the inversion lands on a page turn. If the crossover
+        # drifts off the boundary a reader meets two text colours on one ground.
+        xo = pg.evaluate("""() => {
+            const c = document.querySelector('.crossover');
+            if (!c) return null;
+            const r = c.getBoundingClientRect();
+            return r.top + window.scrollY + r.height / 2;
+        }""")
+        rows = pages["rows"]
+        half = len(rows) // 2
+        boundary = rows[half]["top"] if len(rows) > half else None
+        off = None if (xo is None or boundary is None) else abs(xo - boundary)
+        chk(off is not None and off <= 2.0,
+            "crossover_on_break the inversion lands on the turn into page %02d%s"
+            % (half + 1,
+               ("  :: no crossover or no page boundary to measure against" if off is None
+                else "  :: %.1fpx off the boundary" % off) if (off is None or off > 2.0)
+               else "  :: %.1fpx off a %.0fpx page" % (off, rows[half]["height"])))
+
+        # ---------- one_numbering
+        # The page number is the only number. A section folio that disagrees with the
+        # page it sits on is a second numbering system, and cross-references drift.
+        mismatched = ["page %s carries folio %s" % (r["page"], r["folio"].strip())
+                      for r in rows
+                      if r["folio"] and r["folio"].strip() != (r["page"] or "").strip()]
+        folio_count = len([r for r in rows if r["folio"]])
+        # A check that matched nothing and reported success is the defect this harness
+        # was already caught committing once. The specification pages all carry a folio.
+        if not rows:
+            mismatched.append("the document has no pages to number")
+        if rows and folio_count != len(rows) // 2:
+            mismatched.append("%d folios across %d pages, expected %d"
+                              % (folio_count, len(rows), len(rows) // 2))
+        chk(not mismatched,
+            "one_numbering    every section folio is its own page number%s"
+            % ("  :: " + "; ".join(mismatched) if mismatched
+               else "  :: %d folios, all matching" % folio_count))
+
         # ---------- specimen_truth
         # Recomputing contrast(data-fg, data-bg) only proves the arithmetic is
         # self-consistent: any internally consistent lie passes. So the colours
         # themselves must also be ones the document measured, not ones it invented.
-        claims = pg.evaluate("""() => [...document.querySelectorAll('[data-fg][data-bg]')]
-            .map(e => {
+        claims = pg.evaluate("""() => {
+            const pgs = [...document.querySelectorAll('.page')];
+            const docAt = row => {
+                const host = row.closest('.page');
+                const i = pgs.indexOf(host);
+                return i < 0 ? parseFloat(row.dataset.at)
+                             : (i + parseFloat(row.dataset.at)) / pgs.length;
+            };
+            return [...document.querySelectorAll('[data-fg][data-bg]')].map(e => {
                 const row = e.closest('[data-at]');
                 const dt = e.closest('dd') && e.closest('dd').previousElementSibling;
                 return {fg: e.dataset.fg, bg: e.dataset.bg, shown: e.textContent.trim(),
-                        at: row ? parseFloat(row.dataset.at) : null,
+                        at: row ? docAt(row) : null,
                         label: dt ? dt.textContent.trim() : ''};
-            })""")
+            });
+        }""")
         palette = set()
         for path in ("color.ground.value", "color.surface-deep.value", "color.surface.value",
                      "color.text.value", "color.muted.value"):
@@ -499,14 +639,18 @@ def document_checks(chk, tokens):
                     % (len(claims), len(palette))))
 
         # the declared ground of every anchored row, checked against the fall itself
-        grounds = pg.evaluate("""() => [...document.querySelectorAll('.lrow[data-at]')]
-            .map(e => {
+        grounds = pg.evaluate("""() => {
+            const pgs = [...document.querySelectorAll('.page')];
+            return [...document.querySelectorAll('.lrow[data-at]')].map(e => {
                 const dts = [...e.querySelectorAll('dt')];
                 const g = dts.find(d => d.textContent.trim().toLowerCase() === 'ground');
-                return {at: parseFloat(e.dataset.at),
+                const i = pgs.indexOf(e.closest('.page'));
+                const at = parseFloat(e.dataset.at);
+                return {at: i < 0 ? at : (i + at) / pgs.length,
                         ground: g && g.nextElementSibling
                                 ? g.nextElementSibling.textContent.trim() : null};
-            }).filter(x => x.ground)""")
+            }).filter(x => x.ground);
+        }""")
         gbad = ["the row at t=%.4f prints ground %s; the fall reaches %s"
                 % (g["at"], g["ground"], _fall(g["at"]))
                 for g in grounds if g["ground"].upper() != _fall(g["at"]).upper()]
@@ -517,15 +661,18 @@ def document_checks(chk, tokens):
 
         # ---------- ledger_anchored
         rows = pg.evaluate("""() => {
-            const doc = document.querySelector('.doc').getBoundingClientRect();
-            const top = doc.top + window.scrollY, h = doc.height;
             return [...document.querySelectorAll('.lrow[data-at]')].map(e => {
+                const host = e.closest('.page').getBoundingClientRect();
+                const top = host.top + window.scrollY, h = host.height;
                 const b = e.getBoundingClientRect();
                 const centre = b.top + window.scrollY + b.height / 2;
                 return {at: parseFloat(e.dataset.at),
                         actual: (centre - top) / h,
                         wanted_px: parseFloat(e.dataset.at) * h,
                         actual_px: centre - top,
+                        top_px: b.top + window.scrollY - top,
+                        bottom_px: (b.top + window.scrollY + b.height) - top,
+                        page_px: h,
                         label: (e.querySelector('.lk') || {}).textContent || ''};
             });
         }""")
@@ -536,16 +683,17 @@ def document_checks(chk, tokens):
             if r["at"] <= 0.001 or r["at"] >= 0.999:
                 edges += 1
                 want = 0.0 if r["at"] <= 0.001 else 1.0
-                near = r["actual_px"] if want == 0.0 else r["actual_px"]
-                limit = 0.06 * (r["wanted_px"] if want else 1) or 0.06
-                frac = r["actual"]
-                if (want == 0.0 and frac > 0.06) or (want == 1.0 and frac < 0.94):
-                    off.append("%s is clamped to the %s edge but sits at %.1f%% of the fall"
+                # A clamped row is pinned by one edge, not centred, and these rows are
+                # tall. Holding its centre to the page edge would be a test of how
+                # little the row says, so the pinned edge is what gets measured.
+                gap = r["top_px"] if want == 0.0 else r["page_px"] - r["bottom_px"]
+                if gap < -1.0 or gap > 48.0:
+                    off.append("%s is pinned to the %s edge but sits %.0fpx from it"
                                % (r["label"].strip()[:24], "top" if want == 0.0 else "bottom",
-                                  frac * 100))
+                                  gap))
                 continue
             if abs(r["actual_px"] - r["wanted_px"]) > 4.0:
-                off.append("%s sits at %.1fpx, the fall reaches its value at %.1fpx"
+                off.append("%s sits %.1fpx into its page, the fall reaches its value at %.1fpx"
                            % (r["label"].strip()[:28], r["actual_px"], r["wanted_px"]))
         chk(rows and not off,
             "ledger_anchored  each row sits where the fall reaches its value%s"
@@ -667,25 +815,30 @@ def document_checks(chk, tokens):
                else "  :: no borders and no painted pseudo-elements on any row"))
 
         # ---------- fall_survives
-        geo390 = mp.evaluate("""() => {
-            const d = document.querySelector('.doc').getBoundingClientRect();
-            const m = document.querySelector('.measure').getBoundingClientRect();
-            return {top: d.top + window.scrollY, height: d.height,
-                    x: m.right + window.scrollX - 10};
-        }""")
-        ls390 = []
-        for i in range(10):
-            y = geo390["top"] + (geo390["height"] - 3) * i / 9.0
-            mp.screenshot(path=str(tmp), full_page=True,
-                          clip={"x": max(0, geo390["x"]), "y": y, "width": 3, "height": 3})
-            ls390.append(oklch("#%02X%02X%02X"
-                               % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0])
-        rises390 = ["position %d (%.4f) is not below %d (%.4f)"
-                    % (i + 1, ls390[i + 1], i, ls390[i])
-                    for i in range(9) if ls390[i + 1] >= ls390[i]]
-        strays390 = ["position %d sampled L %.4f, the fall is L %.4f there"
-                     % (i, ls390[i], oklch(_fall(i / 9.0))[0])
-                     for i in range(10) if abs(ls390[i] - oklch(_fall(i / 9.0))[0]) > 0.01]
+        rows390 = mp.evaluate("""() => [...document.querySelectorAll('.page')].map(p => {
+            const r = p.getBoundingClientRect();
+            return {top: r.top + window.scrollY, height: r.height,
+                    page: p.getAttribute('data-page')};
+        })""")
+        ls390, want390, where390 = [], [], []
+        n390 = max(1, len(rows390))
+        for idx, r in enumerate(rows390):
+            for frac in (0.02, 0.98):
+                y = r["top"] + (r["height"] - 3) * frac
+                mp.screenshot(path=str(tmp), full_page=True,
+                              clip={"x": 2, "y": y, "width": 3, "height": 3})
+                ls390.append(oklch("#%02X%02X%02X"
+                                   % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0])
+                want390.append(oklch(_fall((idx + frac) / float(n390)))[0])
+                where390.append("page %s %s" % (r["page"], "top" if frac < .5 else "foot"))
+        if not ls390:
+            ls390, want390, where390 = [1.0, 1.0], [0.0, 0.0], ["no pages", "no pages"]
+        rises390 = ["%s (%.4f) is not below %s (%.4f)"
+                    % (where390[i + 1], ls390[i + 1], where390[i], ls390[i])
+                    for i in range(len(ls390) - 1) if ls390[i + 1] > ls390[i] + 0.0005]
+        strays390 = ["%s sampled L %.4f, the fall is L %.4f there"
+                     % (where390[i], ls390[i], want390[i])
+                     for i in range(len(ls390)) if abs(ls390[i] - want390[i]) > 0.01]
         chk(not rises390 and not strays390,
             "fall_survives    the fall still deepens at 390px%s"
             % ("  :: " + "; ".join(rises390 + strays390) if (rises390 or strays390)
@@ -760,37 +913,49 @@ def document_checks(chk, tokens):
         # from the ramp, and no painted surface may be lighter than the void.
         grounds = pp.evaluate("""() => {
             const cs = n => getComputedStyle(document.querySelector(n));
-            return {doc: cs('.doc').backgroundImage,
-                    docColor: cs('.doc').backgroundColor,
+            return {pages: [...document.querySelectorAll('.page')]
+                        .map(p => getComputedStyle(p).backgroundImage),
+                    pageColor: cs('.page').backgroundColor,
                     body: cs('body').backgroundColor,
                     ledger: cs('.ledger').backgroundColor,
                     measure: cs('.measure').backgroundColor};
         }""")
         bad_print = []
-        img = grounds["doc"] or ""
-        if "gradient" not in img:
-            bad_print.append("the fall is not painted under print: %r" % img)
-        else:
-            stops = re.findall(r"rgba?\(([^)]*)\)", img)
-            ramp_up = {c.upper() for c in ramp0}
-            for st in stops:
+        printed_pages = grounds["pages"] or []
+        if not printed_pages:
+            bad_print.append("no page paints a ground under print")
+        n_pp = len(printed_pages)
+        for i, img in enumerate(printed_pages):
+            img = img or ""
+            if "gradient" not in img:
+                bad_print.append("page %02d paints no fall under print: %r" % (i + 1, img))
+                continue
+            # Each page carries its own slice, so "is it a stage colour" is the wrong
+            # question. The right one is whether it is the value the fall reaches at
+            # this page's own boundaries.
+            want = [_fall(i / float(n_pp)).upper(), _fall((i + 1) / float(n_pp)).upper()]
+            got = []
+            for st in re.findall(r"rgba?\(([^)]*)\)", img):
                 parts = [p.strip() for p in re.split(r"[ ,]+", st) if p.strip()]
                 try:
-                    hexv = "#%02X%02X%02X" % tuple(int(float(parts[i])) for i in range(3))
+                    got.append("#%02X%02X%02X"
+                               % tuple(int(float(parts[j])) for j in range(3)))
                 except (ValueError, IndexError):
                     continue
-                if hexv not in ramp_up:
-                    bad_print.append("print paints %s, which is not a stage colour" % hexv)
+            if got[:2] != want:
+                bad_print.append("page %02d prints %s, the fall runs %s there"
+                                 % (i + 1, " to ".join(got[:2]) or "nothing",
+                                    " to ".join(want)))
         void_l = oklch(get(tokens, "color.ground.value"))[0]
-        for name in ("docColor", "body", "ledger", "measure"):
+        for name in ("pageColor", "body", "ledger", "measure"):
             c = css_colour(grounds[name] or "", {})
             if c is not None and oklch(c)[0] > void_l + 0.002:
                 bad_print.append("%s under print is %s, lighter than the void" % (name, c))
         chk(not bad_print,
             "print_ground     the fall survives print emulation%s"
             % ("  :: " + "; ".join(sorted(set(bad_print))[:4]) if bad_print
-               else "  :: %d gradient stops, all from the ramp" % len(
-                   re.findall(r"rgba?\(", img))))
+               else "  :: %d pages, each printing the slice of the fall it carries"
+                    % n_pp))
 
         # block texts taken from the DOM rather than scraped out of the HTML with a
         # regex that mis-nests across section boundaries; no_cut_row reads these.
@@ -887,24 +1052,29 @@ def pdf_checks(chk, tokens):
     wide, measured, longest = [], 0, 0.0
     for i in range(n_pages):
         pix = doc2[i].get_pixmap(dpi=150)
-        x = int(pix.width * 0.25)
-        col = [pix.pixel(x, y)[:3] for y in range(pix.height)]
-        runs, prev, st = [], None, 0
-        for k, c in enumerate(col):
-            if c != prev:
-                if prev is not None:
-                    runs.append((st, k - st, prev))
-                prev, st = c, k
-        runs.append((st, len(col) - st, prev))
-        for y, length, c in runs:
-            if not on_fall(c):
-                continue
-            measured += 1
-            inches = length / 150.0
-            longest = max(longest, inches)
-            if inches > MAX_BAND_IN:
-                wide.append("page %d: a flat band of %.2f in at #%02X%02X%02X"
-                            % (i + 1, inches, c[0], c[1], c[2]))
+        # Sampled inside the gutter, where the fall is and no glyph is. A column
+        # through the text column is broken up by every line it crosses, which turns a
+        # page-high flat into a stack of short ones and hides exactly what this looks
+        # for. More than one column, because one unlucky column is not a measurement.
+        for frac in (0.015, 0.030):
+            x = int(pix.width * frac)
+            col = [pix.pixel(x, y)[:3] for y in range(pix.height)]
+            runs, prev, st = [], None, 0
+            for k, c in enumerate(col):
+                if c != prev:
+                    if prev is not None:
+                        runs.append((st, k - st, prev))
+                    prev, st = c, k
+            runs.append((st, len(col) - st, prev))
+            for y, length, c in runs:
+                if not on_fall(c):
+                    continue
+                measured += 1
+                inches = length / 150.0
+                longest = max(longest, inches)
+                if inches > MAX_BAND_IN:
+                    wide.append("page %d: a flat band of %.2f in at #%02X%02X%02X"
+                                % (i + 1, inches, c[0], c[1], c[2]))
     doc2.close()
     chk(measured and not wide,
         "pdf_banding      no flat band in the printed fall exceeds %.2f in%s"

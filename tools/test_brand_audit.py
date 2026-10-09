@@ -74,20 +74,27 @@ def lie_about_the_ground(s):
 
 # ---------------------------------------------------------------- C2
 def whiten_the_printed_page(s):
+    """The fall is painted per page now, so whitening .doc would be a mutation the
+    document no longer notices. This whitens what actually carries the ground."""
     return s.replace("  @media print{",
                      "  @media print{\n"
-                     "    .doc{background:linear-gradient(180deg,#FFFFFF,#F2F2F2)}\n"
+                     "    .page{background:linear-gradient(180deg,#FFFFFF,#F2F2F2)}\n"
                      "    .ledger{background:#FFFFFF}", 1)
 
 
 # ---------------------------------------------------------------- C1
 def split_a_ledger_row(s):
-    """Force a row to straddle a sheet by removing the break guard and padding it
-    past a page boundary."""
+    """Force a row to straddle a sheet: drop the break guard, put the readings back
+    into one column so they stack, and make one tall enough to cross a boundary."""
     s = s.replace(".lrow,.role,.tstep,.crossover{break-inside:avoid;page-break-inside:avoid}",
                   ".crossover{break-inside:avoid}", 1)
+    # The row has to be tall IN TEXT. A tall empty box straddles a boundary without
+    # any of its words doing so, and no_cut_row matches on words.
     return s.replace("  @media print{", "  @media print{\n"
-                     "    .lnote{display:block;height:760px}", 1)
+                     "    .ledger{display:block;padding-top:300px}\n"
+                     "    .lrow{display:block}\n"
+                     "    .lrow dl{line-height:9}\n"
+                     "    .lnote{display:block;line-height:9}", 1)
 
 
 # ---------------------------------------------------------------- I2
@@ -211,19 +218,28 @@ def test_banding_is_falsifiable():
                               capture_output=True, text=True)
     try:
         d = json.loads(bt)
-        d["color"]["stages"]["2"]["value"] = "#D4AE5E"
-        d["color"]["stages"]["2"]["oklch"] = {"l": 0.7681, "c": 0.1083, "h": 84.9}
+        # Flatten the bottom of the ramp, not the top. Flattening the top moves the
+        # crossover off 50 per cent, the generator refuses to build a twelve-page
+        # document whose inversion is not on a turn, and a build that never ran would
+        # be read as the check staying green. The bottom leaves the crossover alone.
+        d["color"]["stages"]["4"]["value"] = "#8A3B52"
+        d["color"]["stages"]["4"]["oklch"] = {"l": 0.4644, "c": 0.1093, "h": 5.4}
         io.open(tok, "w", encoding="utf-8").write(json.dumps(d, indent=2, ensure_ascii=False))
-        run("tools/build_guidelines.py")
-        run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
-        out = run("tools/brand_audit.py").stdout
-        if "FAIL  pdf_banding" in out:
-            PASSED.append("I8 a near-flat ramp bands in print")
+        built = run("tools/build_guidelines.py")
+        rendered = run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
+        if built.returncode or rendered.returncode:
+            FAILED.append("I8 the mutated document never built, so nothing was measured"
+                          " -> %s" % (built.stderr or rendered.stderr).strip().splitlines()[-1:])
         else:
-            FAILED.append("I8 pdf_banding stayed green on a near-flat ramp")
+            out = run("tools/brand_audit.py").stdout
+            if "FAIL  pdf_banding" in out:
+                PASSED.append("I8 a near-flat ramp bands in print")
+            else:
+                FAILED.append("I8 pdf_banding stayed green on a near-flat ramp")
     finally:
         io.open(tok, "w", encoding="utf-8").write(bt)
         run("tools/build_guidelines.py")
+        run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
         run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
         PDF.write_bytes(bp)
 

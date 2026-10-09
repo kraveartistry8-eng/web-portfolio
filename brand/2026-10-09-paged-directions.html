@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afterglow, paged directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<style>
+:root{--void:#080808;--surface-deep:#141414;--surface:#2B2B2B;--text:#EEECEA;
+  --muted:#C0C0C0;--border:rgba(192,192,192,0.22);
+  --display:'Instrument Serif',Georgia,serif;--body:'Space Grotesk',system-ui,sans-serif;
+  --gut:40px}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--void);color:var(--text);font-family:var(--body);font-weight:400;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin-inline:auto;padding:0 24px 96px}
+header.top{padding:56px 0 36px}
+h1.mast{font-family:var(--display);font-weight:400;font-size:clamp(34px,5vw,58px);
+  line-height:1;margin:0 0 14px;letter-spacing:-.01em}
+.sub{color:var(--muted);max-width:62ch;margin:0}
+.lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+
+.iter{border-top:1px solid var(--border);padding-top:28px;margin-top:56px}
+.iter h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0 0 8px;letter-spacing:-.01em}
+.iter .why{color:var(--muted);max-width:74ch;margin:0 0 22px;font-size:14.5px}
+
+/* the shared page content, identical in all three */
+.pg{position:relative;overflow:hidden}
+.pg .in{padding:clamp(28px,5%,64px);max-width:62ch}
+.dark{color:var(--void)}
+.light{color:var(--text)}
+.t{font-family:var(--display);font-weight:400;font-size:clamp(40px,7vw,86px);line-height:.95;
+  margin:0 0 20px;letter-spacing:-.015em}
+.t2{font-family:var(--display);font-weight:400;font-size:clamp(26px,3.4vw,40px);line-height:1.05;
+  margin:0 0 18px;letter-spacing:-.01em}
+.lede{font-family:var(--display);font-size:clamp(19px,2.2vw,27px);line-height:1.25;margin:0 0 22px}
+.lede2{font-family:var(--display);font-size:clamp(17px,1.9vw,23px);line-height:1.3;margin:0}
+.kick{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;opacity:.72}
+.bd{font-size:14.5px;line-height:1.6;margin:0 0 14px;max-width:54ch}
+.sw{height:64px;width:100%;max-width:360px;margin:0 0 20px}
+.led{margin:0;font-size:12.5px}
+.led > div{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-top:1px solid var(--rule)}
+.led dt{flex:0 0 94px;letter-spacing:.1em;text-transform:uppercase;font-size:10.5px;opacity:.75}
+.led dd{margin:0;font-variant-numeric:tabular-nums}
+.fol{position:absolute;right:16px;top:14px;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;opacity:.7;display:flex;gap:10px;align-items:baseline}
+.fol i{font-style:normal;font-variant-numeric:tabular-nums}
+
+/* A: snap */
+.frameA{height:620px;overflow-y:auto;scroll-snap-type:y mandatory;border:1px solid var(--border)}
+.frameA .pg{height:620px;scroll-snap-align:start;display:flex;align-items:center}
+
+/* B: sheets */
+.frameB{height:620px;overflow-y:auto;border:1px solid var(--border);background:var(--void);
+  padding:36px 0}
+.sheetwrap{display:flex;justify-content:center;padding:0 0 36px}
+.frameB .pg{width:min(78%,520px);aspect-ratio:8.5/11;display:flex;align-items:center}
+.frameB .pg .in{padding:9%}
+
+/* C: separate documents */
+.frameC{border:1px solid var(--border)}
+.frameC .pg{height:560px;display:flex;align-items:center}
+.docnav{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  background:var(--surface-deep);border-top:1px solid var(--border);padding:14px 18px;
+  font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+.docnav button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--text);
+  background:var(--surface);border:1px solid var(--border);border-radius:0;
+  padding:11px 16px;min-height:44px;cursor:pointer;transition:background 450ms cubic-bezier(.2,0,.2,1),color 450ms cubic-bezier(.2,0,.2,1)}
+.docnav button:hover,.docnav button:focus-visible{background:var(--surface-deep);color:var(--muted)}
+.docnav .off{opacity:.45}
+
+.foot{border-top:1px solid var(--border);margin-top:64px;padding-top:24px;color:var(--muted);font-size:13.5px}
+.foot a{color:var(--text)}
+@media (max-width:760px){
+  :root{--gut:20px}
+  .frameA,.frameA .pg{height:520px}
+  .frameB{height:520px}
+  .frameC .pg{height:480px}
+  .docnav{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="lbl">Afterglow &middot; form pass &middot; 9 Oct 2026</p>
+  <h1 class="mast">Three ways to be more than one page</h1>
+  <p class="sub">The same four pages of the guideline, paged three ways. The fall is unchanged:
+    four stages, flat chroma at 0.110, lightness falling 0.781 to 0.301, and the text flipping
+    from void to light at the halfway point. What changes is where the document breaks and what
+    the break does to the descent.</p>
+</header>
+
+<section class="iter">
+  <p class="lbl">Iteration 1</p>
+  <h2>Snap pages, one fall</h2>
+  <p class="why">The fall is one gradient and every page is a window onto it. Scroll snaps, so you land on a composition instead of between two. Page 01 ends at #C38051 and page 02 begins at the same value, which is why the seam does not read as a seam.</p>
+  <div class="frameA"><section class="pg dark" style="background:linear-gradient(180deg,#D8B260 0.0000%, #C38051 100.0000%)"><div class="in"><h1 class="t">Afterglow</h1><p class="lede">One fragrance told in four stages, from the gold of last light to deep violet. You do not see the bottle until the end.</p><p class="lede2">The light only ever deepens, never brightens.</p></div><span class="fol">01 / 04<i>0.781 L</i></span></section><section class="pg dark" style="background:linear-gradient(180deg,#C38051 0.0000%, #BC6F4C 33.3333%, #A2544E 100.0000%)"><div class="in"><p class="kick">Stage 1</p><h2 class="t2">Gold of last light</h2><div class="sw" style="background:#D8B260"></div><dl class="led" style="--rule:rgba(8,8,8,.30)"><div><dt>Hex</dt><dd>#D8B260</dd></div><div><dt>OKLCH</dt><dd>0.781 / 0.110 / 84.9</dd></div><div><dt>On void</dt><dd>9.97:1</dd></div><div><dt>On surface</dt><dd>7.05:1</dd></div></dl></div><span class="fol">02 / 04<i>0.659 L</i></span></section><section class="pg light" style="background:linear-gradient(180deg,#A2544E 0.0000%, #893A50 66.6667%, #743354 100.0000%)"><div class="in"><p class="kick">Stage 2</p><h2 class="t2">After gold</h2><div class="sw" style="background:#BC6F4C"></div><dl class="led" style="--rule:rgba(238,236,234,.30)"><div><dt>Hex</dt><dd>#BC6F4C</dd></div><div><dt>OKLCH</dt><dd>0.619 / 0.110 / 44.7</dd></div><div><dt>On void</dt><dd>5.26:1</dd></div><div><dt>On surface</dt><dd>3.72:1</dd></div></dl></div><span class="fol">03 / 04<i>0.538 L</i></span></section><section class="pg light" style="background:linear-gradient(180deg,#743354 0.0000%, #341D5E 100.0000%)"><div class="in"><p class="kick">03</p><h2 class="t2">The surface map</h2><p class="bd">Void is the page. Surface-deep is recessed, surface is raised, and the hairline is the border token. Shadow is absent from this list on purpose: on a void ground elevation reads through surface steps.</p><p class="bd">Three stages are not on the ramp, so they cannot carry text. The later stages are specified in the column to the right, which is the fall in the rule. The failing numbers are printed because they are the reason for the restriction.</p></div><span class="fol">04 / 04<i>0.420 L</i></span></section></div>
+</section>
+
+<section class="iter">
+  <p class="lbl">Iteration 2</p>
+  <h2>Sheets on the void</h2>
+  <p class="why">Letter proportion, 8.5 by 11, floating on the void with the ground showing between. The screen document and the printed one become the same artifact. The cost is that the void gaps interrupt the fall, so the descent is read as four steps rather than one continuous move.</p>
+  <div class="frameB"><div class="sheetwrap"><section class="pg dark" style="background:linear-gradient(180deg,#D8B260 0.0000%, #C38051 100.0000%)"><div class="in"><h1 class="t">Afterglow</h1><p class="lede">One fragrance told in four stages, from the gold of last light to deep violet. You do not see the bottle until the end.</p><p class="lede2">The light only ever deepens, never brightens.</p></div><span class="fol">01 / 04<i>0.781 L</i></span></section></div><div class="sheetwrap"><section class="pg dark" style="background:linear-gradient(180deg,#C38051 0.0000%, #BC6F4C 33.3333%, #A2544E 100.0000%)"><div class="in"><p class="kick">Stage 1</p><h2 class="t2">Gold of last light</h2><div class="sw" style="background:#D8B260"></div><dl class="led" style="--rule:rgba(8,8,8,.30)"><div><dt>Hex</dt><dd>#D8B260</dd></div><div><dt>OKLCH</dt><dd>0.781 / 0.110 / 84.9</dd></div><div><dt>On void</dt><dd>9.97:1</dd></div><div><dt>On surface</dt><dd>7.05:1</dd></div></dl></div><span class="fol">02 / 04<i>0.659 L</i></span></section></div><div class="sheetwrap"><section class="pg light" style="background:linear-gradient(180deg,#A2544E 0.0000%, #893A50 66.6667%, #743354 100.0000%)"><div class="in"><p class="kick">Stage 2</p><h2 class="t2">After gold</h2><div class="sw" style="background:#BC6F4C"></div><dl class="led" style="--rule:rgba(238,236,234,.30)"><div><dt>Hex</dt><dd>#BC6F4C</dd></div><div><dt>OKLCH</dt><dd>0.619 / 0.110 / 44.7</dd></div><div><dt>On void</dt><dd>5.26:1</dd></div><div><dt>On surface</dt><dd>3.72:1</dd></div></dl></div><span class="fol">03 / 04<i>0.538 L</i></span></section></div><div class="sheetwrap"><section class="pg light" style="background:linear-gradient(180deg,#743354 0.0000%, #341D5E 100.0000%)"><div class="in"><p class="kick">03</p><h2 class="t2">The surface map</h2><p class="bd">Void is the page. Surface-deep is recessed, surface is raised, and the hairline is the border token. Shadow is absent from this list on purpose: on a void ground elevation reads through surface steps.</p><p class="bd">Three stages are not on the ramp, so they cannot carry text. The later stages are specified in the column to the right, which is the fall in the rule. The failing numbers are printed because they are the reason for the restriction.</p></div><span class="fol">04 / 04<i>0.420 L</i></span></section></div></div>
+</section>
+
+<section class="iter">
+  <p class="lbl">Iteration 3</p>
+  <h2>Separate documents</h2>
+  <p class="why">Four files, one per stage, each with the slice of the fall it occupies. The navigation names where you are going by its lightness, so the rule is still visible at the moment you move. The cost is that nobody ever sees the whole descent at once.</p>
+  <div class="frameC"><article class="doc" data-n="0" ><section class="pg dark" style="background:linear-gradient(180deg,#D8B260 0.0000%, #C38051 100.0000%)"><div class="in"><h1 class="t">Afterglow</h1><p class="lede">One fragrance told in four stages, from the gold of last light to deep violet. You do not see the bottle until the end.</p><p class="lede2">The light only ever deepens, never brightens.</p></div><span class="fol">01 / 04<i>0.781 L</i></span></section><nav class="docnav"><span class="off">Start</span><span>0.781 L</span><button data-go="1">On to 02 &rarr; 0.659 L</button></nav></article><article class="doc" data-n="1" hidden><section class="pg dark" style="background:linear-gradient(180deg,#C38051 0.0000%, #BC6F4C 33.3333%, #A2544E 100.0000%)"><div class="in"><p class="kick">Stage 1</p><h2 class="t2">Gold of last light</h2><div class="sw" style="background:#D8B260"></div><dl class="led" style="--rule:rgba(8,8,8,.30)"><div><dt>Hex</dt><dd>#D8B260</dd></div><div><dt>OKLCH</dt><dd>0.781 / 0.110 / 84.9</dd></div><div><dt>On void</dt><dd>9.97:1</dd></div><div><dt>On surface</dt><dd>7.05:1</dd></div></dl></div><span class="fol">02 / 04<i>0.659 L</i></span></section><nav class="docnav"><button data-go="0">Back to 01</button><span>0.659 L</span><button data-go="2">On to 03 &rarr; 0.538 L</button></nav></article><article class="doc" data-n="2" hidden><section class="pg light" style="background:linear-gradient(180deg,#A2544E 0.0000%, #893A50 66.6667%, #743354 100.0000%)"><div class="in"><p class="kick">Stage 2</p><h2 class="t2">After gold</h2><div class="sw" style="background:#BC6F4C"></div><dl class="led" style="--rule:rgba(238,236,234,.30)"><div><dt>Hex</dt><dd>#BC6F4C</dd></div><div><dt>OKLCH</dt><dd>0.619 / 0.110 / 44.7</dd></div><div><dt>On void</dt><dd>5.26:1</dd></div><div><dt>On surface</dt><dd>3.72:1</dd></div></dl></div><span class="fol">03 / 04<i>0.538 L</i></span></section><nav class="docnav"><button data-go="1">Back to 02</button><span>0.538 L</span><button data-go="3">On to 04 &rarr; 0.420 L</button></nav></article><article class="doc" data-n="3" hidden><section class="pg light" style="background:linear-gradient(180deg,#743354 0.0000%, #341D5E 100.0000%)"><div class="in"><p class="kick">03</p><h2 class="t2">The surface map</h2><p class="bd">Void is the page. Surface-deep is recessed, surface is raised, and the hairline is the border token. Shadow is absent from this list on purpose: on a void ground elevation reads through surface steps.</p><p class="bd">Three stages are not on the ramp, so they cannot carry text. The later stages are specified in the column to the right, which is the fall in the rule. The failing numbers are printed because they are the reason for the restriction.</p></div><span class="fol">04 / 04<i>0.420 L</i></span></section><nav class="docnav"><button data-go="2">Back to 03</button><span>0.420 L</span><span class="off">End</span></nav></article></div>
+</section>
+
+<p class="foot">Produced from the same tokens as
+  <a href="2026-10-07-afterglow-guidelines.html">the guideline document</a>, which is currently
+  one continuous page of 7,163px. Nothing here replaces it; this is the pass that decides
+  whether it breaks, and where.</p>
+</div>
+<script>
+document.querySelectorAll('.frameC button[data-go]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var n = b.getAttribute('data-go');
+    document.querySelectorAll('.frameC .doc').forEach(function(d){
+      d.hidden = (d.getAttribute('data-n') !== n);
+    });
+  });
+});
+</script>
+</body>
+</html>
