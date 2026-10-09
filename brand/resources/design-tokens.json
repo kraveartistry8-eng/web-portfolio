@@ -40,23 +40,43 @@
       "use": "Hairline"
     },
     "stages": {
-      "_note": "Week 2. Four stages, each darker and warmer than the last. Define with Shopify's color_palette setting type, which replaced colour schemes in June 2026.",
+      "_note": "Ramp E, picked 9 October 2026 from brand/2026-10-07-stage-palette-pass-2.html; stage two named from brand/2026-10-09-stage-two-names.html. Lightness falls in even steps of 0.16 in OKLCH and chroma is held flat at 0.110. The stages are NOT required to warm in hue: the brief's \"each room runs warmer than the last\" is about air temperature for scent diffusion and was scoped event-only on 7 October 2026. The theme has no color_palette or color_scheme in config/ at all, so these become a schema addition during the build rather than values dropped into a slot that is waiting for them.",
       "1": {
         "name": "Gold of last light",
-        "value": null
+        "value": "#D8B260",
+        "oklch": {
+          "l": 0.7806,
+          "c": 0.1101,
+          "h": 84.89
+        }
       },
       "2": {
-        "name": null,
-        "value": null,
-        "_note": "Unnamed in the source material. Sits between gold and rose."
+        "name": "After gold",
+        "value": "#BC6F4C",
+        "_note": "Unnamed in the source material and null in this file until 9 October 2026. Named After gold, from the words that belong to Afterglow in voice-tone.md. Candidates and the two set aside are in brand/2026-10-09-stage-two-names.html.",
+        "oklch": {
+          "l": 0.6191,
+          "c": 0.1096,
+          "h": 44.68
+        }
       },
       "3": {
         "name": "Rose",
-        "value": null
+        "value": "#893A50",
+        "oklch": {
+          "l": 0.461,
+          "c": 0.11,
+          "h": 4.98
+        }
       },
       "4": {
         "name": "Deep violet",
-        "value": null
+        "value": "#341D5E",
+        "oklch": {
+          "l": 0.301,
+          "c": 0.1101,
+          "h": 295.25
+        }
       }
     },
     "_forbidden": {
