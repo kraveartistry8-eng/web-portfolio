@@ -238,7 +238,7 @@ def document_checks(chk, tokens):
                      "ledger_anchored", "text_on_fall", "ledger_clear",
                      "crossover_in_fall", "no_h_scroll_390", "ledger_inline",
                      "no_dead_leaders", "fall_survives", "ratios_recomputed",
-                     "touch_targets"):
+                     "touch_targets", "print_ground"):
             chk(False, "%-16s %s  :: %s does not exist yet"
                 % (name, "needs the document", DOC.name))
         return
@@ -642,11 +642,104 @@ def document_checks(chk, tokens):
 
         mp.close()
 
+        # ================= print =================
+        pp = br.new_page(viewport={"width": 816, "height": 1056}, device_scale_factor=1)
+        pp.goto(DOC.resolve().as_uri())
+        pp.emulate_media(media="print")
+        pp.wait_for_timeout(700)
+
+        # ---------- print_ground
+        grounds = pp.evaluate("""() => {
+            const cs = n => getComputedStyle(document.querySelector(n));
+            return {doc: cs('.doc').backgroundImage,
+                    docColor: cs('.doc').backgroundColor,
+                    body: cs('body').backgroundColor,
+                    ledger: cs('.ledger').backgroundColor};
+        }""")
+        bad_print = []
+        if "gradient" not in (grounds["doc"] or ""):
+            bad_print.append("the fall is not painted under print: %r" % grounds["doc"])
+        body_c = css_colour(grounds["body"] or "", {})
+        if body_c is None or oklch(body_c)[0] > oklch(get(tokens, "color.ground.value"))[0] + 0.002:
+            bad_print.append("body background under print is %r" % grounds["body"])
+        chk(not bad_print,
+            "print_ground     the fall survives print emulation%s"
+            % ("  :: " + "; ".join(bad_print) if bad_print else "  :: gradient intact, body on the void"))
+
+        pp.close()
+
         br.close()
         try:
             tmp.unlink()
         except OSError:
             pass
+
+
+def pdf_checks(chk, tokens):
+    """The printed artifact, not the page that produced it."""
+    pdf = ROOT / "brand" / "2026-10-07-afterglow-guidelines.pdf"
+    if not pdf.exists():
+        for n in ("pdf_edges", "no_cut_row"):
+            chk(False, "%-16s needs the rendered PDF  :: %s does not exist yet"
+                % (n, pdf.name))
+        return
+    try:
+        import fitz
+    except ImportError:
+        chk(False, "pdf_edges        the PDF's corners are the ground, not white margin"
+                   "  :: PyMuPDF is not installed, so this cannot be verified")
+        return
+    doc = fitz.open(str(pdf))
+    white = []
+    sampled = 0
+    for i in range(doc.page_count):
+        pix = doc[i].get_pixmap(dpi=36)
+        w, h = pix.width, pix.height
+        for name, (x, y) in (("top left", (2, 2)), ("top right", (w - 3, 2)),
+                             ("bottom left", (2, h - 3)), ("bottom right", (w - 3, h - 3))):
+            r, g, b = pix.pixel(x, y)[:3]
+            sampled += 1
+            # a Letter margin prints white; the fall never reaches L 0.9
+            if oklch("#%02X%02X%02X" % (r, g, b))[0] > 0.9:
+                white.append("page %d %s is #%02X%02X%02X" % (i + 1, name, r, g, b))
+    doc.close()
+    chk(not white,
+        "pdf_edges        every page corner carries the ground, not white margin%s"
+        % ("  :: " + "; ".join(white[:4]) if white
+           else "  :: %d corners across %d pages" % (sampled, sampled // 4)))
+
+    # ---------- no_cut_row
+    # Measuring this in a viewport simulates pagination by dividing continuous
+    # coordinates, which ignores the break-inside the PDF actually applies. The only
+    # honest place to check it is the printed artifact: if a block were split, its
+    # first line and its last would land on different sheets.
+    doc = fitz.open(str(pdf))
+    pages = [" ".join(doc[i].get_text().split()) for i in range(doc.page_count)]
+    doc.close()
+    html = io.open(DOC, encoding="utf-8").read()
+    blocks = []
+    for cls in ("lrow", "role", "tstep"):
+        for m in re.finditer(r'<div class="%s[^"]*"[^>]*>(.*?)</div>\s*(?=<div|</div>|<p|$)'
+                             % cls, html, re.S):
+            text = " ".join(re.sub(r"<[^>]+>", " ", m.group(1))
+                            .replace("&middot;", "·").replace("&nbsp;", " ").split())
+            if len(text) > 12:
+                blocks.append((cls, text))
+    split = []
+    for cls, text in blocks:
+        words = text.split()
+        head, tail_ = " ".join(words[:4]), " ".join(words[-4:])
+        hp = {i for i, pg in enumerate(pages) if head in pg}
+        tp = {i for i, pg in enumerate(pages) if tail_ in pg}
+        if not hp or not tp:
+            continue          # not extractable as text; nothing to conclude
+        if not (hp & tp):
+            split.append("%s %r starts on page %d and ends on page %d"
+                         % (cls, text[:26], min(hp) + 1, min(tp) + 1))
+    chk(blocks and not split,
+        "no_cut_row       no row, role or step is split across a sheet%s"
+        % ("  :: " + "; ".join(split[:4]) if split
+           else "  :: %d blocks checked against %d pages" % (len(blocks), len(pages))))
 
 
 def main():
@@ -898,6 +991,7 @@ def main():
     )
 
     document_checks(chk, tokens)
+    pdf_checks(chk, tokens)
 
     print("\n".join("  PASS  " + m for m in OK))
     if FAIL:

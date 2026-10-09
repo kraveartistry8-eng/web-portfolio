@@ -53,6 +53,23 @@ Colour, typography scale, spacing, radius, shadow, motion.
 [`resources/voice-tone.md`](resources/voice-tone.md)
 Voice, vocabulary, what Afterglow never says.
 
+### The guideline document
+[`2026-10-07-afterglow-guidelines.html`](2026-10-07-afterglow-guidelines.html) and its
+[PDF](2026-10-07-afterglow-guidelines.pdf)
+The visual brand guideline. It states the rules and is an example of them: one continuous fall
+from gold to deep violet that never resets, with every claim proved at the position where the
+ground reaches the value being specified. Rendered from `resources/design-tokens.json` by
+`tools/build_guidelines.py`, so it cannot drift from the tokens. Verified by
+`tools/brand_audit.py`.
+
+### How the decisions were reached
+[`2026-10-07-stage-palette-pass-1.html`](2026-10-07-stage-palette-pass-1.html) and
+[pass 2](2026-10-07-stage-palette-pass-2.html), then
+[stage two names](2026-10-09-stage-two-names.html), then
+[type pass 1](2026-10-09-type-specimen-pass-1.html) and
+[pass 2](2026-10-09-type-specimen-pass-2.html).
+One artifact per pass, never overwritten, each saying what produced it and what it led to.
+
 ---
 
 ## Quick Reference
@@ -65,15 +82,26 @@ Voice, vocabulary, what Afterglow never says.
 | Text | `#EEECEA` | Locked |
 | Muted | `#C0C0C0` | Locked |
 | Border | `rgba(192,192,192,0.22)` | Locked |
-| Stage 1, gold of last light | not set | **Week 2** |
-| Stage 2 | not set | **Week 2**, unnamed in the source |
-| Stage 3, rose | not set | **Week 2** |
-| Stage 4, deep violet | not set | **Week 2** |
-| Display font | not set | **Week 2** |
-| Body font | not set | **Week 2** |
+| Stage 1, gold of last light | `#D8B260` | Locked, 9.97:1 on void |
+| Stage 2, after gold | `#BC6F4C` | Locked, 5.26:1 on void |
+| Stage 3, rose | `#893A50` | Locked, 2.66:1 on void |
+| Stage 4, deep violet | `#341D5E` | Locked, 1.41:1 on void |
+| Display font | Instrument Serif | Locked, Shopify font library |
+| Body font | Space Grotesk | Locked, Shopify font library |
+| Type scale | 1.25 from 16 px | Locked, every step derived |
+| Spacing | 8 px base, whole multiples | Locked |
+| Radius | 0 px | Locked |
+| Shadow | none | Locked, elevation is the surface steps |
+| Motion | 450 ms, `cubic-bezier(0.2, 0, 0.2, 1)` | Locked, settles without overshoot |
 
-The four stages are what Shopify's `color_palette` setting type is for. It replaced colour
-schemes in June 2026 and defining it is a week 2 task.
+Nothing here is outstanding. The stages are ramp E, picked 9 October 2026: lightness falls in
+even steps of 0.16 in OKLCH, chroma is held flat at 0.110, and the hue rotates one direction
+along the sundown arc. Stages 3 and 4 fail 3:1 on the void and are never letterforms; the
+measured reason is printed in the guideline document rather than argued here.
+
+The brief says the four stages are what Shopify's `color_palette` setting type is for. The theme
+has no `color_palette` and no `color_scheme` in `config/` at all, so these become a schema
+addition during the build rather than values dropped into a slot that is waiting for them.
 
 ---
 
@@ -81,4 +109,5 @@ schemes in June 2026 and defining it is a week 2 task.
 
 1. **Identify** which resource files bear on the task
 2. **Cross-reference** planned decisions against them
-3. **Execute** on the locked tokens. Anything marked Week 2 is a decision to make, not to guess
+3. **Execute** on the locked tokens. Every one of them is set; anything that still looks
+   open is a decision to make, not to guess

@@ -185,6 +185,31 @@
   @media (prefers-reduced-motion:reduce){
     a{transition:none}
   }
+
+  /* Print resolves the ground to its value at each page's own position, so the
+     printed artifact carries the same fall as the screen one. Nothing here sets a
+     lighter value: a print stylesheet that reintroduced a white page would break the
+     brand's central rule in the one place nobody looks. */
+  @page{margin:0;size:Letter}
+  @media print{
+    .slug{position:static;border-right:0}
+    /* a sticky marker has no meaning on a fixed page */
+    .marker{display:none}
+    /* An absolutely positioned row does not paginate: it is laid out against a
+       container spanning every sheet, so break-inside cannot hold it together and two
+       of them straddled a boundary. In print the ledger goes inline, exactly as it
+       does at 390px, and each row sits with the passage it annotates. */
+    .doc{grid-template-columns:minmax(0,1fr) 0 var(--rail)}
+    .ledger{display:none}
+    .lrow{position:static;width:auto;transform:none;margin:var(--sp-lg) 0;
+      padding:var(--sp-md)}
+    .lrow.first,.lrow.last{position:static;transform:none;top:auto;bottom:auto}
+    .lrow.anchored::before{display:none}
+    .crossover{width:calc(100% - var(--rail))}
+    /* a reading split across two sheets loses the thing it demonstrates */
+    .lrow,.role,.tstep,.crossover{break-inside:avoid;page-break-inside:avoid}
+    .sechead{break-after:avoid;page-break-after:avoid}
+  }
 </style>
 </head>
 <body>
