@@ -60,7 +60,7 @@ Site art direction is the six neutrals, the deepening-light rule, the motion per
 | `brand/resources/design-tokens.json` | Every `null` replaced. The machine-readable half the theme build consumes, and the source the document renders from |
 | `brand/BRAND-IDENTITY.md` | Quick Reference updated from "Week 2" to real values; the guideline document added to Resource Files |
 | `brand/2026-10-07-stage-palette-pass-N.html` | Working artifacts, **one file per pass, never overwritten**. Ramp exploration. Each pass carries what produced it and what it led to, so the decision trail is itself a deliverable rather than something only git remembers |
-| `brand/2026-10-07-type-specimen-pass-N.html` | Working artifacts, one file per pass, same convention as the palette |
+| `brand/2026-10-09-type-specimen-pass-N.html` | Working artifacts, one file per pass, same convention as the palette |
 
 `usage.md` is not a separate file. Its content is a section of the guideline document, because
 usage rules shown against real colour are clearer than usage rules described in prose.

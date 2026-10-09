@@ -144,7 +144,7 @@ git commit -m "feat: define the four Afterglow stage colours"
 ### Task 3: Type, explore and record
 
 **Files:**
-- Create: `brand/2026-10-07-type-specimen-pass-N.html`, one per pass
+- Create: `brand/2026-10-09-type-specimen-pass-N.html`, one per pass
 - Modify: `brand/resources/design-tokens.json` (`typography`)
 - Modify: `tools/brand_audit.py`
 
@@ -167,7 +167,7 @@ delivery_recorded each face records a delivery route of shopify_library
 Run: `python3 tools/brand_audit.py`
 Expected: the three type checks FAIL.
 
-- [ ] **Step 3: Build `brand/2026-10-07-type-specimen.html`**
+- [ ] **Step 3: Build `brand/2026-10-09-type-specimen-pass-1.html`**
 
 Candidate pairings on the `#080808` ground. Each candidate shows: `AFTERGLOW` as the wordmark, one hero line from the brief, a paragraph of `voice-tone.md` body copy at the proposed body size, and the scale rendered as its steps. State for each face whether it is in Shopify's font library or needs self-hosting, since that is a build cost and part of the choice.
 
@@ -187,7 +187,7 @@ Expected: type checks PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add brand/2026-10-07-type-specimen.html brand/resources/design-tokens.json tools/brand_audit.py
+git add brand/2026-10-09-type-specimen-pass-*.html brand/resources/design-tokens.json tools/brand_audit.py
 git commit -m "feat: choose Afterglow display and body faces"
 ```
 
