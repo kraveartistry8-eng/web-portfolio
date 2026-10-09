@@ -75,17 +75,216 @@ for _ in range(60):
         _hi = _m
 INVERSION = _hi
 
-SECTIONS = [
-    ("opening", "Afterglow", None),
-    ("one-line", "What this is", "01"),
-    ("stages", "The four stages", "02"),
-    ("surfaces", "The surface map", "03"),
-    ("roles", "Stage roles", "04"),
-    ("type", "Type", "05"),
-    ("measures", "Spacing, radius, shadow, motion", "06"),
-    ("usage", "Usage", "07"),
-    ("voice", "Voice", "08"),
-]
+
+def ratio(fg, bg):
+    """A printed ratio carries the two colours it was computed from, so the audit can
+    recompute it instead of trusting it."""
+    return ('<b class="num" data-fg="%s" data-bg="%s">%.2f:1</b>'
+            % (fg.upper(), bg.upper(), B.contrast(fg, bg)))
+
+
+def ok_text(fg, bg, large=False):
+    floor = 3.0 if large else 4.5
+    r = B.contrast(fg, bg)
+    return "clears %s:1" % ("3" if large else "4.5") if r >= floor else "fails %s:1" % (
+        "3" if large else "4.5")
+
+
+def ledger_row(at, kicker, pairs, note, anchored=True, swatch=None, style=""):
+    rows = "".join("<dt>%s</dt><dd>%s</dd>" % (k, v) for k, v in pairs)
+    sw = ('<span class="lsw" style="background:%s"></span>' % swatch) if swatch else ""
+    attrs = ' data-at="%.6f"' % at if anchored else ""
+    # a row centred on t=0 or t=1 would hang half off the column
+    edge = " first" if at <= 0.001 else (" last" if at >= 0.999 else "")
+    return ("""      <div class="lrow%s"%s style="--at:%.6f;%s">
+        <p class="lk">%s%s</p>
+        <dl>%s</dl>
+        <p class="lnote">%s</p>
+      </div>\n""" % (("" if not anchored else " anchored") + edge, attrs, at, style,
+                     sw, kicker, rows, note))
+
+
+def stage_rows():
+    out = []
+    for i, st in enumerate(STAGES):
+        at = (0.0, 1 / 3.0, 2 / 3.0, 1.0)[i]
+        hexv = st["value"]
+        o = st["oklch"]
+        role = ("Text, marks and rules on the void",
+                "Large text or fills. Borderline as text",
+                "Ground, never a letterform",
+                "Ground, never a letterform")[i]
+        out.append(ledger_row(
+            at, "Stage %d &middot; %s" % (i + 1, st["name"]),
+            [("Hex", hexv),
+             ("OKLCH", "%.3f &nbsp;%.3f &nbsp;%.1f" % (o["l"], o["c"], o["h"])),
+             ("On void", ratio(hexv, VOID)),
+             ("Text on it", ratio(TEXT, hexv)),
+             ("Role", role)],
+            "Read off the ground at this line, where the fall passes through it.",
+            swatch=hexv))
+    return "".join(out)
+
+
+def crossover_row():
+    g = ground(CROSSOVER)
+    return ledger_row(
+        CROSSOVER, "Crossover",
+        [("Ground", g),
+         ("OKLCH L", "%.3f" % B.oklch(g)[0]),
+         ("Text on it", ratio(TEXT, g))],
+        "The first position in the document that carries body copy.",
+        swatch=g)
+
+
+def surface_rows():
+    """The six neutrals are not on the ramp, so they cannot be read off the ground.
+    They are specified in the ledger itself, which is the void."""
+    items = [
+        (0.540, "Ground", C["ground"], None),
+        (0.580, "Surface, recessed", C["surface-deep"], C["surface-deep"]["value"]),
+        (0.620, "Surface, raised", C["surface"], C["surface"]["value"]),
+    ]
+    out = []
+    for at, label, tok, bg in items:
+        v = tok["value"]
+        out.append(ledger_row(
+            at, label,
+            [("Hex", v),
+             ("OKLCH L", "%.3f" % B.oklch(v)[0]),
+             ("Text on it", ratio(TEXT, v)),
+             ("Muted on it", ratio(MUTED, v)),
+             ("Use", tok.get("use", ""))],
+            "Not on the ramp, so it is read off this column rather than the page.",
+            anchored=False, swatch=v,
+            style=("background:%s;" % bg) if bg else ""))
+    return "".join(out)
+
+
+def measure_above():
+    """Everything above the crossover. Display sizes only: no ground up here carries
+    running text in any colour. Set in the void, which the gold end does carry."""
+    stage1, stage2 = STAGES[0], STAGES[1]
+    return """      <section class="above">
+        <h1 class="wordmark">Afterglow</h1>
+        <p class="statement">One fragrance told in four stages, from the gold of last light
+          to deep violet. You do not see the bottle until the end.</p>
+        <p class="statement">The light only ever deepens, never brightens.</p>
+        <p class="statement quiet">This page is obeying that rule. The ground beneath this
+          line is darker than the ground you started on, and it will not return.</p>
+        <p class="stagemark">Stage one. %(n1)s.</p>
+        <p class="stagemark">Stage two. %(n2)s.</p>
+      </section>\n""" % dict(n1=stage1["name"], n2=stage2["name"])
+
+
+def sec(folio, title, inner):
+    return ("""        <section class="sec" data-folio="%s">
+          <p class="secnum">%s</p>
+          <h2 class="sechead">%s</h2>
+%s        </section>\n""" % (folio, folio, title, inner))
+
+
+def p(text, cls="copy"):
+    return '          <p class="%s">%s</p>\n' % (cls, text)
+
+
+def measure_below():
+    """Everything below the crossover, where the fall carries body copy for the rest
+    of the document and keeps deepening."""
+    g_cross = ground(CROSSOVER)
+    sd, sf = C["surface-deep"]["value"], C["surface"]["value"]
+    d_fam, b_fam = TYPO["display"]["family"], TYPO["body"]["family"]
+    sc = TYPO["scale"]
+    out = []
+
+    out.append(sec("03", "The surface map", "".join([
+        p("Void is the page. %s is recessed, %s is raised, and the hairline is the border "
+          "token at %s. Shadow is absent from this list on purpose: on a void ground, "
+          "elevation reads through the surface steps, because a shadow has nothing to fall on."
+          % (sd, sf, C["border"]["value"])),
+        p("Those three are not on the ramp, so they cannot be read off the page the way a "
+          "stage can. They are specified in the column to the right, which is the void and "
+          "steps through them, so the family is demonstrated by the thing reporting it."),
+    ])))
+
+    roles = "".join(
+        """          <div class="role">
+            <p class="rolename">%s</p>
+            <p class="rolerule">%s</p>
+            <p class="rolemeas">On void %s &middot; %s &middot; text on it %s</p>
+          </div>\n""" % (
+            st["name"], rule,
+            ratio(st["value"], VOID), ok_text(st["value"], VOID, large=True),
+            ratio(TEXT, st["value"]))
+        for st, rule in zip(STAGES, [
+            "Light enough to set as text, a mark or a rule on the void.",
+            "Large text or fills. Borderline as running text and not to be used as it.",
+            "Fills, grounds and large shapes. Never a letterform.",
+            "Fills, grounds and large shapes. Never a letterform."]))
+    out.append(sec("04", "Stage roles", "".join([
+        p("A ramp whose lightness falls monotonically cannot carry text at both ends. The "
+          "later stages land near 2:1 and 1.4:1 on the void, which is not a flaw in the rule, "
+          "it is what the rule implies. The failing numbers are printed because they are the "
+          "reason for the restriction."),
+        '          <div class="roles">\n' + roles + "          </div>\n",
+    ])))
+
+    specimen = "".join(
+        """          <div class="tstep">
+            <span class="tlabel">%s</span>
+            <span class="tsample" style="font-size:%grem">Deepening</span>
+            <span class="tmeta">%g px &middot; %.4g rem</span>
+          </div>\n""" % (name, sc["steps"][name] / 16.0, sc["steps"][name],
+                         sc["steps"][name] / 16.0)
+        for name in ("xs", "base", "md", "lg", "xl", "2xl"))
+    out.append(sec("05", "Type", "".join([
+        p("Display is %s, body is %s. Both are in Shopify's font library, so neither ships as "
+          "a webfont; the cost is one added font picker, since the theme carries exactly one."
+          % (d_fam, b_fam)),
+        p("The scale is a ratio, not a list. Base %g px, ratio %g, every step derived. This "
+          "section is set in those faces at those sizes, so it is a specimen of itself."
+          % (sc["base"], sc["ratio"])),
+        '          <div class="tspec">\n' + specimen + "          </div>\n",
+    ])))
+
+    out.append(sec("06", "Spacing, radius, shadow, motion", "".join([
+        p("Spacing is an %g px base and whole multiples of it: %s. Eight divides the %g px "
+          "type base, so space and text sit on one grid rather than two that nearly agree."
+          % (TOKENS["spacing"]["base"],
+             ", ".join(str(SPACE[k]) for k in ("2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl")),
+             sc["base"])),
+        p("Radius is %g. Shadow is %s. Motion runs at %g ms on %s, a curve that ends at its "
+          "destination and never passes it, which is what deepening rather than snapping means "
+          "in a timing function."
+          % (TOKENS["radius"]["default"], TOKENS["shadow"]["default"],
+             MOTION["duration"]["base"], MOTION["ease"])),
+    ])))
+
+    out.append(sec("07", "Usage", "".join([
+        p("The brand's central idea is a sentence about mood that nobody can act on: the light "
+          "only ever deepens. The usable form is an interaction rule."),
+        p("No state change brightens. Hover, focus and active deepen or shift hue, and never "
+          "lighten. Nothing fades up to a brighter value. That is checkable in a diff, which "
+          "is the main reason this document is worth having.", "rule"),
+        p("Stages three and four are never letterforms. Stage two is not running text. Those "
+          "are not preferences; the measured ratios in section 04 are the reason."),
+        p("Where the rules stop. Cart and checkout are plain and fast, and the atmosphere stops "
+          "there on purpose, exactly as the voice does. The deepening discipline serves "
+          "browsing and gets out of the way where clarity beats mood. Applied to a payment "
+          "form it would make the form worse."),
+    ])))
+
+    out.append(sec("08", "Voice", "".join([
+        p("Unhurried and physical. It names heat, light, breath and skin. It describes a "
+          "sequence, because the product is a sequence. Certain without pushing: the brand "
+          "does not argue for itself, and assumes you will understand it if you are shown it "
+          "in the right order."),
+        p("The full voice, the word lists and the tone by context live in "
+          "<a href=\"resources/voice-tone.md\">voice-tone.md</a>, which this document does not "
+          "duplicate."),
+    ])))
+
+    return '      <section class="below">\n' + "".join(out) + "      </section>\n"
 
 
 def build():
@@ -96,18 +295,7 @@ def build():
            t, label, B.oklch(ground(t))[0])
         for i, (t, label) in enumerate(rail_marks))
 
-    body = []
-    for key, title, num in SECTIONS:
-        if key == "opening":
-            body.append(
-                """    <section class="sec opening" id="%s">\n"""
-                """      <h1 class="wordmark">%s</h1>\n"""
-                """    </section>\n""" % (key, title))
-        else:
-            body.append(
-                """    <section class="sec" id="%s" data-folio="%s">\n"""
-                """      <h2 class="sechead">%s</h2>\n"""
-                """    </section>\n""" % (key, num, title))
+    body = measure_above() + measure_below()
 
     return """<!doctype html>
 <html lang="en">
@@ -138,7 +326,7 @@ def build():
     --sp-lg:%(splg)spx; --sp-xl:%(spxl)spx; --sp-2xl:%(sp2xl)spx; --sp-3xl:%(sp3xl)spx;
     --radius:%(radius)spx; --shadow:%(shadow)s;
     --dur:%(dur)sms; --ease:%(ease)s;
-    --gut:clamp(20px,4vw,64px); --rail:92px;
+    --gut:clamp(20px,4vw,64px); --rail:92px; --ledger:clamp(170px,23%%,240px);
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%%}
@@ -156,31 +344,78 @@ def build():
   /* The fall. One gradient on the document, sized to its full height, scrolling with
      the content and never fixed. It is the only background in the document. */
   .doc{position:relative;display:grid;
-    grid-template-columns:minmax(0,1fr) clamp(170px,23%%,240px) var(--rail);
+    grid-template-columns:minmax(0,1fr) var(--ledger) var(--rail);
     background:linear-gradient(180deg,
       var(--s1) 0%%, var(--s2) 33.3333%%, var(--s3) 66.6667%%, var(--s4) 100%%)}
 
-  .measure{grid-column:1;padding:calc(var(--sp-3xl) * 2) var(--gut) var(--sp-3xl)}
-  .sec{min-height:1280px;padding-block:var(--sp-3xl)}
-  .sec + .sec{border-top:1px solid var(--border)}
-  .sechead{font-family:var(--display);font-size:var(--x2);line-height:%(lead_disp)s;
-    letter-spacing:%(track_disp)s;margin:0;font-weight:400}
-  .opening{min-height:720px;display:flex;align-items:flex-end}
+  /* Two halves of exactly equal height, so the crossover at 50%% of the document
+     lands on the boundary between them. Above it the document states; below it the
+     document specifies. That is not a metaphor, it is the only arrangement the
+     contrast allows. */
+  .measure{grid-column:1;display:grid;grid-template-rows:1fr 1fr}
+  .above{padding:calc(var(--sp-3xl) * 2) var(--gut) 12%%;
+    display:flex;flex-direction:column;gap:var(--sp-2xl);justify-content:flex-start;
+    color:var(--void)}
+  .below{padding:var(--sp-3xl) var(--gut) calc(var(--sp-3xl) * 2);color:var(--text)}
+
+  /* Above the crossover every value is set in the void. Primary text reads 1.70:1 on
+     the gold end and fails even the large-text floor, so dark is not a preference. */
   .wordmark{font-family:var(--display);font-weight:400;margin:0;
     font-size:clamp(var(--x3),11vw,8rem);line-height:1;letter-spacing:%(track_wm)s}
+  .statement{font-family:var(--display);font-weight:400;margin:0;
+    font-size:clamp(var(--xl),5vw,var(--x4));line-height:%(lead_disp)s;
+    letter-spacing:%(track_disp)s;max-width:21ch}
+  .statement.quiet{font-size:clamp(var(--lg),3vw,var(--x2));max-width:30ch}
+  .stagemark{font-family:var(--display);font-weight:400;margin:0;
+    font-size:var(--xl);line-height:%(lead_disp)s;letter-spacing:%(track_disp)s}
 
-  /* Above the inversion the ground is light, so display type is set in the void.
-     Below it the ground carries primary. Neither is a preference. */
-  .opening .wordmark,.sec[data-folio="01"] .sechead,.sec[data-folio="02"] .sechead,
-  .sec[data-folio="03"] .sechead{color:var(--void)}
-  .sec[data-folio="04"] .sechead,.sec[data-folio="05"] .sechead,
-  .sec[data-folio="06"] .sechead,.sec[data-folio="07"] .sechead,
-  .sec[data-folio="08"] .sechead{color:var(--text)}
+  /* Below it the ground carries primary for the rest of the document. Muted never
+     appears on the fall: it fails at every position, so the void column is its only home. */
+  .sec + .sec{border-top:1px solid var(--border);margin-top:var(--sp-3xl);
+    padding-top:var(--sp-3xl)}
+  .secnum{font-size:var(--xs);letter-spacing:.18em;margin:0 0 var(--sp-xs);
+    font-variant-numeric:tabular-nums}
+  .sechead{font-family:var(--display);font-weight:400;font-size:var(--x2);
+    line-height:%(lead_disp)s;letter-spacing:%(track_disp)s;margin:0 0 var(--sp-lg)}
+  .copy{max-width:58ch;margin:0 0 var(--sp-md)}
+  .rule{border-left:2px solid var(--s1);padding-left:var(--sp-md);max-width:54ch}
+
+  .roles{display:flex;flex-direction:column;gap:var(--sp-lg);margin-top:var(--sp-lg)}
+  .role{border-top:1px solid var(--border);padding-top:var(--sp-sm)}
+  .rolename{font-family:var(--display);font-size:var(--lg);margin:0 0 4px}
+  .rolerule{margin:0 0 6px;max-width:48ch}
+  .rolemeas{margin:0;font-size:var(--xs);font-variant-numeric:tabular-nums}
+
+  .tspec{display:flex;flex-direction:column;gap:var(--sp-sm);margin-top:var(--sp-lg);
+    border-top:1px solid var(--border);padding-top:var(--sp-lg)}
+  .tstep{display:grid;grid-template-columns:56px minmax(0,1fr) auto;
+    gap:var(--sp-md);align-items:baseline}
+  .tlabel{font-size:var(--xs);letter-spacing:.14em;text-transform:uppercase}
+  .tsample{line-height:1.1}
+  .tmeta{font-size:var(--xs);white-space:nowrap;font-variant-numeric:tabular-nums}
 
   /* The ledger. A void column carrying the document's readings, each row anchored to
      the position of the value it describes. Empty until Task 7 fills it. */
   .ledger{grid-column:2;position:relative;background:var(--void);
     border-left:1px solid var(--border)}
+
+  .lrow{position:absolute;left:0;right:0;top:calc(var(--at) * 100%%);
+    transform:translateY(-50%%);padding:var(--sp-sm) var(--sp-md)}
+  .lrow.first{transform:none;top:var(--sp-md)}
+  .lrow.last{transform:none;top:auto;bottom:var(--sp-md)}
+  /* The leader joins the row to the ground it was read from. */
+  .lrow.anchored::before{content:"";position:absolute;left:0;top:50%%;
+    width:var(--sp-md);height:1px;background:var(--s1);transform:translateX(-100%%)}
+  .lrow.anchored.first::before{top:var(--sp-lg)}
+  .lrow.anchored.last::before{top:auto;bottom:var(--sp-lg)}
+  .lk{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:var(--xs);
+    letter-spacing:.12em;text-transform:uppercase;color:var(--s1);line-height:1.3}
+  .lsw{flex:0 0 12px;width:12px;height:12px}
+  .lrow dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;
+    margin:0;font-size:var(--xs);line-height:1.45}
+  .lrow dt{color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .lrow dd{margin:0;color:var(--text);font-variant-numeric:tabular-nums}
+  .lnote{margin:6px 0 0;font-size:var(--xs);line-height:1.45;color:var(--muted);max-width:28ch}
 
   /* The rail. A void strip outside the ledger. It is the folio; there is no page number. */
   .rail{grid-column:3;position:relative;background:var(--void);
@@ -201,7 +436,8 @@ def build():
 
   /* The crossover. The one horizontal rule in the document that is not a section
      boundary, drawn where the fall first carries body copy. */
-  .crossover{position:absolute;left:0;top:%(xo).4f%%;width:calc(100%% - var(--rail));
+  .crossover{position:absolute;left:0;top:%(xo).4f%%;
+    width:calc(100%% - var(--rail) - var(--ledger));
     display:flex;align-items:center;gap:var(--sp-sm);padding-inline:var(--gut);
     pointer-events:none}
   .crossover span{flex:1;height:1px;background:rgba(238,236,234,.45)}
@@ -235,7 +471,8 @@ def build():
     <main class="measure">
 %(body)s    </main>
 
-    <aside class="ledger" aria-label="Measurements"></aside>
+    <aside class="ledger" aria-label="Measurements">
+%(ledger)s    </aside>
 
     <nav class="rail" aria-label="Position in the fall">
 %(rail)s      <span class="tick" style="--at:%(xo_frac).4f"></span>
@@ -268,7 +505,8 @@ def build():
         xo_ratio=B.contrast(TEXT, ground(CROSSOVER)),
         inv=INVERSION * 100.0, inv_ratio=B.contrast(TEXT, ground(INVERSION)),
         link_hover="#A8832F",
-        body="".join(body), rail=rail)
+        body=body, rail=rail,
+        ledger=stage_rows() + crossover_row() + surface_rows())
 
 
 if __name__ == "__main__":

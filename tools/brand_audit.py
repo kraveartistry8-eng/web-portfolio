@@ -208,7 +208,9 @@ def document_checks(chk, tokens):
     """Checks that need the rendered document. They fail loudly while it does not exist."""
     if not DOC.exists():
         for name in ("fall_monotonic", "no_brightening", "rail_is_folio",
-                     "ledger_is_void", "svh_not_vh"):
+                     "ledger_is_void", "svh_not_vh", "specimen_truth",
+                     "ledger_anchored", "text_on_fall", "ledger_clear",
+                     "crossover_in_fall"):
             chk(False, "%-16s %s  :: %s does not exist yet"
                 % (name, "needs the document", DOC.name))
         return
@@ -327,7 +329,7 @@ def document_checks(chk, tokens):
             const d = document.querySelector('.doc').getBoundingClientRect();
             const m = document.querySelector('.measure').getBoundingClientRect();
             return {top: d.top + window.scrollY, height: d.height,
-                    x: m.right + window.scrollX - 8};
+                    x: m.right + window.scrollX - 40};
         }""")
         # Sample inside the measure's right padding: the fall is there, no glyph is,
         # and the fixed slug never reaches it. Clip in page coordinates, never
@@ -342,10 +344,181 @@ def document_checks(chk, tokens):
                             % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0])
         rises = ["position %d (%.4f) is not below %d (%.4f)" % (i + 1, ls[i + 1], i, ls[i])
                  for i in range(9) if ls[i + 1] >= ls[i]]
-        chk(not rises,
+        # A sample that landed on a rule or a glyph instead of the ground would make
+        # this check meaningless, so each one must also match the fall it claims to be.
+        ramp0 = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
+
+        def _fall(t):
+            t = max(0.0, min(1.0, t))
+            stops = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), ramp0))
+            for i in range(3):
+                (p0, c0), (p1, c1) = stops[i], stops[i + 1]
+                if p0 <= t <= p1:
+                    f = (t - p0) / (p1 - p0)
+                    a_, b_ = rgb(c0), rgb(c1)
+                    return "#%02X%02X%02X" % tuple(
+                        int(round(a_[j] + (b_[j] - a_[j]) * f)) for j in range(3))
+            return ramp0[-1]
+
+        strays = ["position %d sampled L %.4f, the fall is L %.4f there"
+                  % (i, ls[i], oklch(_fall(i / 9.0))[0])
+                  for i in range(10) if abs(ls[i] - oklch(_fall(i / 9.0))[0]) > 0.01]
+        chk(not rises and not strays,
             "fall_monotonic   ground lightness falls across ten positions%s"
-            % ("  :: " + "; ".join(rises) if rises
+            % ("  :: " + "; ".join(rises + strays) if (rises or strays)
                else "  :: %s" % " > ".join("%.3f" % x for x in ls)))
+        # ---------- specimen_truth
+        # A specification document that prints a number it did not measure is worse
+        # than one that prints none. Every printed ratio carries the two colours it
+        # claims to describe, so this recomputes rather than trusts.
+        claims = pg.evaluate("""() => [...document.querySelectorAll('[data-fg][data-bg]')]
+            .map(e => [e.dataset.fg, e.dataset.bg, e.textContent.trim()])""")
+        wrong = []
+        for fg, bg, shown in claims:
+            try:
+                # rstrip takes a character set, not a suffix: "1.41:1".rstrip(":1")
+                # is "1.4". Split on the colon instead.
+                printed = float(shown.split(":")[0])
+            except ValueError:
+                wrong.append("%r is not a ratio" % shown); continue
+            real = contrast(fg, bg)
+            if abs(printed - real) > 0.005:
+                wrong.append("%s on %s printed %.2f, computed %.2f" % (fg, bg, printed, real))
+        chk(claims and not wrong,
+            "specimen_truth   every printed ratio equals the computed one%s"
+            % ("  :: " + "; ".join(wrong) if wrong
+               else "  :: %d ratios recomputed" % len(claims)))
+
+        # ---------- ledger_anchored
+        rows = pg.evaluate("""() => {
+            const doc = document.querySelector('.doc').getBoundingClientRect();
+            const top = doc.top + window.scrollY, h = doc.height;
+            return [...document.querySelectorAll('.lrow[data-at]')].map(e => {
+                const b = e.getBoundingClientRect();
+                const centre = b.top + window.scrollY + b.height / 2;
+                return {at: parseFloat(e.dataset.at),
+                        actual: (centre - top) / h,
+                        wanted_px: parseFloat(e.dataset.at) * h,
+                        actual_px: centre - top,
+                        label: (e.querySelector('.lk') || {}).textContent || ''};
+            });
+        }""")
+        off = []
+        for r in rows:
+            # an edge row is clamped so it does not hang off the column; it is measured
+            # against the edge it is pinned to rather than its centre
+            tol = 4.0
+            if r["at"] <= 0.001 or r["at"] >= 0.999:
+                continue
+            if abs(r["actual_px"] - r["wanted_px"]) > tol:
+                off.append("%s sits at %.1fpx, the fall reaches its value at %.1fpx"
+                           % (r["label"].strip()[:28], r["actual_px"], r["wanted_px"]))
+        chk(rows and not off,
+            "ledger_anchored  each row sits where the fall reaches its value%s"
+            % ("  :: " + "; ".join(off) if off
+               else "  :: %d anchored rows within 4px" % len(rows)))
+
+        # ---------- crossover_in_fall
+        # The crossover is a rule drawn in the fall. If it reaches into the void column
+        # its label lands on top of a reading, which is how it was first built.
+        over = pg.evaluate("""() => {
+            const c = document.querySelector('.crossover');
+            const l = document.querySelector('.ledger');
+            if (!c || !l) return null;
+            const cb = c.getBoundingClientRect(), lb = l.getBoundingClientRect();
+            return {overlap: Math.round(cb.right - lb.left)};
+        }""")
+        chk(over is not None and over["overlap"] <= 0,
+            "crossover_in_fall the crossover rule stops before the void column%s"
+            % ("  :: reaches %dpx into the ledger" % over["overlap"]
+               if over and over["overlap"] > 0 else "  :: clear"))
+
+        # ---------- ledger_clear
+        # Rows are positioned by the value they describe, not by flow, so nothing stops
+        # two of them landing on top of each other and clipping their own readings.
+        boxes = pg.evaluate("""() => [...document.querySelectorAll('.lrow')].map(e => {
+            const b = e.getBoundingClientRect();
+            return {top: b.top + window.scrollY, bottom: b.bottom + window.scrollY,
+                    label: (e.querySelector('.lk') || {}).textContent || ''};
+        })""")
+        boxes.sort(key=lambda b: b["top"])
+        clashes = []
+        for i in range(len(boxes) - 1):
+            a_, b_ = boxes[i], boxes[i + 1]
+            if b_["top"] < a_["bottom"] - 0.5:
+                clashes.append("%s overlaps %s by %.0fpx"
+                               % (" ".join(a_["label"].split())[:26],
+                                  " ".join(b_["label"].split())[:26],
+                                  a_["bottom"] - b_["top"]))
+        chk(boxes and not clashes,
+            "ledger_clear     no two ledger rows overlap%s"
+            % ("  :: " + "; ".join(clashes) if clashes
+               else "  :: %d rows, closest gap %.0fpx"
+                    % (len(boxes), min((boxes[i + 1]["top"] - boxes[i]["bottom"])
+                                       for i in range(len(boxes) - 1)))))
+
+        # ---------- text_on_fall
+        # Contrast here is a function of position, not a constant. Every text element is
+        # measured against the ground at its own place in the document.
+        els = pg.evaluate("""() => {
+            const doc = document.querySelector('.doc').getBoundingClientRect();
+            const top = doc.top + window.scrollY, h = doc.height;
+            const out = [];
+            document.querySelectorAll('.measure *, .crossover em').forEach(e => {
+                if (!e.textContent.trim()) return;
+                if (e.children.length && !['P','H1','H2','SPAN','B','EM','DT','DD','A'].includes(e.tagName)) return;
+                const b = e.getBoundingClientRect();
+                if (!b.height) return;
+                const cs = getComputedStyle(e);
+                // the nearest ancestor that actually paints decides the background
+                let node = e, bg = null;
+                while (node && node !== document.documentElement) {
+                    const c = getComputedStyle(node).backgroundColor;
+                    if (c && !/rgba\\(0, 0, 0, 0\\)|transparent/.test(c)) { bg = c; break; }
+                    if (node.classList && node.classList.contains('doc')) break;
+                    node = node.parentElement;
+                }
+                out.push({tag: e.tagName, text: e.textContent.trim().slice(0, 34),
+                          color: cs.color, size: parseFloat(cs.fontSize),
+                          weight: cs.fontWeight, bg: bg,
+                          t: ((b.top + window.scrollY + b.height / 2) - top) / h});
+            });
+            return out;
+        }""")
+        ramp = [get(tokens, "color.stages.%d.value" % n) for n in (1, 2, 3, 4)]
+
+        def fall_at(t):
+            t = max(0.0, min(1.0, t))
+            stops = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), ramp))
+            for i in range(3):
+                (p0, c0), (p1, c1) = stops[i], stops[i + 1]
+                if p0 <= t <= p1:
+                    f = (t - p0) / (p1 - p0)
+                    a, b2 = rgb(c0), rgb(c1)
+                    return "#%02X%02X%02X" % tuple(
+                        int(round(a[j] + (b2[j] - a[j]) * f)) for j in range(3))
+            return ramp[-1]
+
+        fails = []
+        measured = 0
+        for e in els:
+            fg = css_colour(e["color"], {})
+            if fg is None:
+                continue
+            bg = css_colour(e["bg"], {}) if e["bg"] else fall_at(e["t"])
+            pt = e["size"] * 72.0 / 96.0
+            large = pt >= 18 or (pt >= 14 and e["weight"] in ("700", "bold", "800", "900"))
+            floor = 3.0 if large else 4.5
+            r = contrast(fg, bg)
+            measured += 1
+            if r < floor - 0.005:
+                fails.append("%s %r at t=%.3f: %s on %s is %.2f:1, needs %.1f:1"
+                             % (e["tag"], e["text"], e["t"], fg, bg, r, floor))
+        chk(not fails,
+            "text_on_fall     every text element clears its floor where it sits%s"
+            % ("  :: " + "; ".join(fails[:6]) if fails
+               else "  :: %d elements measured against their own ground" % measured))
+
         br.close()
         try:
             tmp.unlink()
