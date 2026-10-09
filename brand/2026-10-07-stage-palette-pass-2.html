@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Afterglow stage palette, flat chroma, three hue arcs</title>
+<title>Afterglow stage palette, flat chroma, three hue arcs, pass 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600&family=Azeret+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -29,6 +29,14 @@
   .lede + .lede{margin-top:12px}
   .sched{font-size:12px;letter-spacing:.04em;color:var(--muted);margin-top:14px}
 
+  /* Each pass is its own artifact. The trail is the point, so a pass is never
+     overwritten and every page says what produced it and what it led to. */
+  .process{margin-top:32px;padding:20px 22px;background:var(--deep);border-left:2px solid #D8B260}
+  .process p{font-size:13.5px;line-height:1.6;color:var(--muted);max-width:72ch;margin:0}
+  .process p + p{margin-top:9px}
+  .process b{color:var(--text);font-weight:400}
+  .process a{color:#D8B260;text-decoration:none;border-bottom:1px solid rgba(216,178,96,.35)}
+  .process a:hover{color:#A8832F;border-color:rgba(168,131,47,.3)}
   .ramp{padding-block:clamp(44px,7vh,84px) 0;border-bottom:1px solid var(--line)}
   .rhead{margin-bottom:34px;padding-inline:var(--pad)}
   .stage{margin-bottom:30px}
@@ -61,7 +69,7 @@
 <body>
 
 <header class="top pad">
-  <p class="kicker">Afterglow &middot; working artifact &middot; second pass &middot; 7 October 2026</p>
+  <p class="kicker">Afterglow &middot; working artifact &middot; pass 2 &middot; second pass &middot; 7 October 2026</p>
   <h1>Flat chroma, three ways through the arc</h1>
   <p class="lede">Chroma is now held flat at 0.110 across all four stages, which is where ramp C
     started and the paleness you picked. Lightness still falls in even steps of 0.16. Stage 1 is
@@ -77,6 +85,16 @@
     4.5:1 on the void to be usable as text and stage 2 has to clear 3:1 for large text. Stages 3
     and 4 cannot clear either and are not meant to; they are grounds, and the number is printed so
     the restriction has a reason attached to it.</p>
+  <div class="process">
+    <p><b>Pass 2 of 2 so far.</b> Came from pass 1: chroma held flat at 0.110, the value ramp C
+      opened on. Lightness is unchanged. Stage 1's hue is pinned so all three candidates open on
+      exactly the gold that was picked, <span class="mono">#D8B260</span>, leaving the hue arc
+      after it as the only variable.</p>
+    <p><b>What it costs.</b> Flat at 0.110 takes the middle of the ramp from a crimson rose to a
+      dusty one. That is what holding chroma down does to the stages carrying the most of it, and
+      it is the trade the pick is really about.</p>
+    <p><a href="2026-10-07-stage-palette-pass-1.html">&larr; Pass 1</a></p>
+  </div>
 </header>
 
 

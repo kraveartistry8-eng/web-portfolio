@@ -59,8 +59,8 @@ Site art direction is the six neutrals, the deepening-light rule, the motion per
 | `brand/2026-10-07-afterglow-guidelines.pdf` | Rendered from the HTML by `tools/render.py`, the same Playwright pipeline the roadmap uses |
 | `brand/resources/design-tokens.json` | Every `null` replaced. The machine-readable half the theme build consumes, and the source the document renders from |
 | `brand/BRAND-IDENTITY.md` | Quick Reference updated from "Week 2" to real values; the guideline document added to Resource Files |
-| `brand/2026-10-07-stage-palette.html` | Working artifact. Ramp exploration, archived once a ramp is chosen |
-| `brand/2026-10-07-type-specimen.html` | Working artifact. Type candidates on the void ground, archived once chosen |
+| `brand/2026-10-07-stage-palette-pass-N.html` | Working artifacts, **one file per pass, never overwritten**. Ramp exploration. Each pass carries what produced it and what it led to, so the decision trail is itself a deliverable rather than something only git remembers |
+| `brand/2026-10-07-type-specimen-pass-N.html` | Working artifacts, one file per pass, same convention as the palette |
 
 `usage.md` is not a separate file. Its content is a section of the guideline document, because
 usage rules shown against real colour are clearer than usage rules described in prose.
@@ -143,7 +143,7 @@ broken with no one able to say why.
 
 ### How values get chosen
 
-`brand/2026-10-07-stage-palette.html` renders three candidate ramps sharing the L rule and
+`brand/2026-10-07-stage-palette-pass-1.html` renders three candidate ramps sharing the L rule and
 differing in C shaping. Each stage is shown on the real `#080808` ground as a fill, as large
 text and as a mark, with contrast computed against void and both surface steps. Aaron picks by
 eye. The rule is then restated to match what was chosen, and those values go in the JSON.

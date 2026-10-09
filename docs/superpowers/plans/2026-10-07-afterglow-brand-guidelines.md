@@ -19,6 +19,7 @@ and `docs/superpowers/specs/2026-10-07-afterglow-guideline-direction-spec.md` (w
 - Stage roles: stage 1 may be text, stage 2 large text or fills only, stages 3 and 4 never text.
 - No state change brightens. Hover, focus and active deepen or shift hue, never lighten.
 - No em-dashes in anything that gets printed. Repo convention, stated in `README.md`.
+- Exploration artifacts are versioned per pass and never overwritten. A new pass is a new file, each one stating what produced it and linking the pass before and after it. The trail is a deliverable, not a side effect.
 - Dated filenames are `YYYY-MM-DD-slug`. The date is when the artifact was made.
 - Motion has no overshoot, spring or bounce.
 - The document is legible at 390px wide with no horizontal scroll.
@@ -89,7 +90,7 @@ git commit -m "test: add brand token audit, failing on unset Week 2 values"
 ### Task 2: Stage palette, explore and record
 
 **Files:**
-- Create: `brand/2026-10-07-stage-palette.html`
+- Create: `brand/2026-10-07-stage-palette-pass-N.html`, one per pass
 - Modify: `brand/resources/design-tokens.json` (`color.stages`)
 - Modify: `tools/brand_audit.py`
 
@@ -114,7 +115,7 @@ Contrast uses the WCAG relative-luminance formula. Put it in a `contrast(hex_a, 
 Run: `python3 tools/brand_audit.py`
 Expected: exit 1, ramp checks failing on null stage values.
 
-- [ ] **Step 3: Build `brand/2026-10-07-stage-palette.html`**
+- [ ] **Step 3: Build `brand/2026-10-07-stage-palette-pass-1.html`**
 
 Three candidate ramps, labelled A, B and C. All three share one L schedule falling in even steps; they differ in chroma shaping, with rose as the chroma peak in at least one. Render on the real `#080808` ground. Each stage appears three ways: as a full-bleed fill, as 48px text, and as a 24px mark. Print each stage's hex, its OKLCH triple, and its measured contrast against `#080808`, `#141414` and `#2B2B2B`. Follow the layout conventions in `archive/colour/2026-09-21-palette.html`.
 
@@ -134,7 +135,7 @@ Expected: ramp checks PASS. `no_nulls` still fails on typography, spacing, radiu
 - [ ] **Step 7: Commit**
 
 ```bash
-git add brand/2026-10-07-stage-palette.html brand/resources/design-tokens.json tools/brand_audit.py
+git add brand/2026-10-07-stage-palette-pass-*.html brand/resources/design-tokens.json tools/brand_audit.py
 git commit -m "feat: define the four Afterglow stage colours"
 ```
 
@@ -143,7 +144,7 @@ git commit -m "feat: define the four Afterglow stage colours"
 ### Task 3: Type, explore and record
 
 **Files:**
-- Create: `brand/2026-10-07-type-specimen.html`
+- Create: `brand/2026-10-07-type-specimen-pass-N.html`, one per pass
 - Modify: `brand/resources/design-tokens.json` (`typography`)
 - Modify: `tools/brand_audit.py`
 
