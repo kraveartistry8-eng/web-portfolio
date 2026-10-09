@@ -103,6 +103,57 @@ def get(tree, dotted):
 
 MISSING = object()
 
+
+DOC = ROOT / "brand" / "2026-10-07-afterglow-guidelines.html"
+
+_HEX = re.compile(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b")
+_RGBA = re.compile(r"rgba?\(\s*([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)")
+
+
+def _expand(h):
+    h = h.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    return "#" + h.upper()
+
+
+def css_colour(value, variables):
+    """Resolve a CSS colour value to a hex string, following var() one level deep.
+    Returns None when the value is not a colour we can reason about."""
+    seen = 0
+    while "var(" in value and seen < 8:
+        m = re.search(r"var\(\s*(--[\w-]+)\s*(?:,([^()]*))?\)", value)
+        if not m:
+            break
+        name, fallback = m.group(1), (m.group(2) or "").strip()
+        value = value[:m.start()] + variables.get(name, fallback) + value[m.end():]
+        seen += 1
+    m = _HEX.search(value)
+    if m:
+        return _expand(m.group(0))
+    m = _RGBA.search(value)
+    if m:
+        return "#%02X%02X%02X" % tuple(int(round(float(m.group(i)))) for i in (1, 2, 3))
+    return None
+
+
+def parse_rules(css):
+    """[(selector, {property: value})] for top-level rules, at-rule bodies included."""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    css = re.sub(r"@media[^{]*\{", "", css)          # flatten media blocks
+    out = []
+    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+        sel = " ".join(m.group(1).split())
+        decls = {}
+        for part in m.group(2).split(";"):
+            if ":" in part:
+                k, v = part.split(":", 1)
+                decls[k.strip().lower()] = v.strip()
+        if sel and decls:
+            out.append((sel, decls))
+    return out
+
+
 # The six locked neutrals, copied from the plan's Global Constraints.
 NEUTRALS = {
     "color.ground.value": "#080808",
@@ -150,6 +201,156 @@ REQUIRED = (
 REQUIRED_BRANCHES = ("radius", "shadow")
 
 TOKEN_BRANCHES = ("color.stages", "typography", "spacing", "radius", "shadow", "motion")
+
+
+
+def document_checks(chk, tokens):
+    """Checks that need the rendered document. They fail loudly while it does not exist."""
+    if not DOC.exists():
+        for name in ("fall_monotonic", "no_brightening", "rail_is_folio",
+                     "ledger_is_void", "svh_not_vh"):
+            chk(False, "%-16s %s  :: %s does not exist yet"
+                % (name, "needs the document", DOC.name))
+        return
+
+    html = io.open(DOC, encoding="utf-8").read()
+    css = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S))
+
+    # ---------- svh_not_vh
+    units = re.findall(r"[\d.]+((?:[sdl])?vh)\b", css)
+    wrong = sorted(set(u for u in units if u != "svh"))
+    chk(not wrong,
+        "svh_not_vh       full-height values use svh only%s"
+        % ("  :: found " + ", ".join(wrong) if wrong else "  :: %d svh values" % len(units)))
+
+    # ---------- no_brightening
+    rules = parse_rules(css)
+    variables = {}
+    for sel, decls in rules:
+        if sel.endswith(":root") or sel == ":root":
+            for k, v in decls.items():
+                if k.startswith("--"):
+                    variables[k] = v
+    # Split every rule on commas. "a:hover,a:focus-visible" reduced whole gives the
+    # base "a,a", which matches no resting rule, and the fallback then hides the very
+    # violation this check exists to find.
+    def selectors(sel):
+        return [p.strip() for p in sel.split(",") if p.strip()]
+
+    STATE = r":(hover|focus-visible|focus|active)"
+    resting = {}
+    for sel, decls in rules:
+        for one in selectors(sel):
+            if re.search(STATE, one):
+                continue
+            for prop in ("color", "background-color", "background"):
+                if prop in decls:
+                    resting.setdefault(one, {})[prop] = decls[prop]
+    brighter = []
+    checked = 0
+    unresolved = []
+    for sel, decls in rules:
+        for one in selectors(sel):
+            if not re.search(STATE, one):
+                continue
+            base = re.sub(STATE, "", one).strip()
+            for prop in ("color", "background-color", "background"):
+                if prop not in decls:
+                    continue
+                new_c = css_colour(decls[prop], variables)
+                if new_c is None:
+                    continue
+                old_raw = resting.get(base, {}).get(prop)
+                if old_raw is None:
+                    # No resting declaration to compare against. Say so rather than
+                    # inventing a default that could pass a real brightening.
+                    unresolved.append("%s %s has no resting %s on %s" % (one, prop, prop, base))
+                    continue
+                old_c = css_colour(old_raw, variables)
+                if old_c is None:
+                    unresolved.append("%s %s resting value %r is not a colour"
+                                      % (one, prop, old_raw))
+                    continue
+                checked += 1
+                if oklch(new_c)[0] > oklch(old_c)[0] + 0.002:
+                    brighter.append("%s %s %s (L %.3f) is lighter than %s (L %.3f)"
+                                    % (one, prop, new_c, oklch(new_c)[0],
+                                       old_c, oklch(old_c)[0]))
+    brighter += unresolved
+    chk(not brighter,
+        "no_brightening   no state is lighter than its resting value%s"
+        % ("  :: " + "; ".join(brighter) if brighter
+           else "  :: %d state declarations checked" % checked))
+
+    from playwright.sync_api import sync_playwright
+    from PIL import Image
+    import tempfile
+
+    with sync_playwright() as p:
+        br = p.chromium.launch()
+        pg = br.new_page(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
+        pg.goto(DOC.resolve().as_uri())
+        pg.wait_for_timeout(700)
+
+        # ---------- rail_is_folio
+        rail = pg.query_selector(".rail")
+        folios = pg.evaluate("""() => {
+            const bad = [];
+            document.querySelectorAll('.rail *, .slug *, .folio, .page-number').forEach(e => {
+                const t = (e.textContent || '').trim();
+                if (/^\\d{1,4}$/.test(t)) bad.push(t);
+            });
+            return bad;
+        }""")
+        chk(rail is not None and not folios,
+            "rail_is_folio    the rail exists and no page number does%s"
+            % ("" if rail is not None and not folios
+               else "  :: rail %s, page numbers %s" % (rail is not None, folios)))
+
+        # ---------- ledger_is_void
+        bg = pg.evaluate("""() => {
+            const l = document.querySelector('.ledger');
+            if (!l) return null;
+            return getComputedStyle(l).backgroundColor;
+        }""")
+        allowed = {get(tokens, "color.ground.value"),
+                   get(tokens, "color.surface-deep.value"),
+                   get(tokens, "color.surface.value")}
+        got = css_colour(bg or "", {}) if bg else None
+        chk(got is not None and got.upper() in {a.upper() for a in allowed},
+            "ledger_is_void   the ledger sits on the void or a surface step%s"
+            % ("  :: %s" % got if got and got.upper() in {a.upper() for a in allowed}
+               else "  :: ledger background is %r" % (bg,)))
+
+        # ---------- fall_monotonic
+        geo = pg.evaluate("""() => {
+            const d = document.querySelector('.doc').getBoundingClientRect();
+            const m = document.querySelector('.measure').getBoundingClientRect();
+            return {top: d.top + window.scrollY, height: d.height,
+                    x: m.right + window.scrollX - 8};
+        }""")
+        # Sample inside the measure's right padding: the fall is there, no glyph is,
+        # and the fixed slug never reaches it. Clip in page coordinates, never
+        # viewport coordinates, or every sample lands on whatever is pinned at y=0.
+        tmp = pathlib.Path(tempfile.gettempdir()) / "afterglow-fall.png"
+        ls = []
+        for i in range(10):
+            y = geo["top"] + (geo["height"] - 3) * i / 9.0
+            pg.screenshot(path=str(tmp), full_page=True,
+                          clip={"x": geo["x"], "y": y, "width": 3, "height": 3})
+            ls.append(oklch("#%02X%02X%02X"
+                            % Image.open(tmp).convert("RGB").getpixel((1, 1)))[0])
+        rises = ["position %d (%.4f) is not below %d (%.4f)" % (i + 1, ls[i + 1], i, ls[i])
+                 for i in range(9) if ls[i + 1] >= ls[i]]
+        chk(not rises,
+            "fall_monotonic   ground lightness falls across ten positions%s"
+            % ("  :: " + "; ".join(rises) if rises
+               else "  :: %s" % " > ".join("%.3f" % x for x in ls)))
+        br.close()
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
 
 
 def main():
@@ -399,6 +600,8 @@ def main():
         "no_week2         BRAND-IDENTITY.md has no Week 2 rows%s"
         % ("" if hits == 0 else "  :: %d occurrence(s)" % hits),
     )
+
+    document_checks(chk, tokens)
 
     print("\n".join("  PASS  " + m for m in OK))
     if FAIL:

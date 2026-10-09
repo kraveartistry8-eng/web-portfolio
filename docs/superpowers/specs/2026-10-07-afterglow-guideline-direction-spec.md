@@ -78,6 +78,24 @@ its end, passing through stages 2 and 3 at their positions. Lightness falls mono
 OKLCH. The void `#080808` is not the document ground here; it is the colour of the rail strip
 and of any surface that must sit outside the fall.
 
+**The inversion point.** Display type above the crossover is set in the void `#080808`, not in
+primary, and flips to primary at t 0.4560. This was missing from the spec and the measurements
+forced it: on the gold end primary text reads 1.70:1 against the ground and fails even the 3:1
+large-text floor, so the only legible display type up there is dark.
+
+The flip is placed where the two are exactly equal. Dark text holds 3:1 until t 0.6069 and light
+text reaches 3:1 at t 0.2960, so they overlap across the middle third; inside that overlap the two
+curves cross at t 0.4560, where both read 4.12:1. Inverting anywhere else in the band would mean
+accepting a worse ratio than the document has to.
+
+**The dead zone, and why it is not a defect.** Between t 0.4119 and t 0.5000 nothing clears 4.5:1
+on the fall in either colour: dark text has fallen to 4.48:1 and light text has not yet reached
+4.52:1. At the worst point, t 0.4560, both read 4.12:1. That band is 8.8 per cent of the document
+and it carries no running text, which the spec already required for a different reason, since it
+sits above the crossover where only display sizes are set. The two rules agree, but they agree by
+arithmetic rather than by luck, and a later change to the ramp could pull them apart. If the ramp
+moves, recompute both before assuming body copy still has somewhere to go.
+
 **Banding.** No mitigation. Settled by a throwaway spike on 9 October 2026 and recorded here
 because it is the one risk that could have invalidated this direction.
 
