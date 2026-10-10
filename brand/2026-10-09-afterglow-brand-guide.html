@@ -21,6 +21,7 @@
     --sp-lg:24px; --sp-xl:32px; --sp-2xl:48px; --sp-3xl:64px;
     --radius:0px; --dur:450ms; --ease:cubic-bezier(0.2, 0, 0.2, 1);
     --pad:clamp(26px,3.2vw,52px);
+    --sheet-h:min(820px,94svh);
     --fall:linear-gradient(180deg,#D8B260 0.0000%, #BC6F4C 33.3333%, #893A50 66.6667%, #341D5E 100.0000%);
   }
   *{box-sizing:border-box}
@@ -32,7 +33,7 @@
   /* A sheet carries its own slice of the fall. Readings sit in void panels on it,
      because a number read off a mid-ramp value is a number nobody can check. */
   .sheet{position:relative;display:flex;flex-direction:column;
-    padding:var(--pad) var(--pad) 0;min-height:min(820px,94svh)}
+    padding:var(--pad) var(--pad) 0;min-height:var(--sheet-h)}
   .grid{flex:1;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);
     gap:var(--sp-2xl);padding-bottom:var(--sp-xl)}
   .col-l{max-width:34ch}
@@ -157,9 +158,33 @@
   .rbig{margin:0 0 var(--sp-xs);font-family:var(--display);font-size:var(--x2);
     line-height:1.05;color:var(--text)}
 
-  .imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-sm);
-    margin-bottom:var(--sp-md)}
-  .imgcell{aspect-ratio:4/3}
+  /* The slot ratio is the fixed quantity and the grid height follows from it, so
+     screen and print crop the same frames the same way. Columns change; 5:4 never does. */
+  .stagehead{display:flex;align-items:baseline;justify-content:space-between;
+    gap:var(--sp-md);flex-wrap:wrap}
+  .stagename{margin:0;font-family:var(--display);font-weight:400;font-size:var(--x3);
+    line-height:1}
+  .stageread{display:inline-flex;align-items:center;gap:var(--sp-xs);font-family:var(--body);
+    letter-spacing:.02em;font-variant-numeric:tabular-nums;font-size:var(--xs);white-space:nowrap}
+  .stagerule{border:0;border-top:1px solid currentColor;margin:var(--sp-xs) 0 0;opacity:.4}
+  /* The field is a share of the sheet, not of the column, so it is set once here and
+     reads the same on all four stage sheets. */
+  .imgs{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-xs);
+    margin:calc(var(--sheet-h) * .14) 0 0}
+  .imgs > figure{position:relative;margin:0;aspect-ratio:5/4;overflow:hidden;
+    border-radius:var(--radius);box-shadow:none;background:none}
+  .imgs > figure img,.imgs > figure video{position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover}
+  /* Chromium prints a <video> as whichever frame is showing, which differs run to run.
+     Print takes the poster instead, and reduced motion takes it on screen so that reader
+     sees the frame the printed sheet carries. */
+  /* The swap owns display on .scr and .prt. Two-class selectors so no later single-class
+     rule can win it back; a silently lost swap prints a different frame every build. */
+  .imgs .prt{display:none}
+  @media (prefers-reduced-motion:reduce){.imgs .scr{display:none}.imgs .prt{display:block}}
+  /* Below 600px a three-column slot is under 180px wide and stops reading as a photograph. */
+  @media (min-width:600px){.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (min-width:900px){.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
   .apps,.prints{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
     gap:var(--sp-lg)}
@@ -199,7 +224,7 @@
   @media (max-width:900px){
     .sheet{padding:var(--sp-lg) var(--sp-lg) 0;min-height:0}
     .grid,.cover .covergrid{grid-template-columns:1fr;gap:var(--sp-lg)}
-    .srow dl,.rrs,.donts,.faces,.trio,.apps,.prints,.imgs{grid-template-columns:1fr}
+    .srow dl,.rrs,.donts,.faces,.trio,.apps,.prints{grid-template-columns:1fr}
     .fallspec{grid-template-columns:1fr}
     .fallmeta,.fallspec{min-width:0}
     .fallbar{min-height:90px}
@@ -220,8 +245,11 @@
 
   @page{margin:0;size:Letter landscape}
   @media print{
+    :root{--sheet-h:8.05in}
     .sheet{break-after:page;page-break-after:always;min-height:0;height:8.05in;
       padding:0.36in 0.5in 0;overflow:hidden}
+    .imgs .scr{display:none}
+    .imgs .prt{display:block}
     .sheet:last-child{break-after:auto;page-break-after:auto}
   }
 </style>
@@ -229,7 +257,7 @@
 <body>
 <main class="deck">
 
-  <section class="sheet dark cover" data-sheet="01" style="background:linear-gradient(180deg,#D8B260 0.0000%, #D2A55C 100.0000%)">
+  <section class="sheet dark cover" data-sheet="01" style="background:linear-gradient(180deg,#D8B260 0.0000%, #D4A85D 100.0000%)">
     <div class="covergrid">
       <div><p class="kick">Brand guide &middot; October 2026</p>
         <h1 class="wordmark">Afterglow</h1>
@@ -246,7 +274,7 @@
   </section>
 
   <section class="sheet dark " data-sheet="02"
-           style="background:linear-gradient(180deg,#D2A55C 0.0000%, #CD9758 100.0000%)">
+           style="background:linear-gradient(180deg,#D4A85D 0.0000%, #D09E5A 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">The wordmark</h2>
@@ -276,7 +304,7 @@
   </section>
 
   <section class="sheet dark " data-sheet="03"
-           style="background:linear-gradient(180deg,#CD9758 0.0000%, #C78A54 100.0000%)">
+           style="background:linear-gradient(180deg,#D09E5A 0.0000%, #CB9457 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Misuse</h2>
@@ -302,7 +330,7 @@
   </section>
 
   <section class="sheet dark " data-sheet="04"
-           style="background:linear-gradient(180deg,#C78A54 0.0000%, #C27C50 100.0000%)">
+           style="background:linear-gradient(180deg,#CB9457 0.0000%, #C78A54 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">The four stages</h2>
@@ -364,7 +392,7 @@
   </section>
 
   <section class="sheet dark " data-sheet="05"
-           style="background:linear-gradient(180deg,#C27C50 0.0000%, #BC6F4C 100.0000%)">
+           style="background:linear-gradient(180deg,#C78A54 0.0000%, #C38051 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Contrast and roles</h2>
@@ -410,7 +438,7 @@
   </section>
 
   <section class="sheet dark " data-sheet="06"
-           style="background:linear-gradient(180deg,#BC6F4C 0.0000%, #B2644D 100.0000%)">
+           style="background:linear-gradient(180deg,#C38051 0.0000%, #BF764E 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Neutrals and surfaces</h2>
@@ -450,7 +478,7 @@
   </section>
 
   <section class="sheet dark " data-sheet="07"
-           style="background:linear-gradient(180deg,#B2644D 0.0000%, #A85A4E 100.0000%)">
+           style="background:linear-gradient(180deg,#BF764E 0.0000%, #BC6F4C 66.6667%, #B96C4C 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">The fall</h2>
@@ -498,8 +526,8 @@
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="08"
-           style="background:linear-gradient(180deg,#A85A4E 0.0000%, #9D4F4E 100.0000%)">
+  <section class="sheet dark " data-sheet="08"
+           style="background:linear-gradient(180deg,#B96C4C 0.0000%, #B2644D 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Two faces, one scale</h2>
@@ -552,8 +580,8 @@
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="09"
-           style="background:linear-gradient(180deg,#9D4F4E 0.0000%, #93454F 100.0000%)">
+  <section class="sheet dark " data-sheet="09"
+           style="background:linear-gradient(180deg,#B2644D 0.0000%, #AA5C4D 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Setting for screen and print</h2>
@@ -592,7 +620,7 @@
   </section>
 
   <section class="sheet light " data-sheet="10"
-           style="background:linear-gradient(180deg,#93454F 0.0000%, #893A50 100.0000%)">
+           style="background:linear-gradient(180deg,#AA5C4D 0.0000%, #A2544E 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Grid and spacing</h2>
@@ -624,7 +652,7 @@
   </section>
 
   <section class="sheet light " data-sheet="11"
-           style="background:linear-gradient(180deg,#893A50 0.0000%, #783453 100.0000%)">
+           style="background:linear-gradient(180deg,#A2544E 0.0000%, #9B4D4F 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Radius, shadow, motion, and the one rule</h2>
@@ -657,7 +685,7 @@
   </section>
 
   <section class="sheet light " data-sheet="12"
-           style="background:linear-gradient(180deg,#783453 0.0000%, #672E56 100.0000%)">
+           style="background:linear-gradient(180deg,#9B4D4F 0.0000%, #93454F 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Art direction</h2>
@@ -665,24 +693,16 @@
       </div>
       <div class="col-r">
         <div class="panel ">
-          <div class="imgs">
-            <div class="imgcell" style="background:#BC6F4C"></div>
-            <div class="imgcell" style="background:#893A50"></div>
-            <div class="imgcell" style="background:#341D5E"></div>
-          </div>
-          <p class="pk">Direction</p>
-          <ul class="rules">
-            <li>One light source, and it is falling. Images are made at the end of the
-              day or lit to look as though they were.</li>
-            <li>No specular flash, no blown highlight. The brightest value in an image
-              sits at or below the gold of last light, L 0.781.</li>
-            <li>Warm to cool across a set, never back. A sequence of images follows the
-              ramp in the same direction the ramp runs.</li>
-            <li>Grade toward the stages rather than to neutral. The palette is where the
-              shadows and the highlights land.</li>
-            <li>Nothing is brightened in post. Exposure is lifted at capture or the frame
-              is not used, which is the imaging form of the one rule.</li>
-          </ul>
+          <p class="rbig">One light source, and it is falling.</p>
+          <p class="pl">Images are made at the end of the day or lit to look as though they were.</p>
+          <p class="rbig">The upper quartile of an image's lightness sits at or below the gold of last light, L 0.781.</p>
+          <p class="pl">Measured, not judged. A highlight may pass it; the body of the frame may not.</p>
+          <p class="rbig">Warm to cool across a set, never back.</p>
+          <p class="pl">A sequence follows the ramp in the same direction the ramp runs.</p>
+          <p class="rbig">Grade toward the stages rather than to neutral.</p>
+          <p class="pl">The palette is where the shadows and the highlights land.</p>
+          <p class="rbig">Nothing is brightened in post.</p>
+          <p class="pl">Exposure is lifted at capture or the frame is not used.</p>
         </div>
       </div>
     </div>
@@ -692,19 +712,167 @@
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="13"
-           style="background:linear-gradient(180deg,#672E56 0.0000%, #562958 100.0000%)">
+  <section class="sheet light" data-sheet="13" style="background:linear-gradient(180deg,#93454F 0.0000%, #8C3D50 100.0000%)">
+    <div class="stagehead">
+      <h2 class="stagename">Gold of last light</h2>
+      <span class="stageread"><span class="dot ring" style="background:#D8B260"></span>#D8B260
+        &middot; L 0.781</span>
+    </div>
+    <hr class="stagerule">
+    <div class="imgs">
+      <figure data-stage="1"><img src="moodboard-media/ZY6XxOv.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="1"><img src="moodboard-media/0x4Ubi2.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="1"><img src="moodboard-media/wRU1tGM.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="1"><img src="moodboard-media/k4KfGf3.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="1">
+        <video class="scr" src="moodboard-media/NHyQ2Ii.mp4" poster="moodboard-media/posters/NHyQ2Ii.jpg" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="moodboard-media/posters/NHyQ2Ii.jpg" alt="" aria-hidden="true">
+      </figure>
+      <figure data-stage="1">
+        <video class="scr" src="moodboard-media/gm8x-Nc.mp4" poster="moodboard-media/posters/gm8x-Nc.jpg" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="moodboard-media/posters/gm8x-Nc.jpg" alt="" aria-hidden="true">
+      </figure>
+    </div>
+    <footer class="foot">
+      <span class="mark">Afterglow</span><span>Imagery</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">13</span>
+    </footer>
+  </section>
+
+  <section class="sheet light" data-sheet="14" style="background:linear-gradient(180deg,#8C3D50 0.0000%, #893A50 33.3333%, #803751 100.0000%)">
+    <div class="stagehead">
+      <h2 class="stagename">After gold</h2>
+      <span class="stageread"><span class="dot ring" style="background:#BC6F4C"></span>#BC6F4C
+        &middot; L 0.619</span>
+    </div>
+    <hr class="stagerule">
+    <div class="imgs">
+      <figure data-stage="2">
+        <video class="scr" src="moodboard-media/QOH4dl-.mp4" poster="moodboard-media/posters/QOH4dl-.jpg" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="moodboard-media/posters/QOH4dl-.jpg" alt="" aria-hidden="true">
+      </figure>
+      <figure data-stage="2"><img src="moodboard-media/xy_NvPh.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="2">
+        <video class="scr" src="moodboard-media/ZpX9SWA.mp4" poster="moodboard-media/posters/ZpX9SWA.jpg" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="moodboard-media/posters/ZpX9SWA.jpg" alt="" aria-hidden="true">
+      </figure>
+      <figure data-stage="2"><img src="moodboard-media/gE_ypMW.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="2"><img src="moodboard-media/GU1xDFf.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="2"><img src="moodboard-media/0M3EBK4.jpg" alt="" aria-hidden="true"></figure>
+    </div>
+    <footer class="foot">
+      <span class="mark">Afterglow</span><span>Imagery</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">14</span>
+    </footer>
+  </section>
+
+  <section class="sheet light" data-sheet="15" style="background:linear-gradient(180deg,#803751 0.0000%, #743354 100.0000%)">
+    <div class="stagehead">
+      <h2 class="stagename">Rose</h2>
+      <span class="stageread"><span class="dot ring" style="background:#893A50"></span>#893A50
+        &middot; L 0.461</span>
+    </div>
+    <hr class="stagerule">
+    <div class="imgs">
+      <figure data-stage="3"><img src="moodboard-media/0Hcf2LC.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="3"><img src="moodboard-media/v707B3q.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="3"><img src="moodboard-media/5s0xLGP.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="3"><img src="moodboard-media/f3MgZ_1.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="3"><img src="moodboard-media/nT7RG1w.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="3">
+        <video class="scr" src="moodboard-media/85R4fhS.mp4" poster="moodboard-media/posters/85R4fhS.jpg" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="moodboard-media/posters/85R4fhS.jpg" alt="" aria-hidden="true">
+      </figure>
+    </div>
+    <footer class="foot">
+      <span class="mark">Afterglow</span><span>Imagery</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">15</span>
+    </footer>
+  </section>
+
+  <section class="sheet light" data-sheet="16" style="background:linear-gradient(180deg,#743354 0.0000%, #672E56 100.0000%)">
+    <div class="stagehead">
+      <h2 class="stagename">Deep violet</h2>
+      <span class="stageread"><span class="dot ring" style="background:#341D5E"></span>#341D5E
+        &middot; L 0.301</span>
+    </div>
+    <hr class="stagerule">
+    <div class="imgs">
+      <figure data-stage="4"><img src="moodboard-media/Zul1TsA.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="4"><img src="moodboard-media/D7AGfdU.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="4"><img src="moodboard-media/CbRaZoU.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="4"><img src="moodboard-media/InhSf8F.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="4"><img src="moodboard-media/rpnybJw.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="4">
+        <video class="scr" src="moodboard-media/v9AvMbv.mp4" poster="moodboard-media/posters/v9AvMbv.jpg" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="moodboard-media/posters/v9AvMbv.jpg" alt="" aria-hidden="true">
+      </figure>
+    </div>
+    <footer class="foot">
+      <span class="mark">Afterglow</span><span>Imagery</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">16</span>
+    </footer>
+  </section>
+
+  <section class="sheet light " data-sheet="17"
+           style="background:linear-gradient(180deg,#672E56 0.0000%, #5A2A58 100.0000%)">
+    <div class="grid">
+      <div class="col-l">
+        <h2 class="t">Misuse</h2>
+        <p class="lead">Six ways to break the five rules. Each tile is built from tokens, so none of them is a photograph that would have to clear the ceiling.</p>
+      </div>
+      <div class="col-r">
+        <div class="panel ">
+          <div class="donts">
+            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:radial-gradient(circle at 12% 20%,#D8B260,transparent 55%),radial-gradient(circle at 88% 80%,#341D5E,transparent 55%),#080808"></div>
+              <p class="dk">Two light sources</p><p>Breaks one light, and it is falling.</p></div>
+            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:radial-gradient(circle at 70% 30%,#EEECEA,#893A50 38%,#080808)"></div>
+              <p class="dk">Blown highlight</p><p>Breaks the upper quartile at or below gold.</p></div>
+            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:linear-gradient(180deg,#341D5E,#893A50,#BC6F4C,#D8B260)"></div>
+              <p class="dk">Reversed set</p><p>Breaks warm to cool, never back.</p></div>
+            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:linear-gradient(180deg,#C0C0C0,#2B2B2B)"></div>
+              <p class="dk">Graded to neutral</p><p>Breaks grading toward the stages.</p></div>
+            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:linear-gradient(180deg,#D8B260,#893A50)"></div>
+              <p class="dk">Lifted in post</p><p>Breaks nothing is brightened.</p></div>
+            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:#893A50"></div>
+              <p class="dk">Flat light</p><p>Breaks the fall: no direction, no falloff.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="foot">
+      <span class="mark">Afterglow</span><span>Imagery</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">17</span>
+    </footer>
+  </section>
+
+  <section class="sheet light " data-sheet="18"
+           style="background:linear-gradient(180deg,#5A2A58 0.0000%, #4E265A 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Digital</h2>
-        <p class="lead">The three things a storefront is mostly made of, in the tokens.</p>
+        <p class="lead">The three things a storefront is mostly made of, in the tokens, and the imagery they sit with.</p>
       </div>
       <div class="col-r">
         <div class="panel ">
           <div class="apps">
             <article class="app"><p class="pk">Product card</p>
               <div class="appbody" style="background:#141414">
-                <div class="appimg" style="background:#893A50"></div>
+                <div class="appimg" style="background:#893A50;position:relative">
+                  <img src="moodboard-media/0Hcf2LC.jpg" alt="" aria-hidden="true"
+                       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></div>
                 <p class="aname">Afterglow</p><p class="pl">$180</p></div></article>
             <article class="app"><p class="pk">Button, rest and hover</p>
               <div class="appbody" style="background:#141414">
@@ -721,12 +889,12 @@
     </div>
     <footer class="foot">
       <span class="mark">Afterglow</span><span>Applications</span>
-      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">13</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">18</span>
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="14"
-           style="background:linear-gradient(180deg,#562958 0.0000%, #45235B 100.0000%)">
+  <section class="sheet light " data-sheet="19"
+           style="background:linear-gradient(180deg,#4E265A 0.0000%, #41215C 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Print and production</h2>
@@ -751,6 +919,8 @@
               on the stock, not on a house sheet.</li>
             <li>Flat bands are the failure mode of a long gradient on paper. Keep any one
               flat under an inch at the size it is printed.</li>
+            <li>No placed image has an upper quartile above gold, L 0.781. Checked on
+              the file, not on the proof.</li>
             <li>No varnish or foil on the fall. A specular finish reverses the one rule
               wherever the light catches it.</li>
           </ul>
@@ -759,12 +929,12 @@
     </div>
     <footer class="foot">
       <span class="mark">Afterglow</span><span>Applications</span>
-      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">14</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">19</span>
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="15"
-           style="background:linear-gradient(180deg,#45235B 0.0000%, #341D5E 100.0000%)">
+  <section class="sheet light " data-sheet="20"
+           style="background:linear-gradient(180deg,#41215C 0.0000%, #341D5E 100.0000%)">
     <div class="grid">
       <div class="col-l">
         <h2 class="t">Voice, and where the rules stop</h2>
@@ -791,7 +961,7 @@
     </div>
     <footer class="foot">
       <span class="mark">Afterglow</span><span>Voice</span>
-      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">15</span>
+      <span class="doc">Afterglow Brand Guide &middot; October 2026</span><span class="pg">20</span>
     </footer>
   </section>
 </main>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Afterglow brand guide.
 
-Fourteen sheets. Each carries its own slice of the fall, so the deck deepens gold to
+Twenty sheets. Each carries its own slice of the fall, so the deck deepens gold to
 violet across its whole length and the document is an example of the brand rather than a
 description of it. Readings sit in void panels, because a number read off a mid-ramp
 colour is a number nobody can check.
@@ -37,7 +37,10 @@ BODY = T["typography"]["body"]["family"]
 TITLE = "Afterglow Brand Guide"
 DATE = "October 2026"
 STOPS = list(zip((0.0, 1 / 3.0, 2 / 3.0, 1.0), RAMP))
-N = 15
+N = 20
+MEDIA = ROOT / "brand" / "moodboard-media"
+MANIFEST = json.loads(
+    io.open(ROOT / "brand/resources/imagery-manifest.json", encoding="utf-8").read())
 
 
 def _rgb(h):
@@ -115,6 +118,63 @@ def sheet(i, section, title, lead, body, cls=""):
   </section>
 """ % dict(n=i + 1, tone=ink(i), cls=cls, g=slice_css(i), title=title, lead=lead,
            body=body, section=section, doc=TITLE, date=DATE)
+
+
+def stage_sheet(i, stage_key, body):
+    """A full-width sheet for one stage: name, reading, rule, grid, footer and nothing
+    else. No .col-l/.col-r split, because the grid wants the whole width; the slice of the
+    fall and the folio are exactly sheet()'s. Every extra element here costs print height
+    the sheet does not have, and .sheet clips in print without a word."""
+    st = C["stages"][stage_key]
+    return """
+  <section class="sheet %(tone)s" data-sheet="%(n)02d" style="background:%(g)s">
+    <div class="stagehead">
+      <h2 class="stagename">%(name)s</h2>
+      <span class="stageread"><span class="dot ring" style="background:%(v)s"></span>%(v)s
+        &middot; L %(l).3f</span>
+    </div>
+    <hr class="stagerule">
+    <div class="imgs">
+%(body)s    </div>
+    <footer class="foot">
+      <span class="mark">Afterglow</span><span>Imagery</span>
+      <span class="doc">%(doc)s &middot; %(date)s</span><span class="pg">%(n)02d</span>
+    </footer>
+  </section>
+""" % dict(n=i + 1, tone=ink(i), g=slice_css(i), name=st["name"], v=st["value"],
+           l=B.oklch(st["value"])[0], body=body, doc=TITLE, date=DATE)
+
+
+def _on_disk(name):
+    """A reference that is not on disk fails the build here, by name, rather than
+    shipping a broken image element into a document that looks finished."""
+    f = MEDIA / name  # name may carry a posters/ prefix
+    if not f.is_file() or f.stat().st_size == 0:
+        raise SystemExit("imagery: %s is missing or empty; the manifest points at a "
+                         "file the guide cannot show" % f.relative_to(ROOT))
+    return "moodboard-media/" + name
+
+
+def figure(ref, stage=""):
+    """One slot of the grid. A video is the pair .scr and .prt: the clip for screen, its
+    poster for print, because Chromium prints a video as whichever frame is showing."""
+    src = _on_disk(ref["file"])
+    if ref["kind"] == "video":
+        if not ref.get("poster"):
+            raise SystemExit("imagery: %s is a video with no poster; print would take "
+                             "whichever frame is showing" % ref["file"])
+        poster = _on_disk(ref["poster"])
+        return ("""      <figure data-stage="%(st)s">
+        <video class="scr" src="%(s)s" poster="%(p)s" autoplay muted loop playsinline
+               preload="metadata" aria-hidden="true"></video>
+        <img class="prt" src="%(p)s" alt="" aria-hidden="true">
+      </figure>\n""" % dict(st=stage, s=src, p=poster))
+    return """      <figure data-stage="%s"><img src="%s" alt="" aria-hidden="true"></figure>\n""" % (
+        stage, src)
+
+
+def stage_figures(stage_key):
+    return "".join(figure(r, stage_key) for r in MANIFEST["stages"][stage_key])
 
 
 # ---------------------------------------------------------------- sheet bodies
@@ -336,32 +396,72 @@ def s_system():
                         d=MO["duration"]["base"], e=MO["ease"]))
 
 
-def s_imagery():
-    return panel("""          <div class="imgs">
-            <div class="imgcell" style="background:%(s2)s"></div>
-            <div class="imgcell" style="background:%(s3)s"></div>
-            <div class="imgcell" style="background:%(s4)s"></div>
-          </div>
-          <p class="pk">Direction</p>
-          <ul class="rules">
-            <li>One light source, and it is falling. Images are made at the end of the
-              day or lit to look as though they were.</li>
-            <li>No specular flash, no blown highlight. The brightest value in an image
-              sits at or below the gold of last light, L %(l1).3f.</li>
-            <li>Warm to cool across a set, never back. A sequence of images follows the
-              ramp in the same direction the ramp runs.</li>
-            <li>Grade toward the stages rather than to neutral. The palette is where the
-              shadows and the highlights land.</li>
-            <li>Nothing is brightened in post. Exposure is lifted at capture or the frame
-              is not used, which is the imaging form of the one rule.</li>
-          </ul>\n""" % dict(s2=RAMP[1], s3=RAMP[2], s4=RAMP[3], l1=B.oklch(RAMP[0])[0]))
+def s_imagery_opener():
+    """The five rules, set large, in a void panel and with no image beside them: the stage
+    sheets that follow are the evidence, and an image here would be the first claim."""
+    l1 = B.oklch(RAMP[0])[0]
+    rules = [
+        ("One light source, and it is falling.",
+         "Images are made at the end of the day or lit to look as though they were."),
+        ("The upper quartile of an image's lightness sits at or below the gold of last "
+         "light, L %.3f." % l1,
+         "Measured, not judged. A highlight may pass it; the body of the frame may not."),
+        ("Warm to cool across a set, never back.",
+         "A sequence follows the ramp in the same direction the ramp runs."),
+        ("Grade toward the stages rather than to neutral.",
+         "The palette is where the shadows and the highlights land."),
+        ("Nothing is brightened in post.",
+         "Exposure is lifted at capture or the frame is not used."),
+    ]
+    return panel("".join(
+        """          <p class="rbig">%s</p>\n          <p class="pl">%s</p>\n""" % r
+        for r in rules))
+
+
+def s_imagery_misuse():
+    """Each tile breaks one of the five rules using tokens only, so nothing here is itself
+    a photograph that would have to clear the ceiling it is illustrating."""
+    ramp = lambda cols: "linear-gradient(180deg,%s)" % ",".join(cols)
+    tiles = [
+        ("Two light sources",
+         "Breaks one light, and it is falling.",
+         "radial-gradient(circle at 12%% 20%%,%s,transparent 55%%),"
+         "radial-gradient(circle at 88%% 80%%,%s,transparent 55%%),%s"
+         % (RAMP[0], RAMP[3], VOID)),
+        ("Blown highlight",
+         "Breaks the upper quartile at or below gold.",
+         "radial-gradient(circle at 70%% 30%%,%s,%s 38%%,%s)" % (TEXT, RAMP[2], VOID)),
+        ("Reversed set",
+         "Breaks warm to cool, never back.",
+         ramp(RAMP[::-1])),
+        ("Graded to neutral",
+         "Breaks grading toward the stages.",
+         "linear-gradient(180deg,%s,%s)" % (MUTED, SURF)),
+        ("Lifted in post",
+         "Breaks nothing is brightened.",
+         "linear-gradient(180deg,%s,%s)" % (RAMP[0], RAMP[2])),
+        ("Flat light",
+         "Breaks the fall: no direction, no falloff.",
+         RAMP[2]),
+    ]
+    cells = "".join("""            <div class="dont">
+              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:%s"></div>
+              <p class="dk">%s</p><p>%s</p></div>\n""" % (bg, k, v) for k, v, bg in tiles)
+    return panel('          <div class="donts">\n' + cells + "          </div>\n")
+
+
+def _first_image(stage_key):
+    """A still, not a clip: the card is the one place an image sits outside the swap."""
+    return next(r["file"] for r in MANIFEST["stages"][stage_key] if r["kind"] == "image")
 
 
 def s_digital():
     return panel("""          <div class="apps">
             <article class="app"><p class="pk">Product card</p>
               <div class="appbody" style="background:%(sd)s">
-                <div class="appimg" style="background:%(s3)s"></div>
+                <div class="appimg" style="background:%(s3)s;position:relative">
+                  <img src="%(ref)s" alt="" aria-hidden="true"
+                       style="position:absolute;inset:0;width:100%%;height:100%%;object-fit:cover"></div>
                 <p class="aname">Afterglow</p><p class="pl">$180</p></div></article>
             <article class="app"><p class="pk">Button, rest and hover</p>
               <div class="appbody" style="background:%(sd)s">
@@ -373,7 +473,8 @@ def s_digital():
                 <div class="step" style="background:%(sd)s">Recessed %(sd)s</div>
                 <div class="step" style="background:%(sf)s">Raised %(sf)s</div></div></article>
           </div>\n""" % dict(sd=SDEEP, sf=SURF, v=VOID, s1=RAMP[0], s3=RAMP[2],
-                             hv="#A8832F", l1=B.oklch(RAMP[0])[0], lh=B.oklch("#A8832F")[0]))
+                             hv="#A8832F", l1=B.oklch(RAMP[0])[0], lh=B.oklch("#A8832F")[0],
+                             ref=_on_disk(_first_image("3"))))
 
 
 def s_print():
@@ -394,9 +495,11 @@ def s_print():
               on the stock, not on a house sheet.</li>
             <li>Flat bands are the failure mode of a long gradient on paper. Keep any one
               flat under an inch at the size it is printed.</li>
+            <li>No placed image has an upper quartile above gold, L %(l1).3f. Checked on
+              the file, not on the proof.</li>
             <li>No varnish or foil on the fall. A specular finish reverses the one rule
               wherever the light catches it.</li>
-          </ul>\n""")
+          </ul>\n""" % dict(l1=B.oklch(RAMP[0])[0]))
 
 
 def s_voice():
@@ -471,13 +574,22 @@ def build():
               "automatically.", s_system()),
         sheet(11, "Imagery", "Art direction",
               "The palette is a description of light at a particular hour. Images are "
-              "made to match it rather than graded toward it afterwards.", s_imagery()),
-        sheet(12, "Applications", "Digital",
-              "The three things a storefront is mostly made of, in the tokens.",
-              s_digital()),
-        sheet(13, "Applications", "Print and production",
+              "made to match it rather than graded toward it afterwards.",
+              s_imagery_opener()),
+        stage_sheet(12, "1", stage_figures("1")),
+        stage_sheet(13, "2", stage_figures("2")),
+        stage_sheet(14, "3", stage_figures("3")),
+        stage_sheet(15, "4", stage_figures("4")),
+        sheet(16, "Imagery", "Misuse",
+              "Six ways to break the five rules. Each tile is built from tokens, so none "
+              "of them is a photograph that would have to clear the ceiling.",
+              s_imagery_misuse()),
+        sheet(17, "Applications", "Digital",
+              "The three things a storefront is mostly made of, in the tokens, and the "
+              "imagery they sit with.", s_digital()),
+        sheet(18, "Applications", "Print and production",
               "What the fall needs from a press, and what will break it.", s_print()),
-        sheet(14, "Voice", "Voice, and where the rules stop",
+        sheet(19, "Voice", "Voice, and where the rules stop",
               "The visual system and the voice stop in the same place, which is not an "
               "accident.", s_voice()),
     ]

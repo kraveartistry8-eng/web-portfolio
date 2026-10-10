@@ -20,7 +20,9 @@ def check(fn):
     try:
         fn()
         PASSED.append(fn.__name__)
-    except Exception as e:  # noqa: BLE001 - report every failure, keep going
+    # SystemExit too: the build fails loudly with sys.exit, and a tested path that exits
+    # would otherwise end the run, lose the later tests and the summary line.
+    except (Exception, SystemExit) as e:  # noqa: BLE001 - report every failure, keep going
         FAILED.append("%s: %r" % (fn.__name__, e))
 
 
@@ -198,6 +200,66 @@ def test_equidistant_stages_assign_identically_whatever_the_order():
     assert got == ["a.jpg", "b.jpg", "c.jpg"], got
 
 
+def test_twenty_sheets_and_the_fall_still_divides():
+    import build_guide
+    html = build_guide.build()
+    assert html.count('<section class="sheet') == 20, html.count('<section class="sheet')
+    assert build_guide.N == 20
+    # every sheet carries its own folio, so a sheet dropped from the list cannot hide
+    for n in range(1, 21):
+        assert 'data-sheet="%02d"' % n in html, n
+
+
+def test_each_stage_sheet_carries_six_figures():
+    import build_guide
+    html = build_guide.build()
+    man = json.loads((ROOT / "brand/resources/imagery-manifest.json").read_text())
+    for stage in ("1", "2", "3", "4"):
+        assert html.count('data-stage="%s"' % stage) == 6, stage
+        # the six are the manifest's six, not any six
+        for r in man["stages"][stage]:
+            assert 'src="moodboard-media/%s"' % r["file"] in html, r["file"]
+
+
+def test_a_video_is_emitted_as_a_swap_pair_inside_the_grid():
+    import re
+    import build_guide
+    html = build_guide.build()
+    man = json.loads((ROOT / "brand/resources/imagery-manifest.json").read_text())
+    vids = [r for rs in man["stages"].values() for r in rs if r["kind"] == "video"]
+    assert vids
+    # the print swap only exists under .imgs, so the pair must be emitted inside one
+    for imgs in re.findall(r'<div class="imgs">(.*?)\n    </div>\n    <footer', html, re.S):
+        assert imgs.count('class="scr"') == imgs.count('class="prt"'), "unpaired"
+    inside = "".join(re.findall(r'<div class="imgs">(.*?)\n    </div>\n    <footer',
+                                html, re.S))
+    assert inside.count('class="scr"') == len(vids), (inside.count('class="scr"'), len(vids))
+    for v in vids:
+        assert '<img class="prt" src="moodboard-media/%s"' % v["poster"] in inside, v["file"]
+
+
+def test_a_missing_reference_file_fails_the_build_naming_it():
+    import build_guide
+    msg = _exit_message(lambda: build_guide.figure({"file": "nope.jpg", "kind": "image"}))
+    assert "nope.jpg" in msg, msg
+    # a video whose poster is gone must fail too, since print would show a broken image
+    msg = _exit_message(lambda: build_guide.figure(
+        {"file": "mPNk84g.mp4", "kind": "video", "poster": "posters/gone.jpg"}))
+    assert "gone.jpg" in msg, msg
+    msg = _exit_message(lambda: build_guide.figure(
+        {"file": "mPNk84g.mp4", "kind": "video", "poster": None}))
+    assert "mPNk84g.mp4" in msg and "poster" in msg, msg
+
+
+def test_the_brightness_rule_names_the_upper_quartile():
+    import build_guide
+    html = build_guide.build().lower()
+    assert "upper quartile" in html
+    assert "brightest value in an image" not in html
+    # the L value still interpolates from the token rather than being typed in
+    assert "gold of last light, l %.3f" % build_guide.B.oklch(build_guide.RAMP[0])[0] in html
+
+
 for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_last_frame,
           test_single_frame_clip_yields_a_frame, test_stale_poster_is_not_accepted,
           test_posters_are_one_per_video_and_capped, test_committed_posters_match_the_videos,
@@ -206,7 +268,12 @@ for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_las
           test_ceiling_excludes_bright_references,
           test_a_reference_exactly_at_the_ceiling_is_eligible, test_assignment_is_deterministic,
           test_a_starved_stage_fails_the_build,
-          test_equidistant_stages_assign_identically_whatever_the_order):
+          test_equidistant_stages_assign_identically_whatever_the_order,
+          test_twenty_sheets_and_the_fall_still_divides,
+          test_each_stage_sheet_carries_six_figures,
+          test_a_video_is_emitted_as_a_swap_pair_inside_the_grid,
+          test_a_missing_reference_file_fails_the_build_naming_it,
+          test_the_brightness_rule_names_the_upper_quartile):
     check(t)
 
 print("\n".join("  PASS  " + m for m in PASSED))
