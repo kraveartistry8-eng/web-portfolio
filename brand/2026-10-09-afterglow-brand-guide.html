@@ -49,6 +49,11 @@
   .sheet.light{color:var(--text)}
   .sheet.light .lead{color:var(--muted)}
 
+  /* The footer and lead are set at .74 ink or muted, which is quiet and fine on the ends of
+     the fall. On the imagery sheets the ground is mid-ramp or a flat stage colour, where
+     that falls to 3.2:1 against a 4.5 floor, so there they take the sheet's full ink. */
+  .sheet.dark.imagery .lead,.sheet.dark.imagery .foot{color:#080808}
+  .sheet.light.imagery .lead,.sheet.light.imagery .foot{color:var(--text)}
   .foot{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:var(--sp-md);
     align-items:baseline;padding:var(--sp-sm) 0 var(--sp-md);font-size:var(--xs);
     letter-spacing:.04em;border-top:1px solid currentColor}
@@ -183,9 +188,12 @@
      rule can win it back; a silently lost swap prints a different frame every build. */
   .imgs .prt{display:none}
   @media (prefers-reduced-motion:reduce){.imgs .scr{display:none}.imgs .prt{display:block}}
+  /* Chromium evaluates a width query against the page width in points when it prints (792),
+     not in pixels (1056), so an unqualified (max-width:900px) fires on every printed sheet
+     and (min-width:900px) never does. Print is the desktop layout and says so. */
   /* Below 600px a three-column slot is under 180px wide and stops reading as a photograph. */
-  @media (min-width:600px){.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media (min-width:900px){.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (min-width:600px),print{.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (min-width:900px),print{.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
   /* Only a stage sheet has no flex-filling grid, so its footer takes the spare room
      itself. An auto margin resolves to at least 0, so it cannot add to the overflow. */
@@ -228,7 +236,7 @@
   .panel a{color:var(--s1)}
   a:hover,a:focus-visible{color:#A8832F}
 
-  @media (max-width:900px){
+  @media screen and (max-width:900px){
     .sheet{padding:var(--sp-lg) var(--sp-lg) 0;min-height:0}
     .grid,.cover .covergrid{grid-template-columns:1fr;gap:var(--sp-lg)}
     .srow dl,.rrs,.donts,.faces,.trio,.apps,.prints{grid-template-columns:1fr}
@@ -255,6 +263,9 @@
     :root{--sheet-h:8.05in}
     .sheet{break-after:page;page-break-after:always;min-height:0;height:8.05in;
       padding:0.36in 0.5in 0;overflow:hidden}
+    /* Grid and spacing overflows its 8.05in sheet by 20.65px, and .sheet clips in print,
+       so its folio was lost. The column specimen is the one element with height to give. */
+    .sheet.gridsheet .gcols{height:96px}
     .imgs .scr{display:none}
     .imgs .prt{display:block}
     .sheet:last-child{break-after:auto;page-break-after:auto}
@@ -626,7 +637,7 @@
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="10"
+  <section class="sheet light gridsheet" data-sheet="10"
            style="background:linear-gradient(180deg,#AA5C4D 0.0000%, #A2544E 100.0000%)">
     <div class="grid">
       <div class="col-l">
@@ -691,7 +702,7 @@
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="12"
+  <section class="sheet light  imagery" data-sheet="12"
            style="background:linear-gradient(180deg,#9B4D4F 0.0000%, #93454F 100.0000%)">
     <div class="grid">
       <div class="col-l">
@@ -719,7 +730,7 @@
     </footer>
   </section>
 
-  <section class="sheet dark" data-sheet="13" style="background:#D8B260">
+  <section class="sheet dark imagery" data-sheet="13" style="background:#D8B260">
     <div class="stagehead">
       <h2 class="stagename">Gold of last light</h2>
       <span class="stageread">#D8B260 &middot; L 0.781</span>
@@ -747,7 +758,7 @@
     </footer>
   </section>
 
-  <section class="sheet dark" data-sheet="14" style="background:#BC6F4C">
+  <section class="sheet dark imagery" data-sheet="14" style="background:#BC6F4C">
     <div class="stagehead">
       <h2 class="stagename">After gold</h2>
       <span class="stageread">#BC6F4C &middot; L 0.619</span>
@@ -775,7 +786,7 @@
     </footer>
   </section>
 
-  <section class="sheet light" data-sheet="15" style="background:#893A50">
+  <section class="sheet light imagery" data-sheet="15" style="background:#893A50">
     <div class="stagehead">
       <h2 class="stagename">Rose</h2>
       <span class="stageread">#893A50 &middot; L 0.461</span>
@@ -799,7 +810,7 @@
     </footer>
   </section>
 
-  <section class="sheet light" data-sheet="16" style="background:#341D5E">
+  <section class="sheet light imagery" data-sheet="16" style="background:#341D5E">
     <div class="stagehead">
       <h2 class="stagename">Deep violet</h2>
       <span class="stageread">#341D5E &middot; L 0.301</span>
@@ -823,7 +834,7 @@
     </footer>
   </section>
 
-  <section class="sheet light " data-sheet="17"
+  <section class="sheet light  imagery" data-sheet="17"
            style="background:linear-gradient(180deg,#672E56 0.0000%, #5A2A58 100.0000%)">
     <div class="grid">
       <div class="col-l">

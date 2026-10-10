@@ -5,8 +5,15 @@ Deliberately small. The old guideline document needed thirty-odd checks because 
 ground was a function of scroll position; this one is flat, so almost nothing can be
 wrong in a way the eye cannot see. What the eye cannot check is whether a printed
 number still matches the token it came from, which is what most of this holds.
+
+Photography is the exception, and it is the part the eye is worst placed to audit: an
+image either clears the lightness ceiling or it does not, and a slot is either 5:4 or a
+few percent off, and nobody sees four percent. So the imagery checks read the same
+manifest the build read and measure the same document and the same PDF the reader gets.
+A check that cannot fail is worse than none, because it manufactures confidence; each of
+these has a test that breaks the document in exactly the way it guards against.
 """
-import io, json, pathlib, re, sys, importlib.util
+import io, json, os, pathlib, re, sys, importlib.util
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("ba", ROOT / "tools" / "brand_audit.py")
@@ -16,8 +23,13 @@ try:
 except SystemExit:
     pass
 
-DOC = ROOT / "brand/2026-10-09-afterglow-brand-guide.html"
-PDF = DOC.with_suffix(".pdf")
+# The three inputs can be pointed elsewhere so the tests can audit a mutated copy of the
+# document and prove each check fails when it should; left alone, this audits the real files.
+DOC = pathlib.Path(os.environ.get("GUIDE_AUDIT_DOC")
+                   or ROOT / "brand/2026-10-09-afterglow-brand-guide.html")
+PDF = pathlib.Path(os.environ.get("GUIDE_AUDIT_PDF") or DOC.with_suffix(".pdf"))
+MANIFEST = pathlib.Path(os.environ.get("GUIDE_AUDIT_MANIFEST")
+                        or ROOT / "brand/resources/imagery-manifest.json")
 T = json.loads(io.open(ROOT / "brand/resources/design-tokens.json", encoding="utf-8").read())
 OK, FAIL = [], []
 
@@ -333,7 +345,330 @@ def extra_checks():
             "print_values     the guide specifies a print medium%s"
             % ("  :: missing " + ", ".join(missing) if missing
                else "  :: CMYK, Pantone slot, millimetres, points, stock"))
+        imagery_checks(pg, rows)
         b.close()
+
+
+# The ratio every slot holds, as the guide states it. The document carries it as --slot;
+# the audit asserts the two agree rather than trusting either alone.
+SLOT = 5 / 4.0
+# WCAG's floors for text and for large text, the same pair the guide's own contrast sheet
+# prints. They are a standard, not a token, so they are named once here.
+FLOOR_BODY, FLOOR_LARGE = 4.5, 3.0
+
+
+def _hex_of(rgb):
+    return "#%02X%02X%02X" % tuple(max(0, min(255, int(round(v)))) for v in rgb[:3])
+
+
+def _over(top, base):
+    """top is [r,g,b] or [r,g,b,a] laid over the opaque rgb base."""
+    a = top[3] if len(top) > 3 else 1.0
+    return [top[i] * a + base[i] * (1 - a) for i in range(3)]
+
+
+def _page_clips(page):
+    """The visible slots on a printed page: every clip rectangle that an image fills.
+    Chromium prints an image larger than its slot and clips it, so the image's own box
+    says nothing about the crop; the clip is the slot. Full-sheet clips are the sheet."""
+    pw, ph = page.rect.width, page.rect.height
+    imgs = [b[1] for b in page.get_bboxlog() if "image" in b[0]]
+    seen = []
+    for d in page.get_drawings(extended=True):
+        if d["type"] != "clip":
+            continue
+        r = d["scissor"]
+        if r.width >= pw - 1 or r.height < 10 or r.height >= ph - 40:
+            continue
+        if any(i[0] <= r.x0 + 1 and i[1] <= r.y0 + 1 and i[2] >= r.x1 - 1
+               and i[3] >= r.y1 - 1 for i in imgs):
+            box = tuple(round(v, 2) for v in r)
+            if box not in seen:
+                seen.append(box)
+    return sorted(seen, key=lambda r: (round(r[1]), r[0]))
+
+
+def imagery_checks(pg, rows):
+    """The six checks the photography section needs. They read the manifest the build
+    read, the document at four widths, and the PDF the reader is handed."""
+    import fitz
+    C = T["color"]
+    stage_vals = [C["stages"][str(n)]["value"] for n in (1, 2, 3, 4)]
+    man = json.loads(io.open(MANIFEST, encoding="utf-8").read())
+    css = io.open(DOC, encoding="utf-8").read()
+    n_sheets = len(rows)
+    stage_idx = [i for i, r_ in enumerate(rows) if r_["stage"]]
+
+    pdf, pdf_why = None, ""
+    if not PDF.exists():
+        pdf_why = "%s does not exist; run tools/render.py" % PDF.name
+    else:
+        pdf = fitz.open(str(PDF))
+        if pdf.page_count != n_sheets:
+            pdf_why = ("the PDF has %d pages against %d sheets; it is stale, run "
+                       "tools/render.py" % (pdf.page_count, n_sheets))
+            pdf = None
+    sheet_pt = re.search(r"@media print\s*\{\s*:root\s*\{[^}]*--sheet-h:\s*([\d.]+)in", css)
+    sheet_pt = float(sheet_pt.group(1)) * 72 if sheet_pt else None
+
+    # ---------- image_never_brightens
+    # The ceiling is the first stage's lightness. Lightness is read from the manifest, which
+    # measured the poster frame of a video and the file of a still, so the build and the
+    # audit cannot disagree about what was measured. An image the manifest has not measured
+    # fails: it is exactly how a bright reference would get in.
+    ceiling = round(B.oklch(stage_vals[0])[0], 3)
+    measured = {}
+    for refs in man["stages"].values():
+        for r_ in refs:
+            measured[r_["file"]] = r_["l_p75"]
+            if r_.get("poster"):
+                measured[r_["poster"]] = r_["l_p75"]
+    placed = pg.evaluate("""() => [...document.querySelectorAll(
+        'img[src], video[src], video[poster]')].map(e => ({
+            src: (e.getAttribute('src') || e.getAttribute('poster') || ''),
+            poster: e.getAttribute('poster') || ''}))""")
+    names = []
+    for e in placed:
+        for ref in (e["src"], e["poster"]):
+            if "moodboard-media/" in ref:
+                names.append(ref.split("moodboard-media/", 1)[1])
+    unknown = sorted({n for n in names if n not in measured})
+    over = sorted({"%s L %.3f" % (n, measured[n]) for n in names
+                   if n in measured and measured[n] > ceiling})
+    top = max((measured[n] for n in names if n in measured), default=0)
+    why = ([("over the ceiling: " + ", ".join(over))] if over else []) + \
+          ([("not in the manifest, so never measured: " + ", ".join(unknown))]
+           if unknown else []) + ([] if names else ["no placed images found"])
+    chk(not why,
+        "image_never_brightens every placed image's upper quartile is at or below L %.3f%s"
+        % (ceiling, "  :: " + "; ".join(why) if why
+           else "  :: %d placements of %d measured files, brightest L %.3f"
+           % (len(names), len(set(names)), top)))
+
+    # ---------- image_on_ground
+    # An image that reaches a page edge stops being a picture on a ground and becomes the
+    # ground. Measured at desktop and phone, and on the page the reader prints.
+    EDGE = 1.0
+    touch = []
+    for w in (1440, 390):
+        pg.set_viewport_size({"width": w, "height": 900})
+        pg.wait_for_timeout(260)
+        for e in pg.evaluate("""() => [...document.querySelectorAll('.sheet')].flatMap(s => {
+            const sr = s.getBoundingClientRect();
+            return [...s.querySelectorAll('img, video')].filter(
+                e => getComputedStyle(e).display !== 'none').map(e => {
+                    const r = e.getBoundingClientRect();
+                    return {n: s.dataset.sheet, l: r.left - sr.left, r: sr.right - r.right,
+                            t: r.top - sr.top, b: sr.bottom - r.bottom};
+                });
+        })"""):
+            side = [k for k in "lrtb" if e[k] < EDGE]
+            if side:
+                touch.append("sheet %s at %dpx, %d px from the edge"
+                             % (e["n"], w, round(min(e[k] for k in side))))
+    n_print = 0
+    if pdf is not None and sheet_pt:
+        for i in range(n_sheets):
+            pw = pdf[i].rect.width
+            for r in _page_clips(pdf[i]):
+                n_print += 1
+                if r[0] < EDGE or r[1] < EDGE or pw - r[2] < EDGE or sheet_pt - r[3] < EDGE:
+                    touch.append("sheet %02d in print, slot at %.0f,%.0f to %.0f,%.0f"
+                                 % (i + 1, r[0], r[1], r[2], r[3]))
+    chk(not touch and (pdf is not None and sheet_pt),
+        "image_on_ground  no image touches a page edge; the ground does%s"
+        % ("  :: " + "; ".join(touch[:3]) if touch
+           else "  :: " + (pdf_why or "no print height in the document") if not (
+               pdf is not None and sheet_pt)
+           else "  :: every image inset from every edge, on screen at 1440 and 390 and "
+                "%d slots in print" % n_print))
+
+    # ---------- poster_in_print
+    # Chromium prints a <video> as whichever frame is showing, so each clip carries a poster
+    # that print shows instead. The stills the PDF holds on a stage sheet must be exactly the
+    # manifest's: a poster for each video, the file for each still.
+    swap = pg.evaluate("""() => [...document.querySelectorAll('.imgs > figure')].map(f => ({
+        n: f.closest('.sheet').dataset.sheet,
+        video: !!f.querySelector('video'),
+        prt: (f.querySelector('img.prt') || {}).src || ''}))""")
+    gone = ["sheet %s: a video with no poster in the swap" % q["n"]
+            for q in swap if q["video"] and "posters/" not in q["prt"]]
+    n_vid = sum(1 for refs in man["stages"].values() for r_ in refs if r_["kind"] == "video")
+    if pdf is not None and len(stage_idx) == len(man["stages"]):
+        for i, key in zip(stage_idx, sorted(man["stages"])):
+            want = []
+            for r_ in man["stages"][key]:
+                pm = fitz.Pixmap(str(ROOT / "brand/moodboard-media" /
+                                     (r_["poster"] or r_["file"])))
+                want.append((pm.width, pm.height, r_["kind"], r_["file"]))
+            have = sorted((im["width"], im["height"]) for im in pdf[i].get_image_info())
+            left = list(have)
+            for w_, h_, kind, f_ in sorted(want):
+                if (w_, h_) in left:
+                    left.remove((w_, h_))
+                else:
+                    gone.append("sheet %02d prints no %s for %s (%dx%d)"
+                                % (i + 1, "poster" if kind == "video" else "still", f_, w_, h_))
+            if left:
+                gone.append("sheet %02d prints %d image(s) the manifest does not hold"
+                            % (i + 1, len(left)))
+    chk(pdf is not None and not gone and n_vid,
+        "poster_in_print  every video reference resolves to a still in the PDF%s"
+        % ("  :: " + "; ".join(gone[:3]) if gone
+           else "  :: " + pdf_why if pdf is None
+           else "  :: %d videos, each printed as its poster, on %d stage sheets"
+           % (n_vid, len(stage_idx))))
+
+    # ---------- caption_contrast
+    # ink_measured proves the sheet's ink; this proves the words set in it. Every caption and
+    # reading on a sheet that carries imagery is measured against the ground it sits on: the
+    # panel it is in, or the flat stage colour, or the worse end of the fall's slice.
+    pg.set_viewport_size({"width": 1440, "height": 900})
+    pg.wait_for_timeout(260)
+    texts = pg.evaluate(r"""() => {
+        const num = s => (s.match(/[\d.]+/g) || []).map(Number);
+        const out = [];
+        document.querySelectorAll('.sheet').forEach(sh => {
+            const sec = (sh.querySelector('.foot span:nth-child(2)') || {}).textContent;
+            if (!(sec === 'Imagery' || sh.querySelector('.imgs, .misuse-tile, .appimg'))) return;
+            sh.querySelectorAll('*').forEach(e => {
+                if (![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+                const cs = getComputedStyle(e);
+                if (cs.display === 'none' || cs.visibility === 'hidden') return;
+                if (!e.getBoundingClientRect().width) return;
+                const layers = []; let grad = null, node = e;
+                while (node && node !== document.documentElement) {
+                    const c = getComputedStyle(node), b = num(c.backgroundColor);
+                    if (node.classList.contains('sheet') &&
+                        c.backgroundImage.includes('gradient')) { grad = c.backgroundImage; break; }
+                    if (b.length >= 3 && (b.length < 4 || b[3] > 0)) {
+                        layers.push(b); if (b.length < 4 || b[3] >= 1) break;
+                    }
+                    node = node.parentElement;
+                }
+                out.push({n: sh.dataset.sheet, what: (e.className || e.tagName),
+                          text: e.textContent.trim().slice(0, 24), fg: num(cs.color),
+                          layers, grad, size: parseFloat(cs.fontSize),
+                          weight: parseInt(cs.fontWeight)});
+            });
+        });
+        return out;
+    }""")
+    low, worst = [], None
+    for t_ in texts:
+        ends = re.findall(r"rgba?\(([^)]*)\)", t_["grad"] or "")
+        if t_["grad"]:
+            bases = []
+            for g in (ends[0], ends[-1]):
+                parts = [float(x) for x in re.split(r"[ ,]+", g.strip()) if x][:3]
+                bases.append(parts)
+        else:
+            bases = [[8, 8, 8]]  # an unpainted element sits on the void
+        for base in bases:
+            for layer in reversed(t_["layers"]):
+                base = _over(layer, base)
+            ink = _over(t_["fg"], base)
+            got = B.contrast(_hex_of(ink), _hex_of(base))
+            large = t_["size"] >= 24 or (t_["size"] >= 18.66 and t_["weight"] >= 700)
+            floor = FLOOR_LARGE if large else FLOOR_BODY
+            worst = got if worst is None else min(worst, got)
+            if got < floor:
+                low.append("sheet %s %r reads %.2f:1 on %s, below %.1f"
+                           % (t_["n"], t_["text"], got, _hex_of(base), floor))
+    chk(texts and not low,
+        "caption_contrast every caption and reading clears its floor on the ground it sits on%s"
+        % ("  :: " + "; ".join(sorted(set(low))[:3]) if low
+           else "  :: %d lines on %d sheets, lowest %.2f:1"
+           % (len(texts), len({t_["n"] for t_ in texts}), worst or 0)))
+
+    # ---------- grid_ratio_holds
+    # The slot is the fixed quantity; the columns change. A slot that drifts to 4:3 is a
+    # crop nobody chose. The field above the grid must read the same on all four stage
+    # sheets or the set stops looking like a set.
+    slot_css = pg.evaluate("getComputedStyle(document.documentElement)"
+                           ".getPropertyValue('--slot')")
+    m_ = re.match(r"\s*([\d.]+)\s*/\s*([\d.]+)", slot_css or "")
+    declared = float(m_.group(1)) / float(m_.group(2)) if m_ else 0
+    bad, fields, n_slots = [], {}, 0
+    if abs(declared - SLOT) > 1e-9:
+        bad.append("the document declares --slot as %r, not 5/4" % slot_css.strip())
+    for w in (1440, 900, 700, 390):
+        pg.set_viewport_size({"width": w, "height": 900})
+        pg.wait_for_timeout(260)
+        got = pg.evaluate("""() => ({
+            slots: [...document.querySelectorAll('.imgs > figure, .misuse-tile')].map(f => {
+                const r = f.getBoundingClientRect();
+                return {n: f.closest('.sheet').dataset.sheet, w: r.width, h: r.height};
+            }),
+            field: [...document.querySelectorAll('.stagerule')].map(h => {
+                const g = h.closest('.sheet').querySelector('.imgs');
+                return {n: h.closest('.sheet').dataset.sheet,
+                        f: g.getBoundingClientRect().top - h.getBoundingClientRect().bottom};
+            })})""")
+        for q in got["slots"]:
+            n_slots += 1
+            if abs(q["w"] / q["h"] / SLOT - 1) > 0.01:
+                bad.append("sheet %s at %dpx is %.3f, not 1.250" % (q["n"], w, q["w"] / q["h"]))
+        spread = [q["f"] for q in got["field"]]
+        fields[w] = spread
+        if len(spread) != 4 or max(spread) - min(spread) > 0.5:
+            bad.append("the field above the grid at %dpx runs %s"
+                       % (w, "/".join("%.0f" % v for v in spread)))
+    if pdf is not None:
+        for i in stage_idx:
+            clips = _page_clips(pdf[i])
+            rule = [d["scissor"] for d in pdf[i].get_drawings(extended=True)
+                    if d["type"] == "clip" and 0 < d["scissor"].height < 3
+                    and d["scissor"].width > pdf[i].rect.width / 2]
+            for r in clips:
+                n_slots += 1
+                if abs((r[2] - r[0]) / (r[3] - r[1]) / SLOT - 1) > 0.01:
+                    bad.append("sheet %02d in print is %.3f, not 1.250"
+                               % (i + 1, (r[2] - r[0]) / (r[3] - r[1])))
+            if rule and clips:
+                fields.setdefault("print", []).append(clips[0][1] - rule[0].y1)
+        pf = fields.get("print", [])
+        # Print snaps a clip to whole device pixels, so the same field varies by up to a pixel
+        # (0.75pt) with where the head lands; a field that is really unequal is far more.
+        if len(pf) != 4 or max(pf) - min(pf) > 1.5:
+            bad.append("the field above the grid in print runs %s"
+                       % "/".join("%.1f" % v for v in pf))
+    else:
+        bad.append(pdf_why)
+    chk(not bad,
+        "grid_ratio_holds every slot is 5:4 within 1%% at 1440, 900, 700, 390 and in print%s"
+        % ("  :: " + "; ".join(bad[:3]) if bad
+           else "  :: %d slots measured, field above the grid %.0f px on all four stage sheets"
+           % (n_slots, fields[1440][0])))
+
+    # ---------- footer_in_page
+    # .sheet clips at 8.05in in print, so a footer pushed past it is dropped without a word:
+    # the stage sheets clear it by about 12px, and a stage name that wraps would cost 40.
+    # The folio is found on its own line and everything on that line must sit inside.
+    lost = []
+    if pdf is not None and sheet_pt:
+        for i in range(n_sheets):
+            words = pdf[i].get_text("words")
+            folio = [w for w in words if w[4] == "%02d" % (i + 1)]
+            if not folio:
+                lost.append("sheet %02d prints no folio; its footer is clipped" % (i + 1))
+                continue
+            f = max(folio, key=lambda w: (w[1], w[0]))
+            line = [w for w in words if abs(w[1] - f[1]) < 3]
+            low_ = max(w[3] for w in line)
+            if low_ > sheet_pt + 0.3 or min(w[1] for w in line) < 0:
+                lost.append("sheet %02d footer ends %.1fpt, the sheet at %.1fpt"
+                            % (i + 1, low_, sheet_pt))
+            elif not any(w[4].upper() == "AFTERGLOW" for w in line):
+                lost.append("sheet %02d footer has lost its mark" % (i + 1))
+    chk(pdf is not None and sheet_pt and not lost,
+        "footer_in_page   every sheet's footer sits wholly inside its page in the PDF%s"
+        % ("  :: " + "; ".join(lost[:3]) if lost
+           else "  :: " + (pdf_why or "no print height in the document") if not (
+               pdf is not None and sheet_pt)
+           else "  :: %d footers inside %.1fpt" % (n_sheets, sheet_pt)))
+    if pdf is not None:
+        pdf.close()
 
 
 if __name__ == "__main__":

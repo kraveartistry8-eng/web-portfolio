@@ -116,8 +116,8 @@ def sheet(i, section, title, lead, body, cls=""):
       <span class="doc">%(doc)s &middot; %(date)s</span><span class="pg">%(n)02d</span>
     </footer>
   </section>
-""" % dict(n=i + 1, tone=ink(i), cls=cls, g=slice_css(i), title=title, lead=lead,
-           body=body, section=section, doc=TITLE, date=DATE)
+""" % dict(n=i + 1, tone=ink(i), cls=(cls + " imagery" if section == "Imagery" else cls),
+           g=slice_css(i), title=title, lead=lead, body=body, section=section, doc=TITLE, date=DATE)
 
 
 def stage_sheet(i, stage_key, body):
@@ -129,7 +129,7 @@ def stage_sheet(i, stage_key, body):
     the sheet does not have, and .sheet clips in print without a word."""
     st = C["stages"][stage_key]
     return """
-  <section class="sheet %(tone)s" data-sheet="%(n)02d" style="background:%(v)s">
+  <section class="sheet %(tone)s imagery" data-sheet="%(n)02d" style="background:%(v)s">
     <div class="stagehead">
       <h2 class="stagename">%(name)s</h2>
       <span class="stageread">%(v)s &middot; L %(l).3f</span>
@@ -574,7 +574,7 @@ def build():
               "being redrawn.", s_setting()),
         sheet(9, "Layout", "Grid and spacing",
               "Twelve columns in both media and one spacing base that divides the type "
-              "base.", s_grid()),
+              "base.", s_grid(), cls="gridsheet"),
         sheet(10, "Layout", "Radius, shadow, motion, and the one rule",
               "Three values and the only rule in this document that can be checked "
               "automatically.", s_system()),
