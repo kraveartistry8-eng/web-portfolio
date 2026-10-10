@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Afterglow — Mood Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void:#080808; --deep:#141414; --surface:#2B2B2B; --text:#EEECEA;
+    --muted:#C0C0C0; --line:rgba(192,192,192,0.22);
+    --s1:#D8B260; --s2:#BC6F4C; --s3:#893A50; --s4:#341D5E;
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Space Grotesk',system-ui,sans-serif; font-weight:300;
+         background:var(--void); color:var(--text); -webkit-font-smoothing:antialiased; }
+
+  /* ── Document header ── */
+  .doc-header { background:var(--void); padding:112px 64px 84px;
+    display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; }
+  .doc-header__eyebrow { font-size:10px; font-weight:500; letter-spacing:0.3em;
+    text-transform:uppercase; color:rgba(238,236,234,0.32); }
+  .doc-header__wordmark { font-family:'Instrument Serif',Georgia,serif; font-weight:400;
+    font-size:clamp(46px,9vw,112px); line-height:1; letter-spacing:-0.025em; margin-top:36px; }
+  .doc-header__subtitle { font-size:10.5px; font-weight:400; letter-spacing:0.24em;
+    text-transform:uppercase; color:rgba(238,236,234,0.3); margin-top:14px; }
+  .doc-header__rule { width:32px; height:1px; background:rgba(216,178,96,0.45); margin-top:18px; }
+
+  /* ── Mode sections ── */
+  .mode-section { padding:72px 48px 88px; }
+  .mode-header { display:flex; align-items:flex-end; justify-content:space-between;
+    gap:48px; margin-bottom:40px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .mode-header__tag { display:inline-block; font-size:9px; font-weight:500; letter-spacing:0.26em;
+    text-transform:uppercase; border-radius:0; padding:5px 11px; margin-bottom:30px;
+    background:rgba(255,255,255,0.03); color:rgba(238,236,234,0.4);
+    border:1px solid rgba(192,192,192,0.16); }
+  .mode-header__title { font-family:'Instrument Serif',Georgia,serif; font-weight:400;
+    font-size:clamp(34px,5vw,58px); line-height:1; letter-spacing:-0.022em; }
+  .mode-header__descriptor { font-size:13px; font-weight:300; line-height:1.68;
+    max-width:380px; text-align:right; color:rgba(238,236,234,0.5); flex:none; }
+
+  /* ── Masonry ── */
+  .grid { columns:4; column-gap:10px; }
+  @media (max-width:1300px) { .grid { columns:3; } }
+  @media (max-width:900px)  { .grid { columns:2; } }
+  @media (max-width:560px)  { .grid { columns:1; } }
+
+  .card { break-inside:avoid; margin-bottom:10px; position:relative; overflow:hidden;
+    border-radius:0; cursor:default; background:var(--deep); }
+  .card img, .card video { width:100%; display:block;
+    transition:transform 900ms cubic-bezier(0.2,0,0.2,1); }
+  .card:hover img, .card:hover video { transform:scale(1.04); }
+  .card__overlay { position:absolute; inset:0; display:flex; flex-direction:column;
+    justify-content:flex-end; padding:40px 14px 14px; opacity:0;
+    background:linear-gradient(transparent 36%, rgba(4,4,4,0.92) 100%);
+    transition:opacity 450ms cubic-bezier(0.2,0,0.2,1); }
+  .card:hover .card__overlay { opacity:1; }
+  .card__signal { font-size:9px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--s1); margin-bottom:5px; }
+  .card__label { font-size:12px; font-weight:300; color:rgba(255,255,255,0.93); line-height:1.5; }
+
+  /* ── Bridge ── */
+  .bridge { background:var(--void); height:2px; }
+
+  /* ── Legend ── */
+  .legend { background:var(--void); padding:48px 64px 88px; display:flex; flex-wrap:wrap;
+    gap:40px; align-items:flex-start; border-top:1px solid var(--line); }
+  .legend__item { display:flex; align-items:center; gap:12px; }
+  .legend__swatch { width:16px; height:16px; border-radius:0; flex-shrink:0; }
+  .legend__text { font-size:10.5px; font-weight:300; letter-spacing:0.06em;
+    color:rgba(238,236,234,0.35); }
+  .legend__text strong { font-weight:500; color:rgba(238,236,234,0.6); }
+
+  @media (max-width:760px) {
+    .doc-header { padding:80px 24px 56px; }
+    .mode-section { padding:56px 20px 64px; }
+    .mode-header { flex-direction:column; align-items:flex-start; gap:18px; }
+    .mode-header__descriptor { text-align:left; max-width:none; }
+    .legend { padding:40px 20px 72px; gap:24px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="doc-header">
+    <span class="doc-header__eyebrow">Visual reference</span>
+    <div class="doc-header__wordmark">Afterglow</div>
+    <span class="doc-header__subtitle">Mood board</span>
+    <div class="doc-header__rule"></div>
+  </header>
+
+  <section class="mode-section" style="background:#080808">
+    <div class="mode-header">
+      <div class="mode-header__left">
+        <div class="mode-header__tag">I · Last light</div>
+        <h2 class="mode-header__title">The light only leaves.</h2>
+      </div>
+      <p class="mode-header__descriptor">The hour the brand is named for. These fix the finish, the accent ratio and the emotional register, so every later decision has a reference instead of an adjective.</p>
+    </div>
+    <div class="grid">
+        <div class="card">
+          <img src="moodboard-media/gE_ypMW.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Horizon</span>
+            <span class="card__label">Dusk silhouette — rose and violet in one sky</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/a2QG-_S.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Grain</span>
+            <span class="card__label">Super 8 fragments to sundown — night as a sequence</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/0M3EBK4.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Warmth in Dark</span>
+            <span class="card__label">Tail lights in mist — warm accent in violet field</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/Na_PDmV.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Diffusion</span>
+            <span class="card__label">Headlights in fog — glow as diffusion, not halo</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/fMmCZqp.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Movement</span>
+            <span class="card__label">Road running under the camera — travel as line</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/sh51Sqi.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Form + Color</span>
+            <span class="card__label">House at dusk — warmth as interior</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/D7AGfdU.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Stillness</span>
+            <span class="card__label">Emptied room — absence as atmosphere</span>
+          </div>
+        </div>
+    </div>
+  </section>
+  <div class="bridge"></div>
+  <section class="mode-section" style="background:#141414">
+    <div class="mode-header">
+      <div class="mode-header__left">
+        <div class="mode-header__tag">II · One source</div>
+        <h2 class="mode-header__title">One source is enough.</h2>
+      </div>
+      <p class="mode-header__descriptor">Depth with shadow set to none and radius set to zero. This section is the system's answer to elevation, section breaks and page transitions, all solved with light instead of chrome.</p>
+    </div>
+    <div class="grid">
+        <div class="card">
+          <img src="moodboard-media/e4jFDHF.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Threshold</span>
+            <span class="card__label">Lit doorway — light as depth</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/p-PXFnN.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Edge</span>
+            <span class="card__label">Shadow on warm grain — shadow as edge</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/0x4Ubi2.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Light Rays</span>
+            <span class="card__label">Window shadow on orange — light as division</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/OOqXr-G.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Luminosity</span>
+            <span class="card__label">Heat lamp and its wash — light as fixture</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/CbRaZoU.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Depth</span>
+            <span class="card__label">Corridor to a lit room — warmth as destination</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/85R4fhS.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Movement</span>
+            <span class="card__label">Red corridor rushing past — passage as transition</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/fC3QclQ.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Light Rays</span>
+            <span class="card__label">Hand in a shaft — one beam as event</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/Zul1TsA.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Warmth in Dark</span>
+            <span class="card__label">Cigarette at night — the smallest warm source</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/InhSf8F.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Color</span>
+            <span class="card__label">Red room, nothing in it — colour as ground</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/wRU1tGM.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Presence</span>
+            <span class="card__label">Her shadow only — shadow as portrait</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/5s0xLGP.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Geometry</span>
+            <span class="card__label">Light across glassware — light as rhythm</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/O6syNhj.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Material</span>
+            <span class="card__label">Cinema velvet, one lamp — velvet as warm ground</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/F20ztHX.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Movement</span>
+            <span class="card__label">Still figure, shifting room — colour moves, body holds</span>
+          </div>
+        </div>
+    </div>
+  </section>
+  <div class="bridge"></div>
+  <section class="mode-section" style="background:#080808">
+    <div class="mode-header">
+      <div class="mode-header__left">
+        <div class="mode-header__tag">III · On the body</div>
+        <h2 class="mode-header__title">It lands on skin.</h2>
+      </div>
+      <p class="mode-header__descriptor">The photography direction. Casting, crop, exposure and what the brand may own that no other fragrance is using. Hand this section to a shoot and it needs almost no brief.</p>
+    </div>
+    <div class="grid">
+        <div class="card">
+          <img src="moodboard-media/USalI5W.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Skin</span>
+            <span class="card__label">Hair across a lit face — concealment as portrait</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/0Hcf2LC.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Form</span>
+            <span class="card__label">Face in deep shadow — shadow as default</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/nT7RG1w.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Skin</span>
+            <span class="card__label">Mouth and jaw — crop as intimacy</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/xy_NvPh.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">On-brand</span>
+            <span class="card__label">Warm light on a shoulder — amber as skin tone</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/_SNh4mJ.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Luminosity</span>
+            <span class="card__label">Portrait, no visible source — light without origin</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/f3MgZ_1.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Texture</span>
+            <span class="card__label">Wet skin in gold — skin as surface</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/qNdZUES.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Silhouette</span>
+            <span class="card__label">Head as an edge — outline as presence</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/ZY6XxOv.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Abstraction</span>
+            <span class="card__label">Body dissolving in heat — figure as scent</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/R6euaYP.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Translucency</span>
+            <span class="card__label">Light through a hand — warmth from within</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/KLTQTBB.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Perspective</span>
+            <span class="card__label">An eye past something — seeing as reveal</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/2OYJ0AX.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Material</span>
+            <span class="card__label">Back and falling silk — cloth as skin</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/v707B3q.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Movement</span>
+            <span class="card__label">Body blurred into itself — blur as finish</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/GVEgivk.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Diffusion</span>
+            <span class="card__label">Figure in gold haze — haze as diffusion</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/Fr3gA2Q.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Rim Light</span>
+            <span class="card__label">Profile on a warm field — rim light as form</span>
+          </div>
+        </div>
+    </div>
+  </section>
+  <div class="bridge"></div>
+  <section class="mode-section" style="background:#141414">
+    <div class="mode-header">
+      <div class="mode-header__left">
+        <div class="mode-header__tag">IV · The ground</div>
+        <h2 class="mode-header__title">The dark is a material.</h2>
+      </div>
+      <p class="mode-header__descriptor">What #080808 is made of, and how little may sit on it. The restraint benchmark, the accent ratio and the texture that stops the page reading as flat black.</p>
+    </div>
+    <div class="grid">
+        <div class="card">
+          <img src="moodboard-media/lgBEnyK.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Form</span>
+            <span class="card__label">Gold rising out of black — ground as source</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/v9AvMbv.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Warmth in Dark</span>
+            <span class="card__label">Glint opening into light — heat arriving</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/CZjLx5b.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Mass</span>
+            <span class="card__label">Slabs washed red — mass as ornament</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/-vDj1rY.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Reflected Color</span>
+            <span class="card__label">Branches in a dusty field — colour as reflection</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/ZpX9SWA.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Particle</span>
+            <span class="card__label">Sand thrown into light — diffusion as particle</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/rpnybJw.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Form</span>
+            <span class="card__label">Figure folded into dark — material without colour</span>
+          </div>
+        </div>
+    </div>
+  </section>
+  <div class="bridge"></div>
+  <section class="mode-section" style="background:#080808">
+    <div class="mode-header">
+      <div class="mode-header__left">
+        <div class="mode-header__tag">V · Holding</div>
+        <h2 class="mode-header__title">Violet is light, not paint.</h2>
+      </div>
+      <p class="mode-header__descriptor">Stage four behaving as light rather than pigment, which is the only thing keeping it from reading as a purple box. Also the brand's abstract mark, where a wordmark would be too much.</p>
+    </div>
+    <div class="grid">
+        <div class="card">
+          <video src="moodboard-media/4RH87Zk.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Movement</span>
+            <span class="card__label">Violet drawn across black — light as a stroke</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/mPNk84g.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Form + Color</span>
+            <span class="card__label">One room, two temperatures — colour as pulse</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/GU1xDFf.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Form + Color</span>
+            <span class="card__label">Gold through violet — the full sequence as one mark</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/QOH4dl-.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Edge</span>
+            <span class="card__label">Violet edge crossing — gradient in motion</span>
+          </div>
+        </div>
+    </div>
+  </section>
+  <div class="bridge"></div>
+  <section class="mode-section" style="background:#141414">
+    <div class="mode-header">
+      <div class="mode-header__left">
+        <div class="mode-header__tag">VI · Last</div>
+        <h2 class="mode-header__title">The bottle comes last.</h2>
+      </div>
+      <p class="mode-header__descriptor">Packaging present and not leading. The standing direction for the bottle when it is finally designed, and the proof that a product page can open on the hour instead of the object.</p>
+    </div>
+    <div class="grid">
+        <div class="card">
+          <video src="moodboard-media/eSgBkag.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Reveal</span>
+            <span class="card__label">Black held, then a bottle — reveal as restraint</span>
+          </div>
+        </div>
+        <div class="card">
+          <img src="moodboard-media/k4KfGf3.jpg" alt="" loading="lazy">
+          <div class="card__overlay">
+            <span class="card__signal">Stillness</span>
+            <span class="card__label">Bottle on its side — shadow as the subject</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/gm8x-Nc.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Movement</span>
+            <span class="card__label">Vessels drifting out of focus — packaging as atmosphere</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/NHyQ2Ii.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Form + Color</span>
+            <span class="card__label">Amber glass barely moving — colour as material</span>
+          </div>
+        </div>
+        <div class="card">
+          <video src="moodboard-media/PNTk-Dh.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          <div class="card__overlay">
+            <span class="card__signal">Reveal</span>
+            <span class="card__label">Seal, then the whole bottle — detail before object</span>
+          </div>
+        </div>
+    </div>
+  </section>
+
+  <footer class="legend">
+    <div class="legend__item"><div class="legend__swatch" style="background:var(--void);border:1px solid rgba(192,192,192,0.2)"></div>
+      <span class="legend__text"><strong>Void</strong> — #080808</span></div>
+    <div class="legend__item"><div class="legend__swatch" style="background:var(--s1)"></div>
+      <span class="legend__text"><strong>Gold of last light</strong> — #D8B260</span></div>
+    <div class="legend__item"><div class="legend__swatch" style="background:var(--s2)"></div>
+      <span class="legend__text"><strong>After gold</strong> — #BC6F4C</span></div>
+    <div class="legend__item"><div class="legend__swatch" style="background:var(--s3)"></div>
+      <span class="legend__text"><strong>Stage three</strong> — #893A50</span></div>
+    <div class="legend__item"><div class="legend__swatch" style="background:var(--s4)"></div>
+      <span class="legend__text"><strong>Stage four</strong> — #341D5E</span></div>
+  </footer>
+
+</body>
+</html>
