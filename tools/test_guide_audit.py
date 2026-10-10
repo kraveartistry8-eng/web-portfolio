@@ -251,10 +251,23 @@ def test_a_missing_reference_file_fails_the_build_naming_it():
     assert "mPNk84g.mp4" in msg and "poster" in msg, msg
 
 
+def test_stage_images_state_their_role_to_a_screen_reader():
+    import build_guide
+    html = build_guide.build()
+    for stage, name in (("1", "Gold of last light"), ("4", "Deep violet")):
+        for k in range(1, 7):
+            assert 'Reference %d of 6 for %s"' % (k, name) in html, (stage, k)
+    assert 'aria-hidden' not in html.split('<main')[1]
+
+
 def test_the_brightness_rule_names_the_upper_quartile():
     import build_guide
     html = build_guide.build().lower()
-    assert "upper quartile" in html
+    # the opener's own sentence: the s_print bullet also says "upper quartile", so the bare
+    # phrase would survive the opener's rule being deleted
+    assert ("the upper quartile of an image's lightness sits at or below the gold of last "
+            "light") in html
+    assert "up to a quarter of the frame may pass it" in html
     assert "brightest value in an image" not in html
     # the L value still interpolates from the token rather than being typed in
     assert "gold of last light, l %.3f" % build_guide.B.oklch(build_guide.RAMP[0])[0] in html
@@ -273,6 +286,7 @@ for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_las
           test_each_stage_sheet_carries_six_figures,
           test_a_video_is_emitted_as_a_swap_pair_inside_the_grid,
           test_a_missing_reference_file_fails_the_build_naming_it,
+          test_stage_images_state_their_role_to_a_screen_reader,
           test_the_brightness_rule_names_the_upper_quartile):
     check(t)
 

@@ -155,7 +155,7 @@ def _on_disk(name):
     return "moodboard-media/" + name
 
 
-def figure(ref, stage=""):
+def figure(ref, stage="", alt=""):
     """One slot of the grid. A video is the pair .scr and .prt: the clip for screen, its
     poster for print, because Chromium prints a video as whichever frame is showing."""
     src = _on_disk(ref["file"])
@@ -166,15 +166,19 @@ def figure(ref, stage=""):
         poster = _on_disk(ref["poster"])
         return ("""      <figure data-stage="%(st)s">
         <video class="scr" src="%(s)s" poster="%(p)s" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="%(p)s" alt="" aria-hidden="true">
-      </figure>\n""" % dict(st=stage, s=src, p=poster))
-    return """      <figure data-stage="%s"><img src="%s" alt="" aria-hidden="true"></figure>\n""" % (
-        stage, src)
+               preload="metadata" aria-label="%(a)s"></video>
+        <img class="prt" src="%(p)s" alt="%(a)s">
+      </figure>\n""" % dict(st=stage, s=src, p=poster, a=alt))
+    return """      <figure data-stage="%s"><img src="%s" alt="%s"></figure>\n""" % (
+        stage, src, alt)
 
 
 def stage_figures(stage_key):
-    return "".join(figure(r, stage_key) for r in MANIFEST["stages"][stage_key])
+    """The alt text states the image's role and nothing else. No description of the
+    picture exists to be written, and one invented here could not be checked."""
+    refs, name = MANIFEST["stages"][stage_key], C["stages"][stage_key]["name"]
+    return "".join(figure(r, stage_key, "Reference %d of %d for %s" % (k + 1, len(refs), name))
+                   for k, r in enumerate(refs))
 
 
 # ---------------------------------------------------------------- sheet bodies
@@ -405,7 +409,7 @@ def s_imagery_opener():
          "Images are made at the end of the day or lit to look as though they were."),
         ("The upper quartile of an image's lightness sits at or below the gold of last "
          "light, L %.3f." % l1,
-         "Measured, not judged. A highlight may pass it; the body of the frame may not."),
+         "Up to a quarter of the frame may pass it; the rest may not."),
         ("Warm to cool across a set, never back.",
          "A sequence follows the ramp in the same direction the ramp runs."),
         ("Grade toward the stages rather than to neutral.",
@@ -422,30 +426,32 @@ def s_imagery_misuse():
     """Each tile breaks one of the five rules using tokens only, so nothing here is itself
     a photograph that would have to clear the ceiling it is illustrating."""
     ramp = lambda cols: "linear-gradient(180deg,%s)" % ",".join(cols)
+    # Each tile breaks one rule on the opener, in the opener's order.
+    veil = "linear-gradient(rgba(%d,%d,%d,.4),rgba(%d,%d,%d,.4))" % (_rgb(TEXT) * 2)
     tiles = [
         ("Two light sources",
-         "Breaks one light, and it is falling.",
+         "Breaks one light source, and it is falling.",
          "radial-gradient(circle at 12%% 20%%,%s,transparent 55%%),"
          "radial-gradient(circle at 88%% 80%%,%s,transparent 55%%),%s"
          % (RAMP[0], RAMP[3], VOID)),
-        ("Blown highlight",
-         "Breaks the upper quartile at or below gold.",
-         "radial-gradient(circle at 70%% 30%%,%s,%s 38%%,%s)" % (TEXT, RAMP[2], VOID)),
+        ("Flat light",
+         "Breaks one light source, and it is falling: nothing falls.",
+         RAMP[2]),
+        ("Over-lit frame",
+         "Breaks the upper quartile at or below gold: over a quarter of it passes.",
+         "linear-gradient(180deg,%s 0%%,%s 38%%,%s 62%%,%s)" % (TEXT, TEXT, RAMP[0], RAMP[2])),
         ("Reversed set",
          "Breaks warm to cool, never back.",
          ramp(RAMP[::-1])),
         ("Graded to neutral",
-         "Breaks grading toward the stages.",
+         "Breaks grade toward the stages rather than to neutral.",
          "linear-gradient(180deg,%s,%s)" % (MUTED, SURF)),
         ("Lifted in post",
-         "Breaks nothing is brightened.",
-         "linear-gradient(180deg,%s,%s)" % (RAMP[0], RAMP[2])),
-        ("Flat light",
-         "Breaks the fall: no direction, no falloff.",
-         RAMP[2]),
+         "Breaks nothing is brightened in post: the shadows are raised.",
+         "%s,%s" % (veil, RAMP[2])),
     ]
     cells = "".join("""            <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:%s"></div>
+              <div class="misuse-tile" style="background:%s"></div>
               <p class="dk">%s</p><p>%s</p></div>\n""" % (bg, k, v) for k, v, bg in tiles)
     return panel('          <div class="donts">\n' + cells + "          </div>\n")
 
@@ -459,9 +465,8 @@ def s_digital():
     return panel("""          <div class="apps">
             <article class="app"><p class="pk">Product card</p>
               <div class="appbody" style="background:%(sd)s">
-                <div class="appimg" style="background:%(s3)s;position:relative">
-                  <img src="%(ref)s" alt="" aria-hidden="true"
-                       style="position:absolute;inset:0;width:100%%;height:100%%;object-fit:cover"></div>
+                <div class="appimg" style="background:%(s3)s">
+                  <img src="%(ref)s" alt="Reference for the product card"></div>
                 <p class="aname">Afterglow</p><p class="pl">$180</p></div></article>
             <article class="app"><p class="pk">Button, rest and hover</p>
               <div class="appbody" style="background:%(sd)s">

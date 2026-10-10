@@ -22,6 +22,7 @@
     --radius:0px; --dur:450ms; --ease:cubic-bezier(0.2, 0, 0.2, 1);
     --pad:clamp(26px,3.2vw,52px);
     --sheet-h:min(820px,94svh);
+    --slot:5/4;
     --fall:linear-gradient(180deg,#D8B260 0.0000%, #BC6F4C 33.3333%, #893A50 66.6667%, #341D5E 100.0000%);
   }
   *{box-sizing:border-box}
@@ -171,7 +172,7 @@
      reads the same on all four stage sheets. */
   .imgs{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-xs);
     margin:calc(var(--sheet-h) * .14) 0 0}
-  .imgs > figure{position:relative;margin:0;aspect-ratio:5/4;overflow:hidden;
+  .imgs > figure{position:relative;margin:0;aspect-ratio:var(--slot);overflow:hidden;
     border-radius:var(--radius);box-shadow:none;background:none}
   .imgs > figure img,.imgs > figure video{position:absolute;inset:0;width:100%;height:100%;
     object-fit:cover}
@@ -186,6 +187,12 @@
   @media (min-width:600px){.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (min-width:900px){.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
+  /* Only a stage sheet has no flex-filling grid, so its footer takes the spare room
+     itself. An auto margin resolves to at least 0, so it cannot add to the overflow. */
+  .sheet > .imgs ~ .foot{margin-top:auto}
+  .misuse-tile{aspect-ratio:var(--slot);margin-bottom:var(--sp-xs)}
+  .appimg{position:relative}
+  .appimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .apps,.prints{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
     gap:var(--sp-lg)}
   .app{display:flex;flex-direction:column;gap:var(--sp-xs)}
@@ -696,7 +703,7 @@
           <p class="rbig">One light source, and it is falling.</p>
           <p class="pl">Images are made at the end of the day or lit to look as though they were.</p>
           <p class="rbig">The upper quartile of an image's lightness sits at or below the gold of last light, L 0.781.</p>
-          <p class="pl">Measured, not judged. A highlight may pass it; the body of the frame may not.</p>
+          <p class="pl">Up to a quarter of the frame may pass it; the rest may not.</p>
           <p class="rbig">Warm to cool across a set, never back.</p>
           <p class="pl">A sequence follows the ramp in the same direction the ramp runs.</p>
           <p class="rbig">Grade toward the stages rather than to neutral.</p>
@@ -720,19 +727,19 @@
     </div>
     <hr class="stagerule">
     <div class="imgs">
-      <figure data-stage="1"><img src="moodboard-media/ZY6XxOv.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="1"><img src="moodboard-media/0x4Ubi2.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="1"><img src="moodboard-media/wRU1tGM.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="1"><img src="moodboard-media/k4KfGf3.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="1"><img src="moodboard-media/ZY6XxOv.jpg" alt="Reference 1 of 6 for Gold of last light"></figure>
+      <figure data-stage="1"><img src="moodboard-media/0x4Ubi2.jpg" alt="Reference 2 of 6 for Gold of last light"></figure>
+      <figure data-stage="1"><img src="moodboard-media/wRU1tGM.jpg" alt="Reference 3 of 6 for Gold of last light"></figure>
+      <figure data-stage="1"><img src="moodboard-media/k4KfGf3.jpg" alt="Reference 4 of 6 for Gold of last light"></figure>
       <figure data-stage="1">
         <video class="scr" src="moodboard-media/NHyQ2Ii.mp4" poster="moodboard-media/posters/NHyQ2Ii.jpg" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="moodboard-media/posters/NHyQ2Ii.jpg" alt="" aria-hidden="true">
+               preload="metadata" aria-label="Reference 5 of 6 for Gold of last light"></video>
+        <img class="prt" src="moodboard-media/posters/NHyQ2Ii.jpg" alt="Reference 5 of 6 for Gold of last light">
       </figure>
       <figure data-stage="1">
         <video class="scr" src="moodboard-media/gm8x-Nc.mp4" poster="moodboard-media/posters/gm8x-Nc.jpg" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="moodboard-media/posters/gm8x-Nc.jpg" alt="" aria-hidden="true">
+               preload="metadata" aria-label="Reference 6 of 6 for Gold of last light"></video>
+        <img class="prt" src="moodboard-media/posters/gm8x-Nc.jpg" alt="Reference 6 of 6 for Gold of last light">
       </figure>
     </div>
     <footer class="foot">
@@ -751,18 +758,18 @@
     <div class="imgs">
       <figure data-stage="2">
         <video class="scr" src="moodboard-media/QOH4dl-.mp4" poster="moodboard-media/posters/QOH4dl-.jpg" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="moodboard-media/posters/QOH4dl-.jpg" alt="" aria-hidden="true">
+               preload="metadata" aria-label="Reference 1 of 6 for After gold"></video>
+        <img class="prt" src="moodboard-media/posters/QOH4dl-.jpg" alt="Reference 1 of 6 for After gold">
       </figure>
-      <figure data-stage="2"><img src="moodboard-media/xy_NvPh.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="2"><img src="moodboard-media/xy_NvPh.jpg" alt="Reference 2 of 6 for After gold"></figure>
       <figure data-stage="2">
         <video class="scr" src="moodboard-media/ZpX9SWA.mp4" poster="moodboard-media/posters/ZpX9SWA.jpg" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="moodboard-media/posters/ZpX9SWA.jpg" alt="" aria-hidden="true">
+               preload="metadata" aria-label="Reference 3 of 6 for After gold"></video>
+        <img class="prt" src="moodboard-media/posters/ZpX9SWA.jpg" alt="Reference 3 of 6 for After gold">
       </figure>
-      <figure data-stage="2"><img src="moodboard-media/gE_ypMW.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="2"><img src="moodboard-media/GU1xDFf.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="2"><img src="moodboard-media/0M3EBK4.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="2"><img src="moodboard-media/gE_ypMW.jpg" alt="Reference 4 of 6 for After gold"></figure>
+      <figure data-stage="2"><img src="moodboard-media/GU1xDFf.jpg" alt="Reference 5 of 6 for After gold"></figure>
+      <figure data-stage="2"><img src="moodboard-media/0M3EBK4.jpg" alt="Reference 6 of 6 for After gold"></figure>
     </div>
     <footer class="foot">
       <span class="mark">Afterglow</span><span>Imagery</span>
@@ -778,15 +785,15 @@
     </div>
     <hr class="stagerule">
     <div class="imgs">
-      <figure data-stage="3"><img src="moodboard-media/0Hcf2LC.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="3"><img src="moodboard-media/v707B3q.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="3"><img src="moodboard-media/5s0xLGP.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="3"><img src="moodboard-media/f3MgZ_1.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="3"><img src="moodboard-media/nT7RG1w.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="3"><img src="moodboard-media/0Hcf2LC.jpg" alt="Reference 1 of 6 for Rose"></figure>
+      <figure data-stage="3"><img src="moodboard-media/v707B3q.jpg" alt="Reference 2 of 6 for Rose"></figure>
+      <figure data-stage="3"><img src="moodboard-media/5s0xLGP.jpg" alt="Reference 3 of 6 for Rose"></figure>
+      <figure data-stage="3"><img src="moodboard-media/f3MgZ_1.jpg" alt="Reference 4 of 6 for Rose"></figure>
+      <figure data-stage="3"><img src="moodboard-media/nT7RG1w.jpg" alt="Reference 5 of 6 for Rose"></figure>
       <figure data-stage="3">
         <video class="scr" src="moodboard-media/85R4fhS.mp4" poster="moodboard-media/posters/85R4fhS.jpg" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="moodboard-media/posters/85R4fhS.jpg" alt="" aria-hidden="true">
+               preload="metadata" aria-label="Reference 6 of 6 for Rose"></video>
+        <img class="prt" src="moodboard-media/posters/85R4fhS.jpg" alt="Reference 6 of 6 for Rose">
       </figure>
     </div>
     <footer class="foot">
@@ -803,15 +810,15 @@
     </div>
     <hr class="stagerule">
     <div class="imgs">
-      <figure data-stage="4"><img src="moodboard-media/Zul1TsA.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="4"><img src="moodboard-media/D7AGfdU.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="4"><img src="moodboard-media/CbRaZoU.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="4"><img src="moodboard-media/InhSf8F.jpg" alt="" aria-hidden="true"></figure>
-      <figure data-stage="4"><img src="moodboard-media/rpnybJw.jpg" alt="" aria-hidden="true"></figure>
+      <figure data-stage="4"><img src="moodboard-media/Zul1TsA.jpg" alt="Reference 1 of 6 for Deep violet"></figure>
+      <figure data-stage="4"><img src="moodboard-media/D7AGfdU.jpg" alt="Reference 2 of 6 for Deep violet"></figure>
+      <figure data-stage="4"><img src="moodboard-media/CbRaZoU.jpg" alt="Reference 3 of 6 for Deep violet"></figure>
+      <figure data-stage="4"><img src="moodboard-media/InhSf8F.jpg" alt="Reference 4 of 6 for Deep violet"></figure>
+      <figure data-stage="4"><img src="moodboard-media/rpnybJw.jpg" alt="Reference 5 of 6 for Deep violet"></figure>
       <figure data-stage="4">
         <video class="scr" src="moodboard-media/v9AvMbv.mp4" poster="moodboard-media/posters/v9AvMbv.jpg" autoplay muted loop playsinline
-               preload="metadata" aria-hidden="true"></video>
-        <img class="prt" src="moodboard-media/posters/v9AvMbv.jpg" alt="" aria-hidden="true">
+               preload="metadata" aria-label="Reference 6 of 6 for Deep violet"></video>
+        <img class="prt" src="moodboard-media/posters/v9AvMbv.jpg" alt="Reference 6 of 6 for Deep violet">
       </figure>
     </div>
     <footer class="foot">
@@ -831,23 +838,23 @@
         <div class="panel ">
           <div class="donts">
             <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:radial-gradient(circle at 12% 20%,#D8B260,transparent 55%),radial-gradient(circle at 88% 80%,#341D5E,transparent 55%),#080808"></div>
-              <p class="dk">Two light sources</p><p>Breaks one light, and it is falling.</p></div>
+              <div class="misuse-tile" style="background:radial-gradient(circle at 12% 20%,#D8B260,transparent 55%),radial-gradient(circle at 88% 80%,#341D5E,transparent 55%),#080808"></div>
+              <p class="dk">Two light sources</p><p>Breaks one light source, and it is falling.</p></div>
             <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:radial-gradient(circle at 70% 30%,#EEECEA,#893A50 38%,#080808)"></div>
-              <p class="dk">Blown highlight</p><p>Breaks the upper quartile at or below gold.</p></div>
+              <div class="misuse-tile" style="background:#893A50"></div>
+              <p class="dk">Flat light</p><p>Breaks one light source, and it is falling: nothing falls.</p></div>
             <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:linear-gradient(180deg,#341D5E,#893A50,#BC6F4C,#D8B260)"></div>
+              <div class="misuse-tile" style="background:linear-gradient(180deg,#EEECEA 0%,#EEECEA 38%,#D8B260 62%,#893A50)"></div>
+              <p class="dk">Over-lit frame</p><p>Breaks the upper quartile at or below gold: over a quarter of it passes.</p></div>
+            <div class="dont">
+              <div class="misuse-tile" style="background:linear-gradient(180deg,#341D5E,#893A50,#BC6F4C,#D8B260)"></div>
               <p class="dk">Reversed set</p><p>Breaks warm to cool, never back.</p></div>
             <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:linear-gradient(180deg,#C0C0C0,#2B2B2B)"></div>
-              <p class="dk">Graded to neutral</p><p>Breaks grading toward the stages.</p></div>
+              <div class="misuse-tile" style="background:linear-gradient(180deg,#C0C0C0,#2B2B2B)"></div>
+              <p class="dk">Graded to neutral</p><p>Breaks grade toward the stages rather than to neutral.</p></div>
             <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:linear-gradient(180deg,#D8B260,#893A50)"></div>
-              <p class="dk">Lifted in post</p><p>Breaks nothing is brightened.</p></div>
-            <div class="dont">
-              <div style="aspect-ratio:5/4;margin-bottom:var(--sp-xs);background:#893A50"></div>
-              <p class="dk">Flat light</p><p>Breaks the fall: no direction, no falloff.</p></div>
+              <div class="misuse-tile" style="background:linear-gradient(rgba(238,236,234,.4),rgba(238,236,234,.4)),#893A50"></div>
+              <p class="dk">Lifted in post</p><p>Breaks nothing is brightened in post: the shadows are raised.</p></div>
           </div>
         </div>
       </div>
@@ -870,9 +877,8 @@
           <div class="apps">
             <article class="app"><p class="pk">Product card</p>
               <div class="appbody" style="background:#141414">
-                <div class="appimg" style="background:#893A50;position:relative">
-                  <img src="moodboard-media/0Hcf2LC.jpg" alt="" aria-hidden="true"
-                       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></div>
+                <div class="appimg" style="background:#893A50">
+                  <img src="moodboard-media/0Hcf2LC.jpg" alt="Reference for the product card"></div>
                 <p class="aname">Afterglow</p><p class="pl">$180</p></div></article>
             <article class="app"><p class="pk">Button, rest and hover</p>
               <div class="appbody" style="background:#141414">
