@@ -21,6 +21,7 @@
     --sp-lg:%(splg)spx; --sp-xl:%(spxl)spx; --sp-2xl:%(sp2xl)spx; --sp-3xl:%(sp3xl)spx;
     --radius:%(radius)spx; --dur:%(dur)sms; --ease:%(ease)s;
     --pad:clamp(26px,3.2vw,52px);
+    --sheet-h:min(820px,94svh);
     --fall:%(fullfall)s;
   }
   *{box-sizing:border-box}
@@ -157,9 +158,31 @@
   .rbig{margin:0 0 var(--sp-xs);font-family:var(--display);font-size:var(--x2);
     line-height:1.05;color:var(--text)}
 
-  .imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-sm);
-    margin-bottom:var(--sp-md)}
-  .imgcell{aspect-ratio:4/3}
+  /* The slot ratio is the fixed quantity and the grid height follows from it, so
+     screen and print crop the same frames the same way. Columns change; 5:4 never does. */
+  .stagehead{display:flex;align-items:baseline;justify-content:space-between;
+    gap:var(--sp-md);flex-wrap:wrap}
+  .stagename{margin:0;font-family:var(--display);font-weight:400;font-size:var(--x3);
+    line-height:1}
+  .stageread{display:inline-flex;align-items:center;gap:var(--sp-xs);font-family:ui-monospace,Menlo,monospace;
+    font-size:var(--xs);white-space:nowrap}
+  .stagerule{border:0;border-top:1px solid currentColor;margin:var(--sp-xs) 0 0;opacity:.4}
+  /* The field is a share of the sheet, not of the column, so it is set once here and
+     reads the same on all four stage sheets. */
+  .imgs{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-xs);
+    margin:calc(var(--sheet-h) * .14) 0 var(--sp-md)}
+  .imgs > figure{position:relative;margin:0;aspect-ratio:5/4;overflow:hidden;
+    border-radius:0;box-shadow:none;background:none}
+  .imgs > figure img,.imgs > figure video{position:absolute;inset:0;width:100%%;height:100%%;
+    object-fit:cover}
+  /* Chromium prints a <video> as whichever frame is showing, which differs run to run.
+     Print takes the poster instead, and reduced motion takes it on screen so that reader
+     sees the frame the printed sheet carries. */
+  .prt{display:none}
+  @media (prefers-reduced-motion:reduce){.scr{display:none}.prt{display:block}}
+  /* Below 600px a three-column slot is under 180px wide and stops reading as a photograph. */
+  @media (min-width:600px){.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (min-width:900px){.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
   .apps,.prints{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
     gap:var(--sp-lg)}
@@ -199,7 +222,7 @@
   @media (max-width:900px){
     .sheet{padding:var(--sp-lg) var(--sp-lg) 0;min-height:0}
     .grid,.cover .covergrid{grid-template-columns:1fr;gap:var(--sp-lg)}
-    .srow dl,.rrs,.donts,.faces,.trio,.apps,.prints,.imgs{grid-template-columns:1fr}
+    .srow dl,.rrs,.donts,.faces,.trio,.apps,.prints{grid-template-columns:1fr}
     .fallspec{grid-template-columns:1fr}
     .fallmeta,.fallspec{min-width:0}
     .fallbar{min-height:90px}
@@ -220,8 +243,11 @@
 
   @page{margin:0;size:Letter landscape}
   @media print{
+    :root{--sheet-h:8.05in}
     .sheet{break-after:page;page-break-after:always;min-height:0;height:8.05in;
       padding:0.36in 0.5in 0;overflow:hidden}
+    .scr{display:none}
+    .prt{display:block}
     .sheet:last-child{break-after:auto;page-break-after:auto}
   }
 </style>
