@@ -108,7 +108,7 @@ def test_committed_posters_match_the_videos():
         assert max(_size(poster)) <= 984, poster
 
 
-def _m(l, n=0):
+def _m(l):
     return {"l_p75": l, "aspect": 1.5, "kind": "image"}
 
 
@@ -148,12 +148,23 @@ def test_ceiling_excludes_bright_references():
     assert "bright.jpg" not in [r["file"] for rs in man["stages"].values() for r in rs]
 
 
+def test_a_reference_exactly_at_the_ceiling_is_eligible():
+    import assign_references
+    measured = {"edge.jpg": _m(0.781)}
+    measured.update({"f%02d.jpg" % i: _m(0.2) for i in range(5)})
+    man = assign_references.assign(measured, {"1": 0.78}, want=6)
+    assert "edge.jpg" in [r["file"] for r in man["stages"]["1"]]
+
+
 def test_assignment_is_deterministic():
     import assign_references
     path = ROOT / "brand/resources/imagery-manifest.json"
-    before = path.read_text()
-    assign_references.main()
-    assert path.read_text() == before
+    # read-only: builds the text and compares, never touches the committed manifest
+    assert assign_references.build_manifest() == path.read_text()
+    with tempfile.TemporaryDirectory() as d:
+        out = pathlib.Path(d) / "m.json"
+        assign_references.main(out=out)
+        assert out.read_text() == path.read_text()
 
 
 def test_a_starved_stage_fails_the_build():
@@ -165,7 +176,7 @@ def test_a_starved_stage_fails_the_build():
     measured.update({"bright%d.jpg" % i: _m(0.9) for i in range(10)})
     msg = _exit_message(lambda: assign_references.assign(
         measured, {"1": 0.78, "2": 0.62, "3": 0.46, "4": 0.30}))
-    assert "stage 4" in msg and "0 eligible" in msg, msg
+    assert "stage 4" in msg and "0 eligible references remaining" in msg, msg
 
 
 def test_equidistant_stages_assign_identically_whatever_the_order():
@@ -192,7 +203,8 @@ for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_las
           test_posters_are_one_per_video_and_capped, test_committed_posters_match_the_videos,
           test_upper_quartile_matches_the_known_measurement,
           test_every_assigned_reference_clears_the_ceiling,
-          test_ceiling_excludes_bright_references, test_assignment_is_deterministic,
+          test_ceiling_excludes_bright_references,
+          test_a_reference_exactly_at_the_ceiling_is_eligible, test_assignment_is_deterministic,
           test_a_starved_stage_fails_the_build,
           test_equidistant_stages_assign_identically_whatever_the_order):
     check(t)

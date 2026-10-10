@@ -21,7 +21,6 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MEDIA = ROOT / "brand" / "moodboard-media"
-POSTERS = MEDIA / "posters"
 TOKENS = ROOT / "brand" / "resources" / "design-tokens.json"
 MANIFEST = ROOT / "brand" / "resources" / "imagery-manifest.json"
 CEILING = 0.781
@@ -36,6 +35,11 @@ except SystemExit:
     pass
 
 
+def poster_name(stem):
+    """Poster filename for a video stem, relative to the media folder."""
+    return "posters/%s.jpg" % stem
+
+
 def _pixels(path):
     """GRID x GRID rgb24 downsample of an image, as a list of (r, g, b)."""
     raw = subprocess.run(
@@ -43,7 +47,8 @@ def _pixels(path):
          "-vf", "scale=%d:%d:flags=area" % (GRID, GRID), "-pix_fmt", "rgb24",
          "-f", "rawvideo", "-"], capture_output=True).stdout
     if len(raw) != GRID * GRID * 3:
-        raise RuntimeError("could not read pixels from %s" % path)
+        hint = " (poster missing? run tools/make_posters.py)" if not pathlib.Path(path).exists() else ""
+        raise RuntimeError("could not read pixels from %s%s" % (path, hint))
     return [tuple(raw[i:i + 3]) for i in range(0, len(raw), 3)]
 
 
@@ -65,7 +70,7 @@ def measure(path):
     """Upper-quartile OKLCH lightness, aspect and kind of one reference."""
     path = pathlib.Path(path)
     video = path.suffix.lower() == ".mp4"
-    frame = POSTERS / (path.stem + ".jpg") if video else path
+    frame = MEDIA / poster_name(path.stem) if video else path
     lights = [B.oklch("#%02x%02x%02x" % px)[0] for px in _pixels(frame)]
     return {"l_p75": _p75(lights), "aspect": _aspect(path),
             "kind": "video" if video else "image"}
@@ -76,13 +81,13 @@ def pick(eligible, stage_l, want, stage="?"):
     `eligible` is a list of dicts with "file" and "l_p75". Exits when the stage
     cannot be filled: a sheet with four frames is a defect, not a fallback."""
     if len(eligible) < want:
-        sys.exit("stage %s has %d eligible references, needs %d"
+        sys.exit("stage %s has %d eligible references remaining, needs %d"
                  % (stage, len(eligible), want))
     return sorted(eligible, key=lambda r: (abs(r["l_p75"] - stage_l), r["file"]))[:want]
 
 
 def _entry(file, m):
-    poster = ("posters/" + pathlib.Path(file).stem + ".jpg") if m["kind"] == "video" else None
+    poster = poster_name(pathlib.Path(file).stem) if m["kind"] == "video" else None
     return {"file": file, "kind": m["kind"], "poster": poster,
             "l_p75": round(m["l_p75"], 4), "aspect": round(m["aspect"], 4)}
 
@@ -100,15 +105,19 @@ def assign(measured, stage_ls, want=WANT):
     return {"stages": out}
 
 
-def main():
+def build_manifest():
+    """The manifest as text, without writing it."""
     tokens = json.loads(io.open(TOKENS, encoding="utf-8").read())
     stages = tokens["color"]["stages"]
     stage_ls = {k: stages[k]["oklch"]["l"] for k in ("1", "2", "3", "4")}
     files = sorted(p for p in MEDIA.iterdir() if p.suffix.lower() in (".jpg", ".mp4"))
     measured = {p.name: measure(p) for p in files}
     man = assign(measured, stage_ls)
-    MANIFEST.write_text(json.dumps(man, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    return None
+    return json.dumps(man, sort_keys=True, indent=2) + "\n"
+
+
+def main(out=MANIFEST):
+    pathlib.Path(out).write_text(build_manifest(), encoding="utf-8")
 
 
 if __name__ == "__main__":
