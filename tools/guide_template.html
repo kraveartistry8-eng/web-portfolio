@@ -33,7 +33,7 @@
   /* A sheet carries its own slice of the fall. Readings sit in void panels on it,
      because a number read off a mid-ramp value is a number nobody can check. */
   .sheet{position:relative;display:flex;flex-direction:column;
-    padding:var(--pad) var(--pad) 0;min-height:min(820px,94svh)}
+    padding:var(--pad) var(--pad) 0;min-height:var(--sheet-h)}
   .grid{flex:1;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);
     gap:var(--sp-2xl);padding-bottom:var(--sp-xl)}
   .col-l{max-width:34ch}
@@ -164,22 +164,24 @@
     gap:var(--sp-md);flex-wrap:wrap}
   .stagename{margin:0;font-family:var(--display);font-weight:400;font-size:var(--x3);
     line-height:1}
-  .stageread{display:inline-flex;align-items:center;gap:var(--sp-xs);font-family:ui-monospace,Menlo,monospace;
-    font-size:var(--xs);white-space:nowrap}
+  .stageread{display:inline-flex;align-items:center;gap:var(--sp-xs);font-family:var(--body);
+    letter-spacing:.02em;font-variant-numeric:tabular-nums;font-size:var(--xs);white-space:nowrap}
   .stagerule{border:0;border-top:1px solid currentColor;margin:var(--sp-xs) 0 0;opacity:.4}
   /* The field is a share of the sheet, not of the column, so it is set once here and
      reads the same on all four stage sheets. */
   .imgs{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-xs);
     margin:calc(var(--sheet-h) * .14) 0 var(--sp-md)}
   .imgs > figure{position:relative;margin:0;aspect-ratio:5/4;overflow:hidden;
-    border-radius:0;box-shadow:none;background:none}
+    border-radius:var(--radius);box-shadow:none;background:none}
   .imgs > figure img,.imgs > figure video{position:absolute;inset:0;width:100%%;height:100%%;
     object-fit:cover}
   /* Chromium prints a <video> as whichever frame is showing, which differs run to run.
      Print takes the poster instead, and reduced motion takes it on screen so that reader
      sees the frame the printed sheet carries. */
-  .prt{display:none}
-  @media (prefers-reduced-motion:reduce){.scr{display:none}.prt{display:block}}
+  /* The swap owns display on .scr and .prt. Two-class selectors so no later single-class
+     rule can win it back; a silently lost swap prints a different frame every build. */
+  .imgs .prt{display:none}
+  @media (prefers-reduced-motion:reduce){.imgs .scr{display:none}.imgs .prt{display:block}}
   /* Below 600px a three-column slot is under 180px wide and stops reading as a photograph. */
   @media (min-width:600px){.imgs{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (min-width:900px){.imgs{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -246,8 +248,8 @@
     :root{--sheet-h:8.05in}
     .sheet{break-after:page;page-break-after:always;min-height:0;height:8.05in;
       padding:0.36in 0.5in 0;overflow:hidden}
-    .scr{display:none}
-    .prt{display:block}
+    .imgs .scr{display:none}
+    .imgs .prt{display:block}
     .sheet:last-child{break-after:auto;page-break-after:auto}
   }
 </style>
