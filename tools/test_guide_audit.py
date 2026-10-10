@@ -273,6 +273,9 @@ def test_each_stage_sheet_stands_on_its_own_stage_flat():
     for (tone, g), i in zip(grounds, (12, 13, 14, 15)):
         assert tone == build_guide.ink(i, g), (i, tone)
     assert [t for t, _ in grounds] == ["dark", "dark", "light", "light"], grounds
+    # the page is the specimen; a chip of the ground drawn on the ground is not shown
+    assert '<span class="stageread">#D8B260 &middot; L 0.781</span>' in html
+    assert 'class="stageread"><span' not in html
 
 
 def test_the_brightness_rule_names_the_upper_quartile():
