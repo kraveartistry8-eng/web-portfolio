@@ -49,7 +49,8 @@ def main():
             const r = s.getBoundingClientRect(), cs = getComputedStyle(s);
             return {n: s.dataset.sheet, h: Math.round(r.height),
                     top: Math.round(r.top + window.scrollY),
-                    bg: cs.backgroundImage,
+                    bg: cs.backgroundImage, stage: !!s.querySelector('.stagehead'),
+                    bgc: cs.backgroundColor,
                     foot: !!s.querySelector('.foot .pg'),
                     pg: (s.querySelector('.foot .pg') || {}).textContent};
         })""")
@@ -59,7 +60,10 @@ def main():
                 bad.append("sheet %s has no folio" % s["n"])
             elif (s["pg"] or "").strip() != s["n"]:
                 bad.append("sheet %s prints folio %s" % (s["n"], s["pg"]))
-            if "gradient" not in (s["bg"] or ""):
+            if s["stage"]:
+                if "gradient" in (s["bg"] or "") or s["bgc"] == "rgba(0, 0, 0, 0)":
+                    bad.append("stage sheet %s is not a flat field" % s["n"])
+            elif "gradient" not in (s["bg"] or ""):
                 bad.append("sheet %s carries no slice of the fall" % s["n"])
             if i and abs(s["top"] - (sheets[i - 1]["top"] + sheets[i - 1]["h"])) > 1:
                 bad.append("sheet %s does not meet the one before it" % s["n"])
@@ -232,7 +236,9 @@ def extra_checks():
 
         rows = pg.evaluate("""() => [...document.querySelectorAll('.sheet')].map(s => ({
             n: s.dataset.sheet, tone: s.classList.contains('dark') ? 'dark' : 'light',
-            bg: getComputedStyle(s).backgroundImage}))""")
+            bg: getComputedStyle(s).backgroundImage,
+            stage: !!s.querySelector('.stagehead'),
+            bgc: getComputedStyle(s).backgroundColor}))""")
         n = len(rows)
 
         # ---------- fall_joins: sheet k ends on the value sheet k+1 opens on
@@ -246,15 +252,30 @@ def extra_checks():
                 except (ValueError, IndexError):
                     pass
             return out
+        def hex_of(rgb):
+            m = re.findall(r"\d+", rgb or "")
+            return "#%02X%02X%02X" % tuple(int(x) for x in m[:3]) if len(m) >= 3 else ""
         seams, wrong = [], []
+        # A stage sheet stands on its own stage colour, exactly and flat. The fall runs
+        # through every other sheet and resumes at its own position after the four.
+        stage_rows = [r_ for r_ in rows if r_["stage"]]
+        for r_, st in zip(stage_rows, stages):
+            if hex_of(r_["bgc"]) != st["value"].upper() or "gradient" in (r_["bg"] or ""):
+                wrong.append("stage sheet %s stands on %s, not %s (%s)"
+                             % (r_["n"], hex_of(r_["bgc"]) or r_["bg"], st["value"],
+                                st["name"]))
+        if len(stage_rows) != len(stages):
+            wrong.append("%d stage sheets against %d stages" % (len(stage_rows), len(stages)))
         for i, r_ in enumerate(rows):
+            if r_["stage"]:
+                continue
             got = stops_of(r_["bg"])
             want = [fall(i / float(n)).upper(), fall((i + 1) / float(n)).upper()]
             if [g.upper() for g in got[:1]] != want[:1] or \
                [g.upper() for g in got[-1:]] != want[-1:]:
                 wrong.append("sheet %s runs %s, the fall runs %s there"
                              % (r_["n"], " to ".join(got[:2]) or "nothing", " to ".join(want)))
-            if i:
+            if i and not rows[i - 1]["stage"]:
                 prev = stops_of(rows[i - 1]["bg"])
                 if prev and got and prev[-1].upper() != got[0].upper():
                     seams.append("sheet %s opens on %s, sheet %s closed on %s"
@@ -262,12 +283,15 @@ def extra_checks():
         chk(not wrong and not seams,
             "fall_joins       the deck is one fall cut into sheets%s"
             % ("  :: " + "; ".join((wrong + seams)[:3]) if (wrong or seams)
-               else "  :: %d sheets, %d seams, all exact" % (n, n - 1)))
+               else "  :: %d sheets, %d seams, all exact; %d stage sheets on their own stage"
+               % (n, sum(1 for i, q in enumerate(rows) if i and not q["stage"]
+                         and not rows[i - 1]["stage"]), len(stage_rows))))
 
         # ---------- ink_measured: the text colour on a sheet is the better of the two
         ibad = []
         for i, r_ in enumerate(rows):
-            mid = fall((i + 0.5) / float(n))
+            mid = (stages[sum(1 for q in rows[:i] if q["stage"])]["value"] if r_["stage"]
+                   else fall((i + 0.5) / float(n)))
             want = "dark" if B.contrast(C["ground"]["value"], mid) >= \
                              B.contrast(C["text"]["value"], mid) else "light"
             if r_["tone"] != want:

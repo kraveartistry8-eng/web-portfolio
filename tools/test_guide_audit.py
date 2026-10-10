@@ -260,6 +260,21 @@ def test_stage_images_state_their_role_to_a_screen_reader():
     assert 'aria-hidden' not in html.split('<main')[1]
 
 
+def test_each_stage_sheet_stands_on_its_own_stage_flat():
+    import re
+    import build_guide
+    html = build_guide.build()
+    grounds = re.findall(r'<section class="sheet (dark|light)" data-sheet="\d+" '
+                         r'style="background:(#[0-9A-Fa-f]{6})">\n    <div class="stagehead">',
+                         html)
+    want = [build_guide.C["stages"][k]["value"] for k in "1234"]
+    assert [g for _, g in grounds] == want, grounds
+    # ink is measured on that flat colour, not carried over from the fall slice
+    for (tone, g), i in zip(grounds, (12, 13, 14, 15)):
+        assert tone == build_guide.ink(i, g), (i, tone)
+    assert [t for t, _ in grounds] == ["dark", "dark", "light", "light"], grounds
+
+
 def test_the_brightness_rule_names_the_upper_quartile():
     import build_guide
     html = build_guide.build().lower()
@@ -287,6 +302,7 @@ for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_las
           test_a_video_is_emitted_as_a_swap_pair_inside_the_grid,
           test_a_missing_reference_file_fails_the_build_naming_it,
           test_stage_images_state_their_role_to_a_screen_reader,
+          test_each_stage_sheet_stands_on_its_own_stage_flat,
           test_the_brightness_rule_names_the_upper_quartile):
     check(t)
 

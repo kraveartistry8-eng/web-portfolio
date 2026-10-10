@@ -88,10 +88,10 @@ def num(fg, bg):
             % (fg.upper(), bg.upper(), ratio(fg, bg)))
 
 
-def ink(i):
+def ink(i, ground=None):
     """Which of the two text colours the sheet's own ground carries. Measured at the
-    sheet's midpoint, never chosen."""
-    mid = fall((i + 0.5) / float(N))
+    sheet's midpoint, or on the flat colour a stage sheet stands on; never chosen."""
+    mid = ground or fall((i + 0.5) / float(N))
     return "dark" if ratio(VOID, mid) >= ratio(TEXT, mid) else "light"
 
 
@@ -122,12 +122,13 @@ def sheet(i, section, title, lead, body, cls=""):
 
 def stage_sheet(i, stage_key, body):
     """A full-width sheet for one stage: name, reading, rule, grid, footer and nothing
-    else. No .col-l/.col-r split, because the grid wants the whole width; the slice of the
-    fall and the folio are exactly sheet()'s. Every extra element here costs print height
+    else. No .col-l/.col-r split, because the grid wants the whole width. Its ground is the
+    stage's own colour, flat, so the images sit on the colour they describe; the folio is
+    sheet()'s, the slice of the fall is not. Every extra element here costs print height
     the sheet does not have, and .sheet clips in print without a word."""
     st = C["stages"][stage_key]
     return """
-  <section class="sheet %(tone)s" data-sheet="%(n)02d" style="background:%(g)s">
+  <section class="sheet %(tone)s" data-sheet="%(n)02d" style="background:%(v)s">
     <div class="stagehead">
       <h2 class="stagename">%(name)s</h2>
       <span class="stageread"><span class="dot ring" style="background:%(v)s"></span>%(v)s
@@ -141,7 +142,7 @@ def stage_sheet(i, stage_key, body):
       <span class="doc">%(doc)s &middot; %(date)s</span><span class="pg">%(n)02d</span>
     </footer>
   </section>
-""" % dict(n=i + 1, tone=ink(i), g=slice_css(i), name=st["name"], v=st["value"],
+""" % dict(n=i + 1, tone=ink(i, st["value"]), name=st["name"], v=st["value"],
            l=B.oklch(st["value"])[0], body=body, doc=TITLE, date=DATE)
 
 
