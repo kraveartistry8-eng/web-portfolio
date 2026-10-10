@@ -1,0 +1,180 @@
+{
+  "stages": {
+    "1": [
+      {
+        "aspect": 0.7971,
+        "file": "ZY6XxOv.jpg",
+        "kind": "image",
+        "l_p75": 0.7561,
+        "poster": null
+      },
+      {
+        "aspect": 0.6605,
+        "file": "0x4Ubi2.jpg",
+        "kind": "image",
+        "l_p75": 0.7315,
+        "poster": null
+      },
+      {
+        "aspect": 0.7503,
+        "file": "wRU1tGM.jpg",
+        "kind": "image",
+        "l_p75": 0.7271,
+        "poster": null
+      },
+      {
+        "aspect": 0.6663,
+        "file": "k4KfGf3.jpg",
+        "kind": "image",
+        "l_p75": 0.6835,
+        "poster": null
+      },
+      {
+        "aspect": 0.7507,
+        "file": "NHyQ2Ii.mp4",
+        "kind": "video",
+        "l_p75": 0.6585,
+        "poster": "posters/NHyQ2Ii.jpg"
+      },
+      {
+        "aspect": 0.8,
+        "file": "gm8x-Nc.mp4",
+        "kind": "video",
+        "l_p75": 0.6456,
+        "poster": "posters/gm8x-Nc.jpg"
+      }
+    ],
+    "2": [
+      {
+        "aspect": 0.8084,
+        "file": "QOH4dl-.mp4",
+        "kind": "video",
+        "l_p75": 0.6335,
+        "poster": "posters/QOH4dl-.jpg"
+      },
+      {
+        "aspect": 0.7994,
+        "file": "xy_NvPh.jpg",
+        "kind": "image",
+        "l_p75": 0.6336,
+        "poster": null
+      },
+      {
+        "aspect": 1.0,
+        "file": "ZpX9SWA.mp4",
+        "kind": "video",
+        "l_p75": 0.5975,
+        "poster": "posters/ZpX9SWA.jpg"
+      },
+      {
+        "aspect": 0.7161,
+        "file": "gE_ypMW.jpg",
+        "kind": "image",
+        "l_p75": 0.5659,
+        "poster": null
+      },
+      {
+        "aspect": 1.0,
+        "file": "GU1xDFf.jpg",
+        "kind": "image",
+        "l_p75": 0.5658,
+        "poster": null
+      },
+      {
+        "aspect": 0.7503,
+        "file": "0M3EBK4.jpg",
+        "kind": "image",
+        "l_p75": 0.5653,
+        "poster": null
+      }
+    ],
+    "3": [
+      {
+        "aspect": 0.8,
+        "file": "0Hcf2LC.jpg",
+        "kind": "image",
+        "l_p75": 0.4742,
+        "poster": null
+      },
+      {
+        "aspect": 0.6667,
+        "file": "v707B3q.jpg",
+        "kind": "image",
+        "l_p75": 0.4423,
+        "poster": null
+      },
+      {
+        "aspect": 0.7324,
+        "file": "5s0xLGP.jpg",
+        "kind": "image",
+        "l_p75": 0.4409,
+        "poster": null
+      },
+      {
+        "aspect": 1.0,
+        "file": "f3MgZ_1.jpg",
+        "kind": "image",
+        "l_p75": 0.4924,
+        "poster": null
+      },
+      {
+        "aspect": 0.7503,
+        "file": "nT7RG1w.jpg",
+        "kind": "image",
+        "l_p75": 0.4993,
+        "poster": null
+      },
+      {
+        "aspect": 0.5634,
+        "file": "85R4fhS.mp4",
+        "kind": "video",
+        "l_p75": 0.4178,
+        "poster": "posters/85R4fhS.jpg"
+      }
+    ],
+    "4": [
+      {
+        "aspect": 1.506,
+        "file": "Zul1TsA.jpg",
+        "kind": "image",
+        "l_p75": 0.2904,
+        "poster": null
+      },
+      {
+        "aspect": 1.7799,
+        "file": "D7AGfdU.jpg",
+        "kind": "image",
+        "l_p75": 0.312,
+        "poster": null
+      },
+      {
+        "aspect": 0.6236,
+        "file": "CbRaZoU.jpg",
+        "kind": "image",
+        "l_p75": 0.3137,
+        "poster": null
+      },
+      {
+        "aspect": 1.7799,
+        "file": "InhSf8F.jpg",
+        "kind": "image",
+        "l_p75": 0.3139,
+        "poster": null
+      },
+      {
+        "aspect": 0.8006,
+        "file": "rpnybJw.jpg",
+        "kind": "image",
+        "l_p75": 0.2776,
+        "poster": null
+      },
+      {
+        "aspect": 1.7857,
+        "file": "v9AvMbv.mp4",
+        "kind": "video",
+        "l_p75": 0.3328,
+        "poster": "posters/v9AvMbv.jpg"
+      }
+    ]
+  }
+}
