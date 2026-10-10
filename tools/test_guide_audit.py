@@ -2,6 +2,8 @@
 """Tests for the guide's photography tooling.
 
 Run: python3 tools/test_guide_audit.py
+
+The audit-check cases render the guide to PDF a dozen times; expect about two minutes.
 """
 import json
 import os
@@ -448,14 +450,27 @@ def test_a_wrapping_stage_name_fails_footer_in_page():
     _bites("footer_in_page", html=html.replace(name, long, 1), expect="footer")
 
 
-def test_the_committed_sheet_ten_fits_its_page():
-    # the defect that was clipped silently: Grid and spacing overflowed by 20.65px
+def test_grid_and_spacing_footer_prints_inside_its_sheet():
+    # the defect that was clipped silently: Grid and spacing overflowed its sheet by 20.65px.
+    # Checked on this run's render of the built document, not the committed PDF.
+    import re
     import fitz
-    out = _baseline()["out"]
-    assert out["footer_in_page"][0] == "PASS", out["footer_in_page"]
-    d = fitz.open(str(_baseline()["pdf"]))
-    words = [w for w in d[9].get_text("words") if w[4] == "10"]
-    assert words and max(w[3] for w in words) < 579.6, words
+    base = _baseline()
+    assert base["out"]["footer_in_page"][0] == "PASS", base["out"]["footer_in_page"]
+    limit = float(re.search(r"@media print\s*\{\s*:root\s*\{[^}]*--sheet-h:\s*([\d.]+)in",
+                            base["html"]).group(1)) * 72
+    d = fitz.open(str(base["pdf"]))
+    pages = [i for i, pg in enumerate(d) if "Grid and spacing" in pg.get_text()
+             and "Twelve columns" in pg.get_text()]
+    assert len(pages) == 1, pages
+    folio = [w for w in d[pages[0]].get_text("words") if w[4] == "%02d" % (pages[0] + 1)]
+    assert folio, "no folio printed on the Grid and spacing page"
+    assert max(w[3] for w in folio) <= limit, (max(w[3] for w in folio), limit)
+
+
+def test_a_print_only_colour_fails_caption_contrast():
+    css = '@media print{[data-sheet="13"] .stageread{color:#D8B260}}'
+    _bites("caption_contrast", html=_css(css), rerender=False, expect="in print")
 
 
 for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_last_frame,
@@ -486,7 +501,8 @@ for t in (test_poster_offset_is_one_third, test_seek_past_the_end_yields_the_las
           test_a_slot_wrong_only_in_print_fails_grid_ratio_holds,
           test_an_unequal_field_fails_grid_ratio_holds,
           test_a_wrapping_stage_name_fails_footer_in_page,
-          test_the_committed_sheet_ten_fits_its_page):
+          test_grid_and_spacing_footer_prints_inside_its_sheet,
+          test_a_print_only_colour_fails_caption_contrast):
     check(t)
 
 print("\n".join("  PASS  " + m for m in PASSED))

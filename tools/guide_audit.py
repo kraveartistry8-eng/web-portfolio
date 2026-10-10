@@ -388,6 +388,60 @@ def _page_clips(page):
     return sorted(seen, key=lambda r: (round(r[1]), r[0]))
 
 
+def read_contrast(pg, all_sheets=False):
+    """Every line of text on the sheets in scope, with the ratio it reads at against the ground
+    it sits on: the panel it is in, the flat stage colour, or the worse end of the fall's slice.
+    Scope is the sheets that carry imagery, or every sheet for a full survey."""
+    void = T["color"]["ground"]["value"]
+    base0 = [int(void[i:i + 2], 16) for i in (1, 3, 5)]  # an unpainted element sits on the void
+    texts = pg.evaluate(r"""(all) => {
+        const num = s => (s.match(/[\d.]+/g) || []).map(Number);
+        const out = [];
+        document.querySelectorAll('.sheet').forEach(sh => {
+            const sec = (sh.querySelector('.foot span:nth-child(2)') || {}).textContent;
+            if (!all && !(sec === 'Imagery' || sh.querySelector('.imgs, .misuse-tile, .appimg'))) return;
+            sh.querySelectorAll('*').forEach(e => {
+                if (![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+                const cs = getComputedStyle(e);
+                if (cs.display === 'none' || cs.visibility === 'hidden') return;
+                if (!e.getBoundingClientRect().width) return;
+                const layers = []; let grad = null, node = e;
+                while (node && node !== document.documentElement) {
+                    const c = getComputedStyle(node), b = num(c.backgroundColor);
+                    if (node.classList.contains('sheet') &&
+                        c.backgroundImage.includes('gradient')) { grad = c.backgroundImage; break; }
+                    if (b.length >= 3 && (b.length < 4 || b[3] > 0)) {
+                        layers.push(b); if (b.length < 4 || b[3] >= 1) break;
+                    }
+                    node = node.parentElement;
+                }
+                out.push({n: sh.dataset.sheet, what: (e.className || e.tagName),
+                          text: e.textContent.trim().slice(0, 24), fg: num(cs.color),
+                          layers, grad, size: parseFloat(cs.fontSize),
+                          weight: parseInt(cs.fontWeight)});
+            });
+        });
+        return out;
+    }""", all_sheets)
+    rows = []
+    for t_ in texts:
+        ends = re.findall(r"rgba?\(([^)]*)\)", t_["grad"] or "")
+        if t_["grad"]:
+            bases = [[float(x) for x in re.split(r"[ ,]+", g.strip()) if x][:3]
+                     for g in (ends[0], ends[-1])]
+        else:
+            bases = [base0]
+        for base in bases:
+            for layer in reversed(t_["layers"]):
+                base = _over(layer, base)
+            ink = _over(t_["fg"], base)
+            large = t_["size"] >= 24 or (t_["size"] >= 18.66 and t_["weight"] >= 700)
+            rows.append({"n": t_["n"], "el": t_["what"], "text": t_["text"],
+                         "got": B.contrast(_hex_of(ink), _hex_of(base)), "on": _hex_of(base),
+                         "floor": FLOOR_LARGE if large else FLOOR_BODY})
+    return len(texts), rows
+
+
 def imagery_checks(pg, rows):
     """The six checks the photography section needs. They read the manifest the build
     read, the document at four widths, and the PDF the reader is handed."""
@@ -416,7 +470,7 @@ def imagery_checks(pg, rows):
     # measured the poster frame of a video and the file of a still, so the build and the
     # audit cannot disagree about what was measured. An image the manifest has not measured
     # fails: it is exactly how a bright reference would get in.
-    ceiling = round(B.oklch(stage_vals[0])[0], 3)
+    ceiling = B.oklch(stage_vals[0])[0]  # unrounded; only the message rounds it
     measured = {}
     for refs in man["stages"].values():
         for r_ in refs:
@@ -475,11 +529,13 @@ def imagery_checks(pg, rows):
                 if r[0] < EDGE or r[1] < EDGE or pw - r[2] < EDGE or sheet_pt - r[3] < EDGE:
                     touch.append("sheet %02d in print, slot at %.0f,%.0f to %.0f,%.0f"
                                  % (i + 1, r[0], r[1], r[2], r[3]))
-    chk(not touch and (pdf is not None and sheet_pt),
+    # n_print is required: a page-clip reader that found nothing must not pass by measuring nothing
+    chk(not touch and pdf is not None and sheet_pt and n_print > 0,
         "image_on_ground  no image touches a page edge; the ground does%s"
         % ("  :: " + "; ".join(touch[:3]) if touch
            else "  :: " + (pdf_why or "no print height in the document") if not (
                pdf is not None and sheet_pt)
+           else "  :: no slots found in print, so nothing was measured" if not n_print
            else "  :: every image inset from every edge, on screen at 1440 and 390 and "
                 "%d slots in print" % n_print))
 
@@ -523,63 +579,27 @@ def imagery_checks(pg, rows):
     # ink_measured proves the sheet's ink; this proves the words set in it. Every caption and
     # reading on a sheet that carries imagery is measured against the ground it sits on: the
     # panel it is in, or the flat stage colour, or the worse end of the fall's slice.
+    # Measured twice: on screen at 1440, and under print emulation at Letter width, because a
+    # colour rule set only for print would otherwise be invisible to a check about what the
+    # PDF reader sees. The PDF's own text is not reconstructed; it is these same computed colours.
     pg.set_viewport_size({"width": 1440, "height": 900})
     pg.wait_for_timeout(260)
-    texts = pg.evaluate(r"""() => {
-        const num = s => (s.match(/[\d.]+/g) || []).map(Number);
-        const out = [];
-        document.querySelectorAll('.sheet').forEach(sh => {
-            const sec = (sh.querySelector('.foot span:nth-child(2)') || {}).textContent;
-            if (!(sec === 'Imagery' || sh.querySelector('.imgs, .misuse-tile, .appimg'))) return;
-            sh.querySelectorAll('*').forEach(e => {
-                if (![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
-                const cs = getComputedStyle(e);
-                if (cs.display === 'none' || cs.visibility === 'hidden') return;
-                if (!e.getBoundingClientRect().width) return;
-                const layers = []; let grad = null, node = e;
-                while (node && node !== document.documentElement) {
-                    const c = getComputedStyle(node), b = num(c.backgroundColor);
-                    if (node.classList.contains('sheet') &&
-                        c.backgroundImage.includes('gradient')) { grad = c.backgroundImage; break; }
-                    if (b.length >= 3 && (b.length < 4 || b[3] > 0)) {
-                        layers.push(b); if (b.length < 4 || b[3] >= 1) break;
-                    }
-                    node = node.parentElement;
-                }
-                out.push({n: sh.dataset.sheet, what: (e.className || e.tagName),
-                          text: e.textContent.trim().slice(0, 24), fg: num(cs.color),
-                          layers, grad, size: parseFloat(cs.fontSize),
-                          weight: parseInt(cs.fontWeight)});
-            });
-        });
-        return out;
-    }""")
-    low, worst = [], None
-    for t_ in texts:
-        ends = re.findall(r"rgba?\(([^)]*)\)", t_["grad"] or "")
-        if t_["grad"]:
-            bases = []
-            for g in (ends[0], ends[-1]):
-                parts = [float(x) for x in re.split(r"[ ,]+", g.strip()) if x][:3]
-                bases.append(parts)
-        else:
-            bases = [[8, 8, 8]]  # an unpainted element sits on the void
-        for base in bases:
-            for layer in reversed(t_["layers"]):
-                base = _over(layer, base)
-            ink = _over(t_["fg"], base)
-            got = B.contrast(_hex_of(ink), _hex_of(base))
-            large = t_["size"] >= 24 or (t_["size"] >= 18.66 and t_["weight"] >= 700)
-            floor = FLOOR_LARGE if large else FLOOR_BODY
-            worst = got if worst is None else min(worst, got)
-            if got < floor:
-                low.append("sheet %s %r reads %.2f:1 on %s, below %.1f"
-                           % (t_["n"], t_["text"], got, _hex_of(base), floor))
-    chk(texts and not low,
-        "caption_contrast every caption and reading clears its floor on the ground it sits on%s"
+    n_text, rows_s = read_contrast(pg)
+    pg.emulate_media(media="print")
+    pg.set_viewport_size({"width": 1056, "height": 816})
+    pg.wait_for_timeout(260)
+    n_text_p, rows_p = read_contrast(pg)
+    pg.emulate_media(media="null")
+    low = ["sheet %s %r reads %.2f:1 on %s%s, below %.1f"
+           % (r_["n"], r_["text"], r_["got"], r_["on"], " in print" if m_ else "", r_["floor"])
+           for m_, rr in ((0, rows_s), (1, rows_p)) for r_ in rr if r_["got"] < r_["floor"]]
+    worst = min([r_["got"] for r_ in rows_s + rows_p], default=0)
+    chk(n_text and n_text_p and not low,
+        "caption_contrast every caption and reading on a sheet that carries imagery clears "
+        "its floor on its ground%s"
         % ("  :: " + "; ".join(sorted(set(low))[:3]) if low
-           else "  :: %d lines on %d sheets, lowest %.2f:1"
-           % (len(texts), len({t_["n"] for t_ in texts}), worst or 0)))
+           else "  :: %d lines on %d sheets, on screen and in print, lowest %.2f:1"
+           % (n_text, len({r_["n"] for r_ in rows_s}), worst)))
 
     # ---------- grid_ratio_holds
     # The slot is the fixed quantity; the columns change. A slot that drifts to 4:3 is a
