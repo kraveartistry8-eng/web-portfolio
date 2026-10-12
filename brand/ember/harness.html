@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember Harness</title>
+<style>
+  :root{--text:#EEECEA;--fall:linear-gradient(180deg,#D8B260,#BC6F4C 30%,#893A50 60%,#341D5E 84%,#080808 95%,#080808 97.2%,#BF15B7 99.4%)}
+  *{box-sizing:border-box} html,body{margin:0}
+  html{background:#080808}
+  /* complete without the ember: the fall is the body's own ground until the engine has drawn */
+  body{font-family:system-ui,sans-serif;color:var(--text);background:#080808 var(--fall) no-repeat;background-size:100% 100%;min-height:100%}
+  .ember-on body{background:transparent}
+  #ember{position:fixed;inset:0;z-index:0;pointer-events:none}
+  #ember canvas{display:block;width:100%;height:100%}
+  main{position:relative;z-index:1}
+  section{min-height:100vh;padding:80px 6vw;display:grid;align-content:start;gap:32px}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:clamp(48px,8vw,128px);line-height:1;margin:0;color:#080808}
+  h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(32px,4vw,56px);line-height:1.05;margin:0}
+  .copy{max-width:52ch;font-size:17px;line-height:1.55;margin:0}
+  .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+  @media (max-width:760px){.row{grid-template-columns:1fr}}
+  /* lit by the ember (spec 2.7): a 2px rim brightest at the edge nearest it, a faint wash, a 24px glow. Nothing cast. */
+  .card,h1,h2,.copy{--li:0;--ec:216,178,96;--px:50%;--py:-200px;--rr:312px;--tx:0px;--ty:0px}
+  .card{position:relative;background:#141414;padding:24px;min-height:220px;display:flex;flex-direction:column;justify-content:flex-end}
+  .card::before{content:"";position:absolute;inset:0;pointer-events:none;border:2px solid transparent;
+    border-image:radial-gradient(circle var(--rr) at var(--px) var(--py),rgba(var(--ec),var(--li)) 0%,rgba(var(--ec),calc(.45 * var(--li))) 45%,rgba(var(--ec),calc(.1 * var(--li))) 90%,transparent 100%) 1}
+  .card::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle var(--rr) at var(--px) var(--py),rgba(var(--ec),calc(.2 * var(--li))),rgba(var(--ec),calc(.05 * var(--li))) 45%,transparent 75%);
+    mix-blend-mode:screen;box-shadow:0 0 24px rgba(var(--ec),calc(.32 * var(--li)))}
+  .card p{margin:0}
+  h1,h2,.copy{text-shadow:var(--tx) var(--ty) 0 rgba(var(--ec),calc(.9 * var(--li))),0 0 10px rgba(var(--ec),calc(.35 * var(--li)))}
+  @media print{#ember{display:none}.ember-on body{background:#080808 var(--fall) no-repeat;background-size:100% 100%}}
+</style>
+</head>
+<body>
+<div id="ember" aria-hidden="true"></div>
+<main>
+  <section>
+    <h1>Afterglow</h1>
+    <p class="copy" style="color:#080808">The light only brightens where the ember is. The lower half of this screen is left empty for the sweep tests.</p>
+  </section>
+  <section>
+    <h2>Gold into after gold</h2>
+    <div class="row">
+      <div class="card"><p>Afterglow</p><p class="copy">$180</p></div>
+      <div class="card"><p>Travel, 10 ml</p><p class="copy">$48</p></div>
+      <div class="card"><h2>The one rule</h2></div>
+    </div>
+  </section>
+  <section>
+    <h2>Rose</h2>
+    <div class="row">
+      <div class="card"><p class="copy">Skin, warm stone, the last heat in the sand.</p></div>
+      <div class="card"><p>Discovery set</p></div>
+      <div class="card"><p class="copy">One spray at the wrist.</p></div>
+    </div>
+  </section>
+  <section>
+    <h2>Deep violet</h2>
+    <div class="row">
+      <div class="card"><p>Afterglow</p></div>
+      <div class="card"><p class="copy">Night let in through an open window.</p></div>
+      <div class="card"><p class="copy">Find it in person.</p></div>
+    </div>
+  </section>
+  <section></section>
+</main>
+<script src="ember.bundle.js"></script>
+<script>
+  (function () {
+    if (!window.EmberEngine) return;
+    var q = new URLSearchParams(location.search);
+    window.ember = new EmberEngine(document.getElementById("ember"), {
+      lit: ".card, h1, h2, .copy",
+      forceByteTargets: q.has("byte"),
+      onFirstFrame: function () { document.documentElement.classList.add("ember-on"); },
+      onLost: function () { document.documentElement.classList.remove("ember-on"); }
+    });
+  })();
+</script>
+</body>
+</html>
