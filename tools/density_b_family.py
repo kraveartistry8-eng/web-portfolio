@@ -12,6 +12,7 @@ import re
 from collections import Counter
 
 import density_directions as D
+from afterglow_hours import HOURS, stamp_times
 from density_directions import S, STAGES, foot, page, stage_sheet, lead_apps, SYSTEM
 
 # Unused mood board references, chosen by eye and checked against the ceiling (all L p75 <= 0.781).
@@ -80,6 +81,33 @@ def cover():
             f'<h1 class="wordmark">Afterglow</h1><p class="covline">The light only ever deepens.</p></div>'
             f'<div class="covmeta"><p class="pl" style="color:inherit;opacity:.82">Four stages, two faces, one grid. '
             f'Every sheet carries a photograph from the stage its ground sits in.</p></div></div>{foot("Cover", 1)}</section>')
+
+
+def cover_hour():
+    """The cover as the first hour (spec 2026-10-11-afterglow-guide-hour-design.md §3): 19:12 across the cover photograph."""
+    return (f'<section class="sheet bcover hcover"><figure class="hpanel"><img src="{COVER}" alt="" '
+            f'style="object-position:50% 0%;transform:scale(1.07);transform-origin:50% 0"></figure>'
+            f'<p class="hour">{HOURS[0]}</p>'
+            f'<p class="covnote">One fragrance in four stages, each an hour of one evening, from 19:12 until it is dark.</p>'
+            f'{foot("Cover", 1)}</section>')
+
+
+HOUR_PX = (190, 120, 90, 64)   # the four stages' hours at 1440: each later hour gets less room
+
+
+def colour_hours(sec):
+    """Sheet 3 as four hours, rebuilt from its finished markup so every reading the copy pass wrote is kept."""
+    open_tag = re.match(r'<section class="([^"]*)"([^>]*)>', sec)
+    h2 = re.search(r'<h2 class="t">.*?</h2>', sec).group(0)
+    lead = re.search(r'<p class="lead">.*?</p>', sec).group(0)
+    notes = "".join(re.findall(r'<p class="fine2">.*?</p>', sec))
+    sws = re.findall(r'<div class="sw" (style="[^"]*")>(.*?</p>)(<dl>.*?</dl>)(<p class="swr">.*?</p>)</div>', sec)
+    assert len(sws) == 4, len(sws)
+    cols = "".join(f'<div class="sw" {st[:-1]};--hs:{px}"><p class="hour">{h}</p>{n}{dl}{r}</div>'
+                   for (st, n, dl, r), h, px in zip(sws, HOURS, HOUR_PX))
+    foot_html = re.search(r'<footer class="foot">.*?</footer>', sec).group(0)
+    return (f'<section class="{open_tag.group(1)} hcolour"{open_tag.group(2)}><div class="hintro">{h2}<div>{lead}{notes}</div></div>'
+            f'<div class="hcols">{cols}</div>{foot_html}</section>')
 
 
 def fig(src, cls=""):
@@ -173,6 +201,94 @@ def spread(k, pg, style, ink):
             f'<hr class="stagebar" style="background:{hexv}"><div class="imgs">{figs}</div>{foot("Imagery", pg)}</section>')
 
 
+LEAD_AIM = {"wRU1tGM": "50% 40%"}   # the lead frame's crop in the full-height panel; moved, never scrimmed, if the hour fails 3:1 over it
+
+
+def spread_hour(k, pg, style, ink):
+    """A stage spread as its hour (spec 2026-10-11-afterglow-guide-hour-design.md §3): the lead frame as a full-height panel,
+    the hour set huge across it, the stage's name and readings as a note, the other four frames as one row."""
+    name, hexv, L, _ = STAGES[k]
+    crop = {"9HB093h": "50% 0%", "HNrkkNB": "50% 30%", "GVEgivk": "50% 10%", "udQHGQp": "50% 64%"}
+    img = lambda f: f'<img src="{media(f)}" alt=""' + (f' style="object-position:{crop[f]}"' if f in crop else '') + '>'
+    lead = SPREADS[k][0]
+    stamps = "".join(f'<figure data-stage="{k + 1}">{img(f)}</figure>' for f in SPREADS[k][1:])
+    return (f'<section class="sheet {ink} imagery hsheet" style="{style}" data-hour="{k}">'
+            f'<figure class="hpanel" data-stage="{k + 1}"><img src="{media(lead)}" alt="" style="object-position:{LEAD_AIM.get(lead, "50% 50%")}"></figure>'
+            f'<p class="hour">{HOURS[k]}</p>'
+            f'<div class="hrow"><div class="hnote"><h2 class="t hname">{name}</h2><p class="stageread">{hexv} &middot; L {L}</p>'
+            f'<p class="stagecap">{STAGE_CAPS[k]}</p></div><div class="stamps">{stamps}</div></div>'
+            f'{foot("Imagery", pg)}</section>')
+
+
+HOUR_CSS = """
+  /* offline the hour falls back to a local serif sized to Instrument Serif's digits (19:40 at 1.567 em), so it never outgrows its sheet */
+  @font-face{font-family:'Hour Georgia';src:local('Georgia');size-adjust:67%}
+  @font-face{font-family:'Hour Times';src:local('Times New Roman'),local('Times');size-adjust:73.6%}
+  /* the hour (spec 2026-10-11-afterglow-guide-hour-design.md): a stage spread is its hour, set across the lead frame */
+  .hour{margin:0;font-family:'Instrument Serif','Hour Georgia','Hour Times',serif;font-weight:400;line-height:.8;letter-spacing:-.03em;white-space:nowrap;
+    font-variant-numeric:lining-nums;color:inherit;position:relative;z-index:2}
+  .hsheet{position:relative;padding-right:calc(38% + var(--pad))!important}
+  :is(.hsheet,.hcover) .hpanel{position:absolute;top:0;right:0;bottom:0;width:38%;margin:0;overflow:hidden}
+  :is(.hsheet,.hcover) .hpanel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .hsheet .hour{font-size:min(520px,36.1vw);margin:auto calc(-1 * var(--pad) - .25em) 0 0;align-self:flex-end;order:1}  /* its end crosses a quarter em onto the panel */
+  .hsheet .hrow{display:grid;grid-template-columns:minmax(0,30ch) minmax(0,1fr);gap:var(--sp-lg);position:relative;z-index:3}
+  .hsheet .hname{font-size:22px;line-height:1.1;margin:0 0 var(--sp-sm);white-space:normal}
+  .hsheet .stageread,.hsheet .stagecap{font-size:12px;line-height:1.55;margin:0;max-width:30ch;opacity:1}
+  .hsheet .stamps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-sm);align-self:start}
+  .hsheet .stamps figure{margin:0;aspect-ratio:4/5;overflow:hidden;position:relative}
+  .hsheet .stamps img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  @media screen and (max-width:992px){
+    .hsheet .hrow{grid-template-columns:1fr}
+    .hsheet .stamps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  /* the fall: each stop's hour under its percentage; the type specimen sets the hour beside the wordmark */
+  .ticks{height:46px}
+  .ticks .thr{display:block;font-style:normal;opacity:.8}
+  .ticks span.tdark{display:block}
+  .ticks .tdark .thr{margin-top:1.4em}
+  .fbig.serif{display:flex;flex-wrap:wrap;column-gap:.5em;white-space:normal}  /* the hour sits beside the name, or under it where the column is narrow */
+  .fbig .fhr{letter-spacing:-.03em;font-variant-numeric:lining-nums}
+  /* the cover: 19:12 across the photograph */
+  .hcover{background:#080808;display:flex;flex-direction:column}
+  .bcover.hcover.sheet.sheet{padding:0 calc(38% + var(--pad)) var(--pad) var(--pad)!important}
+  .sheet.bcover.hcover .foot{margin:var(--sp-md) 0 0!important}
+  .hcover .covnote{margin:var(--sp-xl) 0 0;font-size:12px;line-height:1.55;max-width:30ch;color:#EEECEA;position:relative;z-index:3}
+  .hcover .hour{font-size:min(430px,29.9vw);margin:auto calc(-1 * var(--pad) - .25em) 0 0;align-self:flex-end;order:1;color:#EEECEA}
+  /* the four stages: four hours, each later one given less room */
+  .hcolour .hintro{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:var(--sp-lg);margin-bottom:var(--sp-lg)}
+  .hcolour .hintro h2.t{margin:0}
+  .hcolour .hintro .lead{margin:0 0 var(--sp-sm)}
+  .hcolour.sheet.sheet{--hpad:var(--pad);padding-left:var(--hpad)!important;padding-right:var(--hpad)!important;padding-bottom:0!important}
+  .hcolour .hcols{flex:1;min-height:0;display:grid;grid-template-columns:1.6fr 1fr .8fr .6fr;margin:0 calc(var(--hpad) * -1)}
+  .hcolour .sw{padding:var(--sp-lg) var(--sp-md);min-width:0;overflow:hidden}
+  .hcolour .sw .hour{font-size:min(calc(var(--hs) * 1px),calc(var(--hs) * 100vw / 1440));margin-bottom:auto}
+  .hcolour .swn{margin:var(--sp-md) 0 0;font-size:22px}
+  .hcolour .sw dl{grid-template-columns:1fr;gap:0;margin:var(--sp-sm) 0}
+  .hcolour .sw dt{font-size:9.5px;margin-top:4px}
+  @media screen and (max-width:992px){
+    .hsheet .hour{margin-top:var(--sp-xl)}
+    .hcover{min-height:100svh}
+    .hcolour .hintro{grid-template-columns:1fr}
+    .hcolour .hcols{grid-template-columns:1fr;min-height:1100px;
+      grid-template-rows:minmax(min-content,1.6fr) minmax(min-content,1fr) minmax(min-content,.8fr) minmax(min-content,.6fr)}
+    .hcolour .sw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:var(--sp-lg);align-content:start}
+    .hcolour .sw .hour{grid-column:1;font-size:calc(var(--hs) * .6px);margin:0}
+    .hcolour .swn{grid-column:1;margin:var(--sp-sm) 0 0}
+    .hcolour .sw dl,.hcolour .swr{grid-column:2;grid-row:1 / span 2;align-self:start}
+    .hcolour .swr{grid-row:3}
+  }
+  @media screen and (max-width:576px){
+    .hsheet{padding-right:var(--sp-md)!important}
+    .bcover.hcover.sheet.sheet{padding:0 var(--sp-md) var(--sp-lg)!important}
+    :is(.hsheet,.hcover) .hpanel{position:relative;inset:auto;width:auto;margin:0 calc(var(--sp-md) * -1);aspect-ratio:4/5}
+    :is(.hsheet,.hcover) .hour{font-size:calc((100vw - 32px) / 1.62);margin:-.2em 0 var(--sp-lg);align-self:flex-start;order:0}
+    .hcover .covnote{margin:0}
+    .hcolour .sw .hour{font-size:calc(var(--hs) * .5px)}
+    .hcolour.sheet.sheet{--hpad:var(--sp-md)}
+  }
+"""
+
+
 def misuse(pg, style, ink):
     """The opposite of art direction: a frame the measure cut, shown at the size the lamp gets."""
     return (f'<section class="sheet {ink} imagery misuse" style="{style}"><div class="mugrid">'
@@ -238,7 +354,7 @@ def build(key):
     name, sysfn, admode = VARIANTS[key]
     # cover, 5 system, art direction, 4 stages, the ember, misuse on the fall; then 2 on void
     off, n_fall = 0, (13 if key == "b1-column" else 12)
-    sh = [cover()]
+    sh = [cover_hour() if key == "b1-column" else cover()]
     for i, ((sec, title, lead, fn), img) in enumerate(zip(SYSTEM, CARRY)):
         style, ink = ground(i + 1 + off, n_fall)
         sh.append(sysfn(i + 2 + off, sec, title, lead, fn(), img, style, ink).replace('imagery', f'imagery s{i + 2}', 1))
@@ -246,7 +362,7 @@ def build(key):
     sh.append(ad(admode, 7 + off, style, ink))
     for k in range(4):
         style, ink = ground(7 + k + off, n_fall)
-        sh.append(spread(k, 8 + k + off, style, ink))
+        sh.append((spread_hour if key == "b1-column" else spread)(k, 8 + k + off, style, ink))
     style, ink = ground(11 + off, n_fall)
     if key == "b1-column":
         assert style == f"background:linear-gradient(180deg,{EMBER_G0},{EMBER_G1})", style
@@ -260,13 +376,20 @@ def build(key):
     sh.append(voice(15 + off).replace('style="background:#080808"', f'style="background:linear-gradient(180deg,#080808 0%,#080808 98.4%,{MAGENTA} 100%)"', 1))
     html = page(f"Afterglow — Direction B{key[1]}: {name}", sh)
     html = html.replace("</style>", B_CSS + (POLISH_CSS if key == "b1-column" else "") + "</style>", 1)
-    ticks = "".join(f'<span style="left:{x}%"><b>{h}</b>{x:g}%</span>' for x, h in
+    hour_of = dict(zip((0, 30, 60, 84, 95), HOURS + ["dark"])) if key == "b1-column" else {}   # the hour each stop stands for; the magenta sliver has none
+    ticks = "".join((f'<span class="tdark" style="left:{x}%"><i class="thr">dark</i></span>' if x == 95 and hour_of else   # the void's swatch label stays hidden; its hour shows
+                     f'<span style="left:{x}%"><b>{h}</b>{x:g}%' + (f'<i class="thr">{hour_of[x]}</i>' if x in hour_of else '') + '</span>') for x, h in
                     ((0, "#D8B260"), (30, "#BC6F4C"), (60, "#893A50"), (84, "#341D5E"), (95, "#080808"), (100, MAGENTA)))
     html = re.sub(r'<div class="ticks">.*?</div>', f'<div class="ticks">{ticks}</div>', html, flags=re.S)
     html = html.replace("No stop may be added, moved or removed. Four stops, evenly spaced.",
                         f"Four stages fall to the void and end on a sliver of {MAGENTA}. No stage may be added, moved or removed.")
     if key == "b1-column":
         html = copy_pass(html)
+        html = html.replace('<p class="fbig serif">Afterglow</p>', f'<p class="fbig serif">Afterglow<span class="fhr">{HOURS[0]}</span></p>', 1)
+        i = html.index('imagery s3"'); a = html.rindex('<section', 0, i); b = html.index('</section>', i) + len('</section>')
+        html = html[:a] + colour_hours(html[a:b]) + html[b:]
+        # the hour (spec 2026-10-11-afterglow-guide-hour-design.md §3): each running head carries its sheet's time
+        html = stamp_times(html, n_fall)
         # titles (11 Oct): the tab names the document, each head names its page's subject, the name is not said twice
         html = re.sub(r"<title>.*?</title>", "<title>Afterglow Brand Guide</title>", html, count=1)
         html = html.replace("<span>Identity</span>", "<span>Wordmark</span>")
@@ -279,7 +402,7 @@ def build(key):
         f = html.index('<p class="fbig sans">', i); f = html.index("</div>", f) + len("</div>")
         html = html[:f] + roles + html[f:]
     if key == "b1-column":
-        html = with_ember(html.replace("</style>", EMBER_PAGE_CSS + "</style>", 1))
+        html = with_ember(html.replace("</style>", EMBER_PAGE_CSS + HOUR_CSS + "</style>", 1))
     srcs = [s for s in re.findall(r'<img[^>]+src="([^"]+)"', html) if "moodboard-media" in s]
     dup = [s for s, c in Counter(srcs).items() if c > 1 and not any(k in s for k in ALLOWED_REPEATS)]
     assert not dup, f"{key}: repeated {dup}"
@@ -499,9 +622,10 @@ COPY = [
     ("There is no drawn logotype. The wordmark is the typeface.",
      "There is no drawn logotype. The wordmark is Instrument Serif, widened to 150%."),
     ("Instrument Serif 400, tracking 0.", "Instrument Serif 400 at 150% width, tracking 0."),
-    # cover: say what the brand is and what the guide is for
-    ("Four stages, two faces, one grid. Every sheet carries a photograph from the stage its ground sits in.",
-     "Afterglow is one fragrance told in four stages, from the gold of last light to deep&nbsp;violet."),
+    # cover: its copy is the hour's note now (cover_hour), so the old cover line has no entry here
+    # art direction: the light is an hour, so the shoot has one
+    ("Images are made at the end of the day or lit to look as though they were.",
+     "Images are made between 19:12 and 21:30, or lit to look as though they were."),
     # wordmark
     ("Outside the four stages and the two text neutrals.", "Only the palette, and only the pairs that pass on page 03."),
     ("Do not set small on the fall", "Do not set it small on the gradient"),
@@ -663,6 +787,7 @@ def copy_pass(html):
     html = html[:a] + img_pairs() + html[b:]
     for k, cap in enumerate(STAGE_CAPS):
         bar = f'<hr class="stagebar" style="background:{STAGES[k][1]}">'
+        if f'data-hour="{k}"' in html: continue  # an hour sheet carries its caption already
         assert bar in html
         html = html.replace(bar, bar + f'<p class="stagecap">{cap}</p>', 1)
     return html
@@ -692,6 +817,9 @@ POLISH_CSS = f"""
   .sheet .foot{{order:-1;border-top:1px solid;border-bottom:0;padding:var(--sp-sm) 0 0;margin:var(--sp-md) 0 var(--sp-xl)!important}}
   .sheet.bcover .foot{{margin:var(--sp-md) var(--pad) 0!important;position:relative;z-index:3}}
   .sheet.bcover .foot,.sheet.bcover .foot span{{color:#EEECEA!important;border-color:rgba(238,236,234,.4)}}
+  .foot{{grid-template-columns:1fr 1fr 1fr auto auto}} .adedge .foot{{grid-template-columns:1fr 1fr auto auto}}
+  .foot .hr{{font-variant-numeric:tabular-nums;letter-spacing:.14em;text-transform:uppercase}}
+  @media screen and (max-width:900px){{.foot{{grid-template-columns:1fr auto auto}}}}
   .bcover .bimg::before{{content:"";position:absolute;inset:0 0 auto;height:140px;z-index:1;background:linear-gradient(180deg,rgba(8,8,8,.62),rgba(8,8,8,0))}}
   .bcover.sheet.sheet{{padding:0!important}}
   @media screen and (max-width:576px){{.sheet.sheet{{padding-bottom:var(--sp-lg)}}}}
