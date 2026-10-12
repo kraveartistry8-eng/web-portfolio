@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember v23</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--text:#EEECEA}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font-family:'Space Grotesk',sans-serif;color:var(--text);background:#080808}
+  #ember{position:fixed;inset:0;z-index:1;pointer-events:none}
+  #ember canvas{display:block;width:100vw;height:100vh}
+  main{position:relative;z-index:2}
+  .bar{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    padding:10px 16px;background:rgba(8,8,8,.86);border-bottom:1px solid rgba(238,236,234,.18);font-size:13px}
+  .bar b{font-weight:500;letter-spacing:.12em;text-transform:uppercase;font-size:11px;margin-right:8px}
+  .bar .pick{margin-left:auto;font:inherit;background:transparent;border:1px solid #D8B260;color:#D8B260;padding:7px 12px;cursor:pointer;min-height:36px}
+  .bar .pick.selected{background:#D8B260;color:#080808}
+  .bar .note{opacity:.75;flex-basis:100%;font-size:12px}
+  section{min-height:100vh;padding:120px 6vw 80px;display:grid;align-content:center;gap:32px}
+  h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(64px,11vw,176px);line-height:1;margin:0;
+    display:inline-block;transform:scaleX(1.5);transform-origin:0 50%;color:#080808}
+  h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(36px,5vw,64px);line-height:1.05;margin:0}
+  .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+  @media (max-width:760px){.row{grid-template-columns:1fr}}
+  /* a card lit by the ember: light washes in from the side facing it; nothing is cast onto it */
+  .card{position:relative;background:#141414;padding:24px;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;
+    --li:0;--ec:216,178,96;--px:50%;--py:-200px;--rr:420px}
+  /* a rim light only: a 1px edge that catches the ember on the side facing it, and a faint glow around the card */
+  .card::before{content:"";position:absolute;inset:0;pointer-events:none;border:2px solid transparent;
+    border-image:radial-gradient(circle var(--rr) at var(--px) var(--py),rgba(var(--ec),var(--li)) 0%,rgba(var(--ec),calc(.45 * var(--li))) 40%,rgba(var(--ec),calc(.1 * var(--li))) 75%,transparent 100%) 1}
+  .card::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle var(--rr) at var(--px) var(--py),rgba(var(--ec),calc(.2 * var(--li))),rgba(var(--ec),calc(.05 * var(--li))) 45%,transparent 75%);
+    mix-blend-mode:screen;box-shadow:0 0 24px rgba(var(--ec),calc(.32 * var(--li)))}
+  .card .ph{flex:1;margin-bottom:16px;background:linear-gradient(180deg,#893A50,#341D5E)}
+  .card p{margin:0}
+  .card .nm{font-family:'Instrument Serif',serif;font-size:28px;display:inline-block;transform:scaleX(1.5);transform-origin:0 50%}
+  .card .pr{opacity:.8;font-size:14px;margin-top:4px}
+  .copy{max-width:52ch;font-size:17px;line-height:1.55}
+  .lit{--tl:0;--tx:0px;--ty:0px;text-shadow:var(--tx) var(--ty) 0 rgba(var(--ec,216,178,96),calc(.9 * var(--tl))),0 0 10px rgba(var(--ec,216,178,96),calc(.35 * var(--tl)))}
+</style>
+</head>
+<body>
+<div id="ember"></div>
+<div class="bar">
+  <b>Ember &middot; v23</b>
+  <button class="pick" data-choice="v23" onclick="toggleSelect(this)">Looks right</button>
+  <span class="note">v23: the head coasts on, slowing steadily, and comes to rest at the moment the tail end reaches it. The tail end leaves at the pace it had and arrives with the head, so they meet and go out together. Move fast, then stop.</span>
+</div>
+<main>
+  <section>
+    <p class="kicker" style="color:#080808">Eau de parfum</p>
+    <h1>Afterglow</h1>
+    <p class="copy" style="color:#080808">The light only ever deepens. Move across the page and it catches, flares, and settles back to the hour it came from.</p>
+  </section>
+  <section>
+    <h2>Gold into after gold</h2>
+    <div class="row">
+      <div class="card"><div class="ph"></div><p class="nm">Afterglow</p><p class="pr">$180</p></div>
+      <div class="card"><div class="ph"></div><p class="nm">Afterglow</p><p class="pr">Travel, 10 ml &middot; $48</p></div>
+      <div class="card"><p class="kicker">The one rule</p><h2>The light only brightens where the ember is.</h2></div>
+    </div>
+  </section>
+  <section>
+    <h2>Rose</h2>
+    <div class="row">
+      <div class="card"><p class="kicker">Notes</p><p class="copy">Skin, warm stone, the last heat in the sand.</p></div>
+      <div class="card"><div class="ph"></div><p class="nm">Afterglow</p><p class="pr">Discovery set &middot; $32</p></div>
+      <div class="card"><p class="kicker">Ritual</p><p class="copy">One spray at the wrist, at the hour the light drops.</p></div>
+    </div>
+  </section>
+  <section>
+    <h2>Deep violet</h2>
+    <div class="row">
+      <div class="card"><div class="ph"></div><p class="nm">Afterglow</p><p class="pr">$180</p></div>
+      <div class="card"><p class="kicker">Journal</p><p class="copy">Night let in through an open window.</p></div>
+      <div class="card"><p class="kicker">Stockists</p><p class="copy">Find it in person.</p></div>
+    </div>
+  </section>
+  <section style="min-height:60vh"></section>
+</main>
+
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from "three";
+
+/**
+ * EmberEngine, after StylizedShadowEngine: same shape (constructor, init, setupListeners,
+ * onWindowResize, animate, dispose, getFragmentShader), with the box swapped for a heat field
+ * the cursor writes into. The surface keeps the water button's look; the colour is the fall's.
+ */
+class EmberEngine {
+  constructor(container, options = {}) {
+    this.container = container;
+    this.options = {
+      stops: [[0, "#D8B260"], [.30, "#BC6F4C"], [.60, "#893A50"], [.84, "#341D5E"], [.95, "#080808"], [.972, "#080808"], [.994, "#BF15B7"], [1, "#BF15B7"]],
+      holdMs: 600,           // a short linger, still fading slowly
+      decayMoving: .955, decayHold: .985, decayFade: .93,  // a slow trail tapers to a line
+      coastMax: 8,           // px per frame: the fastest the head coasts, so a flick does not slide it far
+      stopDetect: .034,      // seconds without movement that count as a stop
+      trailVis: .58,         // where the tail visibly ends while moving: .955 per frame falls to the .2 threshold at .58 s
+      ...options
+    };
+    this.reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.coarse = matchMedia("(pointer: coarse)").matches;
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
+    this.clock = new THREE.Clock();
+    this.E = { shrink: 1, x: innerWidth / 2, y: innerHeight * .6, vx: 0, vy: 0, heat: 0, moved: 0, lastMove: -1e9 };
+    this.init();
+  }
+
+  init() {
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer.setSize(innerWidth, innerHeight);
+    this.container.appendChild(this.renderer.domElement);
+    this.makeTargets();
+    // seed velocity at its zero (0.5)
+
+    const vs = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position, 1.0); }`;
+    const geo = new THREE.PlaneGeometry(2, 2);
+    this.sim = new THREE.ShaderMaterial({
+      uniforms: { uField: { value: null }, uPos: { value: new THREE.Vector2() }, uPrev: { value: new THREE.Vector2() }, uVel: { value: new THREE.Vector2() },
+                  uAmt: { value: 0 }, uAsp: { value: 1 }, uDecay: { value: .93 }, uDecayHead: { value: .9 },
+                  uAge: { value: null }, uSince: { value: 0 }, uCut: { value: -1 } },
+      vertexShader: vs, fragmentShader: this.getSimShader() });
+    // the age field: seconds since the ember last passed each point, so the stop can run the tail into the head
+    this.ageSim = new THREE.ShaderMaterial({
+      uniforms: { uAge: { value: null }, uPos: { value: new THREE.Vector2() }, uPrev: { value: new THREE.Vector2() }, uAmt: { value: 0 }, uAsp: { value: 1 }, uDt: { value: 0 } },
+      vertexShader: vs, fragmentShader: `
+        uniform sampler2D uAge; uniform vec2 uPos, uPrev; uniform float uAmt, uAsp, uDt; varying vec2 vUv;
+        // r: age in seconds, interpolated along each frame's segment so it runs smoothly down the path
+        // g: distance from the path's centre line; b: speed when written. Together they give the end a rounded cap.
+        void main(){ vec4 A = texture2D(uAge, vUv); float a = min(A.r + uDt, 30.);
+          vec2 pa = uPrev, pb = uPos, p = vUv; pa.x *= uAsp; pb.x *= uAsp; p.x *= uAsp; vec2 ab = pb - pa; float len = length(ab);
+          float kr = dot(p - pa, ab) / max(len * len, 1e-8), k = clamp(kr, 0., 1.); vec2 d = p - (pa + ab * k);
+          if (uAmt > .02 && dot(d, d) < .0066 && (kr > 0. || len < 1e-4)) { float na = uDt * (1. - k);
+            if (na <= a) { a = na; A.g = length(d); A.b = len / max(uDt, 1e-3); } }
+          gl_FragColor = vec4(a, A.g, A.b, 1.); }` });
+    this.ageScene = new THREE.Scene(); this.ageScene.add(new THREE.Mesh(geo, this.ageSim));
+    this.material = new THREE.ShaderMaterial({
+      uniforms: { uField: { value: null }, uTime: { value: 0 }, uScroll: { value: 0 }, uVh: { value: innerHeight },
+                  uDoc: { value: 1 }, uAsp: { value: 1 }, uHead: { value: new THREE.Vector2(.5, .5) }, uHeat: { value: 0 }, uAge: { value: null }, uSince: { value: 0 }, uCut: { value: -1 }, uRip: { value: 1 }, uResolution: { value: new THREE.Vector2(innerWidth, innerHeight) } },
+      vertexShader: vs, fragmentShader: this.getFragmentShader() });
+    this.simScene = new THREE.Scene(); this.simScene.add(new THREE.Mesh(geo, this.sim));
+    this.scene.add(new THREE.Mesh(geo, this.material));
+    this.cards = [...document.querySelectorAll(".card")];
+    this.texts = [...document.querySelectorAll("main h1, main h2, main .copy, main .kicker, .card .nm, .card .pr")];
+    this.texts.forEach(t => t.classList.add("lit"));
+    this.setupListeners();
+    this.animate();
+  }
+
+  setupListeners() {
+    const E = this.E; let lx = null, ly = null, ls = scrollY;
+    addEventListener("resize", () => this.onWindowResize());
+    addEventListener("pointermove", e => { if (e.pointerType === "touch") return;
+      if (lx !== null) { E.vx = e.clientX - lx; E.vy = e.clientY - ly; E.moved += Math.hypot(E.vx, E.vy); }
+      lx = E.x = e.clientX; ly = E.y = e.clientY; }, { passive: true });
+    // phones: scroll speed stands in for cursor speed; the ember sits at the last touch
+    addEventListener("touchstart", e => { const t = e.touches[0]; E.x = t.clientX; E.y = t.clientY; }, { passive: true });
+    addEventListener("scroll", () => { const d = scrollY - ls; ls = scrollY;
+      if (this.coarse || lx === null) { E.vx = 0; E.vy = -d; E.moved += Math.abs(d) * .8; } }, { passive: true });
+  }
+
+  // the field is a quarter of the viewport on each axis, at least 360 x 225, half-float and linearly filtered
+  makeTargets() {
+    [this.rtA, this.rtB, this.agA, this.agB].forEach(t => t && t.dispose());
+    const W = Math.max(360, Math.round(innerWidth / 4)), H = Math.max(225, Math.round(innerHeight / 4));
+    const rt = () => new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false });
+    this.rtA = rt(); this.rtB = rt(); this.agA = rt(); this.agB = rt();
+    this.renderer.setClearColor(new THREE.Color(0, 0, .5), .5);
+    this.renderer.setRenderTarget(this.rtA); this.renderer.clear(); this.renderer.setRenderTarget(this.rtB); this.renderer.clear();
+    this.renderer.setClearColor(new THREE.Color(1, 1, 1), 1);   // age starts old
+    this.renderer.setRenderTarget(this.agA); this.renderer.clear(); this.renderer.setRenderTarget(this.agB); this.renderer.clear();
+    this.renderer.setRenderTarget(null); this.renderer.setClearColor(0x080808, 1);
+  }
+
+  onWindowResize() {
+    this.renderer.setSize(innerWidth, innerHeight); this.makeTargets();
+    this.material.uniforms.uResolution.value.set(innerWidth, innerHeight);
+  }
+
+  fallAt(t) { const S = this.options.stops; t = Math.min(1, Math.max(0, t));
+    const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+    for (let i = 1; i < S.length; i++) if (t <= S[i][0]) { const a = rgb(S[i - 1][1]), b = rgb(S[i][1]), k = (t - S[i - 1][0]) / (S[i][0] - S[i - 1][0] || 1);
+      return a.map((v, j) => v + (b[j] - v) * k); } return rgb(S[S.length - 1][1]); }
+
+  lightCards() {
+    const E = this.E, X = E.cx ?? E.x, Y = E.cy ?? E.y, docH = document.documentElement.scrollHeight;
+    const base = this.fallAt((scrollY + Y) / docH), l = .2126 * base[0] + .7152 * base[1] + .0722 * base[2];
+    const c = base.map(v => Math.round(Math.min(255, Math.max(0, l + (v - l) * 2.2 + 40)))).join(",");
+    for (const el of this.cards) { const r = el.getBoundingClientRect(); if (r.bottom < -200 || r.top > innerHeight + 200) continue;
+      // nearest point of the card to the ember: light falls off from there along the rim, like a real source
+      const nx = Math.max(r.left, Math.min(X, r.right)), ny = Math.max(r.top, Math.min(Y, r.bottom)), d = Math.hypot(X - nx, Y - ny);
+      const target = Math.min(1, 1.3 * E.heat / (1 + (d / 140) ** 2));
+      el._li = (el._li || 0) + (target - (el._li || 0)) * .12;      // eased, so it brightens and dims like light, not a switch
+      el.style.setProperty("--li", el._li.toFixed(3));
+      el.style.setProperty("--px", (X - r.left).toFixed(0) + "px"); el.style.setProperty("--py", (Y - r.top).toFixed(0) + "px");
+      el.style.setProperty("--rr", (156 + 156 * E.heat).toFixed(0) + "px");   // 40% tighter than v16
+      el.style.setProperty("--ec", c); }
+    for (const el of this.texts) { const r = el.getBoundingClientRect(); if (r.bottom < -200 || r.top > innerHeight + 200) continue;
+      const nx = Math.max(r.left, Math.min(X, r.right)), ny = Math.max(r.top, Math.min(Y, r.bottom)), dx = X - nx, dy = Y - ny, d = Math.hypot(dx, dy);
+      const target = Math.min(1, 1.3 * E.heat / (1 + (d / 140) ** 2));
+      el._li = (el._li || 0) + (target - (el._li || 0)) * .12;
+      const cx = X - (r.left + r.width / 2), cy = Y - (r.top + r.height / 2), cd = Math.hypot(cx, cy) || 1;
+      el.style.setProperty("--tl", el._li.toFixed(3)); el.style.setProperty("--ec", c);
+      el.style.setProperty("--tx", (cx / cd * 1.5).toFixed(2) + "px"); el.style.setProperty("--ty", (cy / cd * 1.5).toFixed(2) + "px"); }
+  }
+
+  animate() {
+    this.animationId = requestAnimationFrame(() => this.animate());
+    const E = this.E, o = this.options, now = performance.now();
+    if (this.reduced) { E.moved = Math.max(E.moved, 30); }       // one ember, held, no trail
+    const dt = Math.min(.1, (now - (this.lastT || now)) / 1000); this.lastT = now;
+    const amt = Math.min(1, E.moved / 60); if (E.moved > 2) E.lastMove = now; E.moved = 0;
+    const since = now - E.lastMove, moving = since < o.stopDetect * 1000, hold = since < o.holdMs || this.reduced;
+    if (moving && !this.wasMoving) E.strokeStart = now; this.wasMoving = moving;
+    E.heat = Math.min(1, E.heat * (moving ? .992 : Math.pow(.965, dt * 60)) + amt * .5);   // the card light cools with the body
+    const su = this.sim.uniforms;
+    su.uField.value = this.rtA.texture; su.uPrev.value.copy(su.uPos.value);
+    su.uVel.value.set(Math.max(-1, Math.min(1, E.vx / 40)), Math.max(-1, Math.min(1, -E.vy / 40)));
+    su.uAsp.value = innerWidth / innerHeight;
+    // once the cursor stops, the shape holds at full width while its tail end runs forward along the path into the head,
+    // like the statue's smear; the cut is eased over dissolveMs and nothing breaks off. Then the field is cleared.
+    // the tail end sits at a fixed age behind the cursor while moving; after the last move it keeps running forward
+    // at the same pace (one second of age per second), so there is no pause between moving and dissolving
+    const stopS = since / 1000, stroke = (E.lastMove - (E.strokeStart || E.lastMove)) / 1000 + .05;
+    // the head: while moving it is the cursor; after the stop it coasts on with the speed it had, and settles
+    if (E.cx === undefined) { E.cx = E.x; E.cy = E.y; E.cvx = 0; E.cvy = 0; }
+    // one stop, one time T. The head's speed falls steadily to zero at T; the tail end leaves where the moving taper
+    // ended, at the pace it had (one second of age per second), and is timed to reach the head at T. They meet and go out.
+    const c0 = Math.min(o.trailVis, stroke), T = .25 + .75 * c0;   // about .7 s after a full trail: long enough that the tail end gathers pace gently
+    let coastAmt = 0;
+    if (moving) { if (amt > 0) { E.cvx = E.cvx * .5 + (E.x - E.cx) * .5; E.cvy = E.cvy * .5 + (E.y - E.cy) * .5; }   // speed only from frames that moved
+      E.cx = E.x; E.cy = E.y; E.coast = null; }
+    else { if (!E.coast) { const m = Math.hypot(E.cvx, E.cvy), q = m > o.coastMax ? o.coastMax / m : 1; E.coast = { x: E.cx, y: E.cy, vx: E.cvx * q, vy: E.cvy * q }; }
+      const C = E.coast, Tc = Math.max(.05, T - o.stopDetect), tc = Math.min(Tc, Math.max(0, stopS - o.stopDetect));
+      const d = (tc - tc * tc / (2 * Tc)) * 60, left = 1 - tc / Tc;           // distance so far in frames of the starting speed
+      E.cx = C.x + C.vx * d; E.cy = C.y + C.vy * d; coastAmt = Math.min(1, Math.hypot(C.vx, C.vy) * left / 10); }
+    // the cut, in age at the stop: starts at c0 falling at 1 per second, reaches -T (the head's last position) at T
+    const cut = moving ? -100 : c0 - stopS - (c0 / (T * T)) * stopS * stopS, f = moving || stopS < T + .06 ? 0 : 1;
+    su.uDecayHead.value = moving ? Math.pow(.935, dt * 60) : (f < 1 ? 1 : 0);   // held while the tail runs in, cleared after
+    su.uDecay.value = moving ? Math.pow(o.decayMoving, dt * 60) : (f < 1 ? 1 : 0);
+    su.uPos.value.set(E.cx / innerWidth, 1 - E.cy / innerHeight); su.uAmt.value = this.reduced ? .25 : (moving ? amt : (coastAmt > .02 ? coastAmt : 0));
+    su.uAge.value = this.agA.texture; su.uSince.value = stopS; su.uCut.value = cut;
+    this.renderer.setRenderTarget(this.rtB); this.renderer.render(this.simScene, this.camera);
+    [this.rtA, this.rtB] = [this.rtB, this.rtA];
+    const ag = this.ageSim.uniforms; ag.uAge.value = this.agA.texture; ag.uPos.value.copy(su.uPos.value); ag.uPrev.value.copy(su.uPrev.value);
+    ag.uAmt.value = su.uAmt.value; ag.uAsp.value = su.uAsp.value; ag.uDt.value = dt;
+    this.renderer.setRenderTarget(this.agB); this.renderer.render(this.ageScene, this.camera);
+    [this.agA, this.agB] = [this.agB, this.agA];
+    const u = this.material.uniforms;
+    u.uField.value = this.rtA.texture; u.uTime.value = this.clock.getElapsedTime(); u.uScroll.value = scrollY;
+    u.uHead.value.set(E.cx / innerWidth, 1 - E.cy / innerHeight); u.uHeat.value = 1; u.uAge.value = this.agA.texture; u.uSince.value = stopS; u.uCut.value = cut; u.uRip.value = moving ? 1 : Math.pow(Math.max(0, 1 - stopS / T), 2);
+    u.uVh.value = innerHeight; u.uDoc.value = document.documentElement.scrollHeight; u.uAsp.value = innerWidth / innerHeight;
+    this.renderer.setRenderTarget(null); this.renderer.render(this.scene, this.camera);
+    this.lightCards(); E.vx *= .6; E.vy *= .6;
+  }
+
+  dispose() { cancelAnimationFrame(this.animationId); [this.rtA, this.rtB, this.agA, this.agB].forEach(t => t.dispose()); this.renderer.dispose(); this.scene.clear(); }
+
+  // heat (r, fast), residue glow (g, slow), velocity (ba, centred on .5)
+  getSimShader() { return `
+    uniform sampler2D uField; uniform vec2 uPos, uPrev, uVel; uniform float uAmt, uAsp, uDecay, uDecayHead, uSince, uCut; uniform sampler2D uAge; varying vec2 vUv;
+    void main(){ vec4 o = texture2D(uField, vUv); vec2 v = (o.ba - .5) * 2.;
+      o = texture2D(uField, vUv - v * .003); v = (o.ba - .5) * 2. * .9;   // a light drift, so the body is not smeared away
+      float h = o.r * uDecay, g = o.g * uDecayHead;
+      if (uCut > -50. && texture2D(uAge, vUv).r - uSince > uCut + .04) { h = 0.; g = 0.; }
+      vec2 a = uPrev, b = uPos, p = vUv; a.x *= uAsp; b.x *= uAsp; p.x *= uAsp; vec2 ab = b - a;
+      float k = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0., 1.); vec2 d = p - (a + ab * k); float on = uAmt > .02 ? clamp(.65 + uAmt, 0., 1.) : 0.;
+      float s = exp(-dot(d, d) / .00035) * on;          // the tail: a thin line
+      float sh = exp(-dot(d, d) / .0022) * on;           // the head: the wider teardrop, as in v8   // any movement lights it; speed adds heat
+      h = max(h, min(1., s)); g = min(1., g + sh * 1.3);   // the head builds as in v8, so it reads as the same teardrop v = clamp(v + uVel * sh, -1., 1.);   // no build-up, so older trail is cooler and thinner
+      gl_FragColor = vec4(h, g, v * .5 + .5); }`; }
+
+  getFragmentShader() { return `
+    uniform sampler2D uField; uniform float uTime, uScroll, uVh, uDoc, uAsp, uHeat; uniform vec2 uResolution, uHead; varying vec2 vUv;
+    // the head: a round body at the cursor; the field behind it is the thin tail
+    // the head layer is read scaled about the cursor, so as uHeat goes 1 to 0 the head shrinks away into it
+    // once the cursor stops, the head is clipped to a band around the tail's centre line that narrows as uK falls,
+    // so the head thins and tapers the way the tail does (its older, cooler rear first), then fades with it
+    uniform sampler2D uAge; uniform float uSince, uCut, uRip;
+    // after a stop, heat fades out where the trail is older than the cut, so the tail end runs into the head;
+    // the heat is highest on the centre line, so the cut end comes out rounded
+    float heat(vec2 p){ vec4 f = texture2D(uField, p); return max(f.r, f.g); }
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise3d(vec3 p){ vec3 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+      return mix(mix(mix(hash(i.xy + i.z), hash(i.xy + vec2(1,0) + i.z), f.x),
+                     mix(hash(i.xy + vec2(0,1) + i.z), hash(i.xy + vec2(1,1) + i.z), f.x), f.y),
+                 mix(mix(hash(i.xy + i.z + 1.0), hash(i.xy + vec2(1,0) + i.z + 1.0), f.x),
+                     mix(hash(i.xy + vec2(0,1) + i.z + 1.0), hash(i.xy + vec2(1,1) + i.z + 1.0), f.x), f.y), f.z); }
+    vec3 c(float r, float g, float b){ return vec3(r, g, b) / 255.; }
+    vec3 fall(float t){ t = clamp(t, 0., 1.);
+      if (t < .30) return mix(c(216.,178.,96.), c(188.,111.,76.), t / .30);
+      if (t < .60) return mix(c(188.,111.,76.), c(137.,58.,80.), (t - .30) / .30);
+      if (t < .84) return mix(c(137.,58.,80.), c(52.,29.,94.), (t - .60) / .24);
+      if (t < .95) return mix(c(52.,29.,94.), c(8.,8.,8.), (t - .84) / .11);
+      if (t < .972) return c(8.,8.,8.);
+      return mix(c(8.,8.,8.), c(191.,21.,183.), clamp((t - .972) / .022, 0., 1.)); }
+    void main(){
+      vec4 o = texture2D(uField, vUv); float h = heat(vUv); vec2 v = (o.ba - .5) * 2.;
+      vec2 sp = vUv * vec2(uAsp, 1.);
+      // the stop: a clean cut that runs from the tail end into the head. Its own edge, anti-aliased, with no outline on it;
+      // cooler edges are cut a little earlier than the centre line, so the end comes out rounded, like the statue's
+      float cutA = 1.;
+      if (uCut > -50.) { vec4 A = texture2D(uAge, vUv);
+        float a0 = A.r - uSince + min(.3, A.g * A.g / (2. * .07 * max(A.b, .05)));   // a rounded cap: the sides go a little before the centre line
+        float w = max(fwidth(a0) * 1.5, .004); cutA = 1. - smoothstep(uCut - w, uCut + w, a0); }
+      // the water button's three layers on the ember (its scales; the liquid keeps our finer span)
+      float thr = .2 + (noise3d(vec3(sp * 30., uTime * 4.)) - .5) * .05;  // 3. surface jitter: scale 30, fast
+      // 2. the liquid, as lava-lamp light: large soft globs, warped into each other and drifting upward
+      vec2 lp = sp * 19. + vec2(0., -uTime * .49);                    // small globs, same drift on screen
+      float w1 = noise3d(vec3(lp, uTime * .22));
+      float lv = noise3d(vec3(lp * 1.15 + vec2(w1 * 1.6, w1 * 1.1), uTime * .3 + 5.));
+      float ink = smoothstep(.60, .74, lv);                              //    small, sparse bright globs on a warm melt
+      float oj = (noise3d(vec3(sp * 80., 0.)) - .5) * .06;               // 4. outline jitter: scale 80, still
+      vec2 dh = vec2(heat(vUv + vec2(.006, 0.)) - heat(vUv - vec2(.006, 0.)), heat(vUv + vec2(0., .006)) - heat(vUv - vec2(0., .006)));
+      // edge ripple: in a band just outside the silhouette, rings run outward and displace the ground
+      vec2 hd = vUv - uHead; hd.x *= uAsp;
+      float near = smoothstep(.015, thr, h) * (1. - smoothstep(thr, thr + .03, h)) * exp(-dot(hd, hd) / .006) * uRip;   // at the head only; fades out with the stop
+      float ring = sin(h * 90. - uTime * 9.);
+      vec2 q = vUv + normalize(dh + 1e-5) * ring * near * .045 - v * .07;
+      vec3 base = fall((uScroll + (1. - q.y) * uVh) / uDoc);
+      vec3 col = base * (1. + ring * near * .26);
+      { float lb = dot(col, vec3(.2126, .7152, .0722)); col = clamp(lb + (col - lb) * (1. + near * 1.4), 0., 1.); }   // the ripple intensifies the page's chroma where it runs                     // the rings catch the light as they bend it
+      // the ember, and its tail, at full intensity: the tail is the same body, cooling thinner
+      float hi = max(h, .75), l = dot(base, vec3(.2126, .7152, .0722));
+      vec3 hot = clamp(l + (base - l) * (1. + 3.4 * hi), 0., 1.);
+      float hs = h - ink * .035;                                         // 2. the liquid also bumps the shape: ink waves on the silhouette
+      // the edge in screen distance: heat over its slope, so jitter and bumps move it by pixels, never by fragments
+      float G = max(length(dh) / .012, .5);
+      float sd = (h - .2) / G + (thr - .2) / G * 0. + (noise3d(vec3(sp * 30., uTime * 4.)) - .5) * .003 - ink * .0025;
+      float aa = fwidth(sd);
+      float body = smoothstep(-aa, aa + .002, sd);
+      body *= cutA;
+      vec3 nrm = normalize(vec3(-dh * 9., 1.));
+      float diff = dot(nrm, normalize(vec3(2., 4., 5.)));
+      float fd = max(fwidth(diff), 1e-4);                                 // the bands keep their values, edges smoothed over a pixel
+      float cel = smoothstep(.1 - fd, .1 + fd, diff) * .4 + smoothstep(.5 - fd, .5 + fd, diff) * .5 + .1;
+      // the liquid at a wider span: finer blobs and a second octave, so more of the map shows
+      vec3 core = mix(hot, vec3(1.), .26) * 1.06;                        // the globs run toward white heat
+      vec3 liquid = mix(hot * .93, core, ink);                            // both tones are light: a dimmer melt and the bright globs
+      vec3 glow = core * pow(lv, 3.) * .9;                               // internal glow, softer
+      float fres = pow(1. - nrm.z, 3.);
+      vec3 rim = hot * .6 * fres * 2.5;                                   // edge glow
+      vec3 emb = liquid * cel + glow + rim;
+      float edge = max(smoothstep(thr + .02 + oj, thr + .09 + oj, hs),     // the heat-based outline, thickening as it cools,
+                       smoothstep(.0035, .0060, sd));                     // but never wider than about 5 px        // marker outline, its width varied by 4
+      emb = mix(vec3(.03), emb, edge) + rim * .6;
+      col = mix(col, emb, body);
+      gl_FragColor = vec4(clamp(col, 0., 1.), 1.); }`; }
+}
+
+try { window.ember = new EmberEngine(document.getElementById("ember")); }
+catch (err) { console.warn("ember fallback", err); document.body.style.background = "linear-gradient(180deg,#D8B260,#BC6F4C 30%,#893A50 60%,#341D5E 84%,#080808 95%)"; }
+</script>
+</body>
+</html>
