@@ -115,9 +115,10 @@ export class EmberEngine {
     // late images and fonts change the document's height: the ground is re-baked so colours stay aligned
     if (window.ResizeObserver) {
       let h = document.documentElement.scrollHeight;
-      this.ro = new ResizeObserver(() => { const n = document.documentElement.scrollHeight; if (n !== h) { h = n; this.rebakeGround(); } });
+      this.ro = new ResizeObserver(() => { const n = document.documentElement.scrollHeight; if (n !== h) { h = n; this.rebakeGround(); this.collectLit(); } });
       this.ro.observe(document.body); this.ro.observe(document.documentElement);
     }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!this.disposed) this.collectLit(); });
     this.renderer.domElement.addEventListener("webglcontextlost", e => { e.preventDefault(); this.lose(); }, false);
   }
 
@@ -147,8 +148,7 @@ export class EmberEngine {
     // a phone toolbar showing or hiding resizes the window mid-scroll; the trail survives unless the field must change
     const [fw, fh] = fieldSize(this.W, this.H);
     if (fw !== this.fieldW || fh !== this.fieldH) this.makeTargets();
-    clearTimeout(this.rebakeT); this.rebakeT = setTimeout(() => this.rebakeGround(), 100);
-    this.collectLit();
+    clearTimeout(this.rebakeT); this.rebakeT = setTimeout(() => { this.rebakeGround(); this.collectLit(); }, 100);
     this.dirty = true; this.wake();
   }
 
@@ -171,7 +171,14 @@ export class EmberEngine {
     return [this.groundPx[i], this.groundPx[i + 1], this.groundPx[i + 2]];
   }
 
-  collectLit() { this.lit = this.options.lit ? [...document.querySelectorAll(this.options.lit)] : []; this.lit.forEach(el => { el._li = el._li || 0; }); }
+  // what catches the light, and where each piece sits in the document. Positions are measured here, on load, resize
+  // and height changes, never per frame, so lighting every element on a long page costs no layout.
+  collectLit() {
+    this.lit = this.options.lit ? [...document.querySelectorAll(this.options.lit)] : [];
+    const sx = scrollX, sy = scrollY;
+    this.litBoxes = this.lit.map(el => { el._li = el._li || 0; const r = el.getBoundingClientRect();
+      return { l: r.left + sx, t: r.top + sy, r: r.right + sx, b: r.bottom + sy, w: r.width }; });
+  }
 
   wake() { if (!this.raf && !this.paused && !this.disposed && !this.failed) this.raf = requestAnimationFrame(t => this.tick(t)); }
 
@@ -281,12 +288,12 @@ export class EmberEngine {
   // whether any light is still moving. All reads come before all writes, so the page lays out once per frame.
   lightElements() {
     if (!this.lit.length) return false;
-    const E = this.E, X = E.cx, Y = E.cy;
+    const t0 = performance.now(), E = this.E, X = E.cx, Y = E.cy, sx = scrollX, sy = scrollY;
     const c = emberColour(this.groundRGB(Y)).join(",");
-    const boxes = this.lit.map(el => el.getBoundingClientRect());
     let active = false;
     for (let i = 0; i < this.lit.length; i++) {
-      const el = this.lit[i], r = boxes[i];
+      const el = this.lit[i], B = this.litBoxes[i];
+      const r = { left: B.l - sx, top: B.t - sy, right: B.r - sx, bottom: B.b - sy, width: B.w, height: B.b - B.t };
       if (r.bottom < -200 || r.top > this.H + 200 || !r.width) { if (el._li) { el._li = 0; el.style.setProperty("--li", "0"); } continue; }
       const nx = Math.max(r.left, Math.min(X, r.right)), ny = Math.max(r.top, Math.min(Y, r.bottom));
       const target = lightTarget(E.heat, Math.hypot(X - nx, Y - ny));
@@ -301,6 +308,7 @@ export class EmberEngine {
       s.setProperty("--tx", (cx / cd * 1.5).toFixed(2) + "px"); s.setProperty("--ty", (cy / cd * 1.5).toFixed(2) + "px");
       s.setProperty("--ec", c);
     }
+    this.lightMs = performance.now() - t0;
     return active || E.heat > .002;
   }
 

@@ -195,7 +195,7 @@ def ember_page(pg, style, ink):
             f'<div class="ph"><h2 class="t">The ember</h2>'
             f'<p class="lead">The one accent of contrast. It follows the cursor in the colour of the page beneath it, '
             f'and goes out when the cursor stops.</p>'
-            f'<p class="lead">Panels and type catch its light on the side facing it. Nothing is cast.</p>'
+            f'<p class="lead">Type, panels, colour and photographs catch its light on the side facing it. Nothing is cast.</p>'
             f'<figure class="efig"><img src="{EMBER_IMG}" alt="A hand lit by one streak of warm light"></figure>'
             f'<p class="never">Never a shadow, a dark pattern, a piece that breaks off, a stepped edge, or a page that '
             f'needs it to render.</p></div>'
@@ -408,9 +408,12 @@ B_CSS = f"""
 """
 
 # ---- the ember (spec 2026-10-11-afterglow-ember-design.md, option 1): one engine behind every sheet ----
-EMBER_LIT = ".panel, .wtile, .pcard, .plabel, .pposter, h2.t, .lead, .stagename, .adbig, .vbig, .fwm2, .tri > span"
-EMBER_CARDS = ".panel, .wtile, .pcard, .plabel, .pposter"
-EMBER_TEXT = "h2.t, .lead, .stagename, .adbig, .vbig, .fwm2, .tri > span"
+# Everything reacts (Aaron, 11 Oct): every surface takes a rim and a glow, every piece of text an edge light.
+# Inline runs (b, em) and the small chips take their parent's light. The cover keeps its own photograph and shade.
+EMBER_CARDS = ".deck .sheet:not(.bcover) :is(.panel, .wtile, .sw, .appbody, .appimg, .pcard, .plabel, .pposter, .fallband, .step, figure)"
+EMBER_TEXT = (".deck .sheet:not(.bcover) :is(h2, h3, p, li, dt, dd, th, td, figcaption, a, .foot span, .wspec, .wpill, .pill, "
+              ".tlab, .tsamp, .tnum, .stageread, .btn, .pwm, .wmtext, .pfine, .tri > span)")
+EMBER_LIT = EMBER_CARDS + ", " + EMBER_TEXT
 EMBER_CSS = f"""
   /* the ember: a canvas behind the sheets that draws every sheet's ground once it has drawn its first frame */
   #ember{{position:fixed;inset:0;z-index:0;pointer-events:none}}
@@ -419,15 +422,15 @@ EMBER_CSS = f"""
   @media screen{{.ember-on .sheet:not(.bcover){{background:transparent!important}}}}
   @media print{{#ember{{display:none}}}}
   /* what it lights (spec 2.7): a 2px rim brightest at the edge nearest it, a faint wash, a 24px glow. Nothing is cast. */
-  {EMBER_CARDS.replace(", ", ",")},{EMBER_TEXT.replace(", ", ",")}{{--li:0;--ec:216,178,96;--px:50%;--py:-200px;--rr:312px;--tx:0px;--ty:0px}}
+  {EMBER_CARDS},{EMBER_TEXT}{{--li:0;--ec:216,178,96;--px:50%;--py:-200px;--rr:312px;--tx:0px;--ty:0px}}
   :where({EMBER_CARDS}){{position:relative}}
-  :is({EMBER_CARDS})::before{{content:"";position:absolute;inset:0;pointer-events:none;border:2px solid transparent;
+  {EMBER_CARDS}::before{{content:"";position:absolute;inset:0;pointer-events:none;border:2px solid transparent;
     border-image:radial-gradient(circle var(--rr) at var(--px) var(--py),rgba(var(--ec),var(--li)) 0%,rgba(var(--ec),calc(.45 * var(--li))) 45%,rgba(var(--ec),calc(.1 * var(--li))) 90%,transparent 100%) 1}}
-  :is({EMBER_CARDS})::after{{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  {EMBER_CARDS}::after{{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
     background:radial-gradient(circle var(--rr) at var(--px) var(--py),rgba(var(--ec),calc(.2 * var(--li))),rgba(var(--ec),calc(.05 * var(--li))) 45%,transparent 75%);
     box-shadow:0 0 24px rgba(var(--ec),calc(.32 * var(--li)))}}
-  :is({EMBER_TEXT}){{text-shadow:var(--tx) var(--ty) 0 rgba(var(--ec),calc(.9 * var(--li))),0 0 10px rgba(var(--ec),calc(.35 * var(--li)))}}
-  @media print{{:is({EMBER_CARDS})::before,:is({EMBER_CARDS})::after{{display:none}}:is({EMBER_TEXT}){{text-shadow:none}}}}
+  {EMBER_TEXT}{{text-shadow:var(--tx) var(--ty) 0 rgba(var(--ec),calc(.9 * var(--li))),0 0 10px rgba(var(--ec),calc(.35 * var(--li)))}}
+  @media print{{{EMBER_CARDS}::before,{EMBER_CARDS}::after{{display:none}}{EMBER_TEXT}{{text-shadow:none}}}}
 """
 # The ground under a point is the innermost sheet (or [data-ground]) there, read from its own inline gradient.
 GUIDE_JS = """
@@ -560,8 +563,6 @@ COPY = [
     # the one rule (spec 4): the ember is where the light brightens; states still deepen
     ("No state change brightens.", "The light only brightens where the ember is."),
     ("Hover, focus and active deepen or shift hue and never lighten.", "Hover, focus and active states still deepen and never lighten."),
-    ("Exposure is lifted at capture or the frame is not used.",
-     "Exposure is lifted at capture or the frame is not used. The ember never lights a photograph."),
     # chroma (spec 4)
     ('<p class="fine2">Each ratio is the contrast',
      '<p class="fine2">Chroma is flat at 0.110 on every stage. The ember is the one exception, an accent of contrast that '

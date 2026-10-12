@@ -146,7 +146,7 @@ Options that differ by host:
 | Option | Shopify homepage | Brand guide (option 1, chosen) |
 |---|---|---|
 | `colourAt(x, y)` | The fall over the whole document: gold 0%, after gold 30%, rose 60%, deep violet 84%, #080808 95–97.2%, magenta #BF15B7 99.4%. | The ground of the sheet under the point, read from that sheet's own gradient. |
-| `lit` | Product cards, section headings, body copy and prices. | Panels, tiles, headings, leads and body copy. |
+| `lit` | Product cards, section headings, body copy and prices. | Everything on every sheet but the cover (Aaron, 11 Oct): panels, tiles, colour swatches, product mockups, the fall band and photographs take the rim and glow; every piece of text takes the edge light. |
 | `stops` and timing | Shared defaults (§2). | Shared defaults (§2). |
 
 **Guide wiring (option 1, chosen).** The sheets become transparent, and the engine draws every sheet's ground from its colour source. Each sheet's gradient is read once from the page at start-up and on resize, and the canvas draws it under the content. The page is still complete without the engine: when the engine has not started, has failed, or WebGL is unavailable, the sheets keep their own CSS grounds. Grounds are only made transparent after the engine's first frame has been drawn.
@@ -211,7 +211,7 @@ Options that differ by host:
 | Label line | Across the foot of the field, under a hairline rule of #EEECEA at 22%. It has three parts. Left: "Live", in 11 px uppercase tracked at 0.14 em. Centre: "Move, and it lights. Stop, and in 0.7 seconds it goes out.", in the display serif at 20 px. Right: two 10 px chips with "#321C5B → #5304E4", in 11 px uppercase. |
 | Footer | The guide's standard footer: Motion, with the page number. |
 
-**What catches the light.** The title, the leads, the wordmark, and the three parts of the label line. The photograph is never lit or brightened (§4: photographs are never brightened).
+**What catches the light.** Everything: the title, the leads, the wordmark, the three parts of the label line, and the photograph (Aaron, 11 Oct). The photograph file itself is still never brightened in post (§4).
 
 **Hierarchy.** The eye goes to the wordmark first, then the label line, then the title column. The page uses three type sizes: the wordmark, the title and the 20 px line, with everything else at body or label size.
 
@@ -229,7 +229,7 @@ Options that differ by host:
 - Add a second display element in the field (a black slab, a reading plate, a second heading).
 - Use more than one kicker or label line.
 - Show the rules as a Do and Don't grid.
-- Brighten the photograph, or reuse it elsewhere in the guide.
+- Reuse the photograph elsewhere in the guide, or brighten the file in post.
 - Depend on the ember to explain itself. With the ember off, the page still says what it does.
 
 Adding the page renumbers every later page. Cross-references ("page 03", "page 07") and `tools/check_b1.py` are updated to match.

@@ -69,6 +69,22 @@ with sync_playwright() as p:
     for i, s in enumerate(pg.evaluate(SHEETS)):
         if not s["cover"] and (s["bc"] != "rgba(0, 0, 0, 0)" or s["bi"] != "none"):
             fails.append(f"ember: sheet {i + 1} keeps its ground with ember-on ({s['bc']}, {s['bi'][:40]})")
+    # everything reacts (Aaron, 11 Oct): a photograph, a colour swatch and body text each catch the ember's light
+    pg.evaluate("() => scrollTo(0, document.querySelectorAll('.sheet')[2].offsetTop)"); pg.wait_for_timeout(300)
+    for sel in (".sheet:nth-child(3) .ph figure", ".sheet:nth-child(3) .sw", ".sheet:nth-child(3) .fine2"):
+        b = pg.evaluate(f"() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.bottom]; }}")
+        for i in range(26):
+            pg.mouse.move(b[0] + 30 + (i % 2) * 24, b[1] + 6 + (i % 3) * 4); pg.wait_for_timeout(16)
+        li = pg.evaluate(f"() => +getComputedStyle(document.querySelector('{sel}')).getPropertyValue('--li') || 0")
+        if li <= .4: fails.append(f"everything reacts: {sel} --li {li} beside the ember, want > 0.4")
+        pg.wait_for_timeout(600)
+    n = pg.evaluate("() => ember.lit.length")
+    if n < 400: fails.append(f"everything reacts: only {n} elements are lit")
+    pg.evaluate("() => { window.__lm = 0; const o = ember.onFrame; ember.onFrame = (e, d) => { __lm = Math.max(__lm, e.lightMs || 0); o && o(e, d); }; }")
+    for i in range(40):
+        pg.mouse.move(200 + i * 25, 300 + (i % 5) * 30); pg.wait_for_timeout(16)
+    lm = pg.evaluate("() => __lm")
+    if not lm or lm > 4: fails.append(f"everything reacts: light loop took {lm} ms in a frame, want under 4")
     pg.emulate_media(media="print")
     r = pg.evaluate("() => [getComputedStyle(document.getElementById('ember') || document.body).display, getComputedStyle(document.querySelectorAll('.sheet')[1]).backgroundImage]")
     if r[0] != "none": fails.append("test_print_grounds: #ember prints")
