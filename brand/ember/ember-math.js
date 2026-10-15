@@ -48,3 +48,28 @@ export function emberColour(c) {
   const l = luma(c);
   return c.map(v => Math.round(clamp255(l + (v - l) * 2.2 + 40)));
 }
+
+// ---- matched chroma (Aaron, 12 Oct): the ember lifts the page's lightness in OKLab and keeps its chroma and hue ----
+const toLin = v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; };
+const toSrgb = v => 255 * (v <= .0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - .055);
+function toLab(c) {
+  const [r, g, b] = c.map(toLin);
+  const l = Math.cbrt(.4122214708 * r + .5363325363 * g + .0514459929 * b), m = Math.cbrt(.2119034982 * r + .6806995451 * g + .1073969566 * b),
+        s = Math.cbrt(.0883024619 * r + .2817188376 * g + .6299787005 * b);
+  return [.2104542553 * l + .793617785 * m - .0040720468 * s, 1.9779984951 * l - 2.428592205 * m + .4505937099 * s, .0259040371 * l + .7827717662 * m - .808675766 * s];
+}
+function fromLab([L, a, b]) {
+  const l = (L + .3963377774 * a + .2158037573 * b) ** 3, m = (L - .1055613458 * a - .0638541728 * b) ** 3, s = (L - .0894841775 * a - 1.291485548 * b) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * m + .2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - .3413193965 * s, -.0041960863 * l - .7034186147 * m + 1.707614701 * s];
+}
+export function oklch(c) { const [L, a, b] = toLab(c); return [L, Math.hypot(a, b), (Math.atan2(b, a) * 180 / Math.PI + 360) % 360]; }
+// raise lightness by dL and scale chroma by k (1 keeps it), hue unchanged; where that leaves sRGB, give up lightness, never chroma
+export function lift(c, dL, k = 1) {
+  let [L, a, b] = toLab(c); a *= k; b *= k;
+  const ok = x => fromLab([x, a, b]).every(v => v >= -1e-4 && v <= 1 + 1e-4);
+  let lo = L, hi = L + dL;
+  if (!ok(hi)) { for (let i = 0; i < 24; i++) { const mid = (lo + hi) / 2; if (ok(mid)) lo = mid; else hi = mid; } hi = lo; }
+  return fromLab([hi, a, b]).map(v => Math.round(clamp255(toSrgb(Math.min(1, Math.max(0, v))))));
+}
+// the light the ember casts on cards and text, at the ground's own chroma
+export const emberColourMatched = (c, k = 1) => lift(c, .22, k);

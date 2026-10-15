@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fallAt, fieldSize, decay, stopTime, cutAge, coastSpeed, capOffset, rippleFade,
-         encodeAge, decodeAge, hot, lightTarget, easeLight, emberColour } from './ember-math.js';
+         encodeAge, decodeAge, hot, lightTarget, easeLight, emberColour, oklch, lift, emberColourMatched } from './ember-math.js';
 
 test('fallAt hits each stop', () => { assert.deepEqual(fallAt(0), [216,178,96]); assert.deepEqual(fallAt(.6), [137,58,80]); assert.deepEqual(fallAt(.96), [8,8,8]); assert.deepEqual(fallAt(1), [191,21,183]); });
 test('fallAt clamps', () => { assert.deepEqual(fallAt(-1), fallAt(0)); assert.deepEqual(fallAt(2), fallAt(1)); });
@@ -18,3 +18,26 @@ test('hot keeps the tail at head intensity', () => { assert.deepEqual(hot([154,7
 test('lightTarget', () => { assert.equal(lightTarget(1, 0), 1); assert.ok(Math.abs(lightTarget(1, 140) - .65) < 1e-9); assert.equal(lightTarget(0, 0), 0); });
 test('easeLight moves 12% of the way', () => { assert.ok(Math.abs(easeLight(0, 1) - .12) < 1e-9); });
 test('emberColour is luma plus chroma x2.2, plus 40, clamped', () => { assert.deepEqual(emberColour([8,8,8]), [48,48,48]); assert.deepEqual(emberColour([255,0,0]).map(v => v >= 0 && v <= 255), [true,true,true]); assert.equal(emberColour([255,0,0])[0], 255); });
+
+// matched chroma (Aaron, 12 Oct): the ember lifts the page's lightness and keeps its chroma and hue exactly
+const near = (a, b, tol) => Math.abs(a - b) <= tol;
+test('lift keeps chroma and hue, and raises lightness', () => {
+  for (const c of [[216,178,96], [188,111,76], [137,58,80], [52,29,94]]) {
+    const [L0, C0, h0] = oklch(c), [L1, C1, h1] = oklch(lift(c, .2));
+    assert.ok(near(C1, C0, .006), `chroma ${C0} -> ${C1}`); assert.ok(near(h1, h0, 3), `hue ${h0} -> ${h1}`); assert.ok(L1 > L0 + .08, `L ${L0} -> ${L1}`);
+  }
+});
+test('lift stays in gamut by giving up lightness, never chroma', () => {
+  const out = lift([216,178,96], .4);
+  assert.ok(out.every(v => v >= 0 && v <= 255)); assert.ok(near(oklch(out)[1], oklch([216,178,96])[1], .006));
+});
+test('emberColourMatched has the ground\'s chroma', () => {
+  const c = [137,58,80]; assert.ok(near(oklch(emberColourMatched(c))[1], oklch(c)[1], .006));
+});
+test('lift can scale chroma by k, keeping hue', () => {
+  const c = [137,58,80], [, C0, h0] = oklch(c), [, C1, h1] = oklch(lift(c, .15, 1.6));
+  assert.ok(near(C1, C0 * 1.6, .01), `chroma ${C0} -> ${C1}`); assert.ok(near(h1, h0, 3));
+});
+test('emberColourMatched takes the same scale', () => {
+  const c = [52,29,94]; assert.ok(near(oklch(emberColourMatched(c, 1.6))[1], oklch(c)[1] * 1.6, .012));
+});

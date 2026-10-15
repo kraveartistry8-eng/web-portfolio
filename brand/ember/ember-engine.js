@@ -3,7 +3,7 @@ import {
   WebGLRenderTarget, DataTexture, HalfFloatType, UnsignedByteType, LinearFilter, NearestFilter, RGBAFormat, Color,
 } from "three";
 import * as EmberMath from "./ember-math.js";
-import { fallAt, fieldSize, decay, stopTime, coastSpeed, cutAge, rippleFade, lightTarget, easeLight, emberColour } from "./ember-math.js";
+import { fallAt, fieldSize, decay, stopTime, coastSpeed, cutAge, rippleFade, lightTarget, easeLight, emberColour, emberColourMatched } from "./ember-math.js";
 
 const GROUND_N = 2048;
 
@@ -25,6 +25,8 @@ export class EmberEngine {
       forceByteTargets: false,
       stopDetect: .034,        // seconds without movement that count as a stop
       coastMax: 8,             // px per frame: the fastest the head coasts
+      chroma: "push",
+      chromaScale: 1,          // matched only: the ember's chroma as a multiple of the page's (1 = the same)          // "push": v23, the page's chroma pushed up toward white heat; "match": lightness only, the page's own chroma
       ...options,
     };
     this.onFrame = this.options.onFrame;
@@ -78,7 +80,7 @@ export class EmberEngine {
     this.material = new ShaderMaterial({
       uniforms: { uField: { value: null }, uTime: { value: 0 }, uScroll: { value: 0 }, uVh: { value: this.H }, uDoc: { value: 1 },
                   uAsp: { value: 1 }, uHead: { value: new Vector2(.5, .5) }, uAge: { value: null }, uSince: { value: 0 },
-                  uCut: { value: -100 }, uRip: { value: 1 }, uGround: { value: null }, uFieldSize: { value: new Vector2(1, 1) } },
+                  uCut: { value: -100 }, uRip: { value: 1 }, uMatch: { value: this.options.chroma === "match" ? 1 : 0 }, uCk: { value: this.options.chromaScale }, uGround: { value: null }, uFieldSize: { value: new Vector2(1, 1) } },
       vertexShader: vs, fragmentShader: pre + this.getFragmentShader(), extensions: { derivatives: true } });
     this.simScene = new Scene(); this.simScene.add(new Mesh(geo, this.sim));
     this.ageScene = new Scene(); this.ageScene.add(new Mesh(geo, this.ageSim));
@@ -289,7 +291,7 @@ export class EmberEngine {
   lightElements() {
     if (!this.lit.length) return false;
     const t0 = performance.now(), E = this.E, X = E.cx, Y = E.cy, sx = scrollX, sy = scrollY;
-    const c = emberColour(this.groundRGB(Y)).join(",");
+    const c = (this.options.chroma === "match" ? emberColourMatched(this.groundRGB(Y), this.options.chromaScale) : emberColour(this.groundRGB(Y))).join(",");
     let active = false;
     for (let i = 0; i < this.lit.length; i++) {
       const el = this.lit[i], B = this.litBoxes[i];
@@ -380,7 +382,20 @@ const AGE_SIM_GLSL = `
     gl_FragColor = packAge(vec3(a, A.y, A.z)); }`;
 
 const DISPLAY_GLSL = `
-  uniform sampler2D uField, uAge, uGround; uniform float uTime, uScroll, uVh, uDoc, uAsp, uSince, uCut, uRip; uniform vec2 uHead; varying vec2 vUv;
+  uniform sampler2D uField, uAge, uGround; uniform float uTime, uScroll, uVh, uDoc, uAsp, uSince, uCut, uRip, uMatch, uCk; uniform vec2 uHead; varying vec2 vUv;
+  // matched chroma: colour handled in OKLab, so the ember can lighten or darken the page's colour and keep its chroma and hue
+  vec3 lin(vec3 c){ return mix(c / 12.92, pow((c + .055) / 1.055, vec3(2.4)), step(.04045, c)); }
+  vec3 gam(vec3 c){ c = max(c, 0.); return mix(c * 12.92, 1.055 * pow(c, vec3(1. / 2.4)) - .055, step(.0031308, c)); }
+  vec3 toLab(vec3 c){ vec3 r = lin(c);
+    vec3 m = pow(max(vec3(dot(r, vec3(.4122214708, .5363325363, .0514459929)), dot(r, vec3(.2119034982, .6806995451, .1073969566)),
+                         dot(r, vec3(.0883024619, .2817188376, .6299787005))), 0.), vec3(1. / 3.));
+    return vec3(dot(m, vec3(.2104542553, .793617785, -.0040720468)), dot(m, vec3(1.9779984951, -2.428592205, .4505937099)), dot(m, vec3(.0259040371, .7827717662, -.808675766))); }
+  vec3 labLin(vec3 q){ vec3 m = vec3(q.x + .3963377774 * q.y + .2158037573 * q.z, q.x - .1055613458 * q.y - .0638541728 * q.z, q.x - .0894841775 * q.y - 1.291485548 * q.z); m = m * m * m;
+    return vec3(dot(m, vec3(4.0767416621, -3.3077115913, .2309699292)), dot(m, vec3(-1.2684380046, 2.6097574011, -.3413193965)), dot(m, vec3(-.0041960863, -.7034186147, 1.707614701))); }
+  bool inG(vec3 r){ return all(greaterThanEqual(r, vec3(-.001))) && all(lessThanEqual(r, vec3(1.001))); }
+  vec3 liftL(vec3 c, float d, float k){ vec3 q = toLab(c); q.yz *= k; float lo = q.x, hi = q.x + d;   // out of gamut, it gives up lightness, never chroma
+    if (!inG(labLin(vec3(hi, q.yz)))) { for (int i = 0; i < 8; i++) { float md = .5 * (lo + hi); if (inG(labLin(vec3(md, q.yz)))) lo = md; else hi = md; } hi = lo; }
+    return gam(clamp(labLin(vec3(hi, q.yz)), 0., 1.)); }
   float heat(vec2 p){ vec4 f = texture2D(uField, p); return max(f.r, f.g); }
   float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
   float noise3d(vec3 p){ vec3 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
@@ -412,7 +427,8 @@ const DISPLAY_GLSL = `
     vec2 q = vUv + normalize(dh + 1e-5) * ring * near * .045 - v * .07;
     vec3 base = texture2D(uGround, vec2(.5, clamp((uScroll + (1. - q.y) * uVh) / uDoc, 0., 1.))).rgb;
     vec3 col = base * (1. + ring * near * .26);
-    { float lb = dot(col, vec3(.2126, .7152, .0722)); col = clamp(lb + (col - lb) * (1. + near * 1.4), 0., 1.); }
+    if (uMatch < .5) { float lb = dot(col, vec3(.2126, .7152, .0722)); col = clamp(lb + (col - lb) * (1. + near * 1.4), 0., 1.); }
+    else col = liftL(base, ring * near * .06, 1.);                          // matched: the ripple bends the light, it adds no chroma
     // the ember: the page's colour pushed to high chroma; the tail keeps the head's intensity
     float hi = max(h, .75), l = dot(base, vec3(.2126, .7152, .0722));
     vec3 hot = clamp(l + (base - l) * (1. + 3.4 * hi), 0., 1.);
@@ -435,6 +451,9 @@ const DISPLAY_GLSL = `
     float edge = max(smoothstep(thr + .02 + oj, thr + .09 + oj, hs),   // the marker outline thickens as it cools,
                      smoothstep(.0035, .0060, sd));                     // but is never wider than about 5 px
     emb = mix(vec3(.03), emb, edge) + rim * .6;
+    if (uMatch > .5) {                                                   // matched: every tone is the page's own colour, lighter or darker
+      float dl = .08 + .12 * cel + ink * .10 + pow(lv, 3.) * .10 + fres * .14;
+      emb = mix(liftL(base, -.6, 1.), liftL(base, dl, uCk), edge); }
     col = mix(col, emb, body);
     gl_FragColor = vec4(clamp(col, 0., 1.), 1.); }`;
 
