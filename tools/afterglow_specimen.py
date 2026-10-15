@@ -561,6 +561,9 @@ def build_lite():
     for part in v23:
         assert html.count(part) == 1, f"satin swap: expected one v23 part, found {html.count(part)}: {part.strip()[:60]}"
         html = html.replace(part, "", 1)
+    # Aaron, 15 Oct: "there should be no links on this guide". The two that point at internal documents keep their words
+    html, n_links = re.subn(r"<a\b[^>]*>(.*?)</a>", r"\1", html, flags=re.S)
+    assert n_links == 2, f"expected the two document links, found {n_links}"
     satin = (D.ROOT / "brand/ember/satin/ember-satin.bundle.js").read_text().replace("</script", "<\\/script")
     # over file:// the browser blocks the image and font reads the rasteriser needs (the photographs would draw blank), so
     # the engine stays off there and the native page shows, without the ember

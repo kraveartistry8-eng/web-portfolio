@@ -164,6 +164,13 @@ def test_label_mark_is_dark_on_gold():
     assert "#080808" in label and "#EEECEA" not in label, "spec §2: the mark is #080808 on gold"
 
 
+def test_lite_has_no_links():
+    html = A.build_lite()[0]
+    deck = html[html.index('<main class="deck">'):html.index("</main>")]
+    assert not re.search(r"<a\b", deck), "Aaron, 15 Oct: there are no links on this guide"
+    assert "voice-tone.md" in deck and "the brief" in deck, "the linked words stay"
+
+
 def test_lite_runs_the_satin_not_v23():
     html = A.build_lite()[0]
     assert "window.EmberSatin=" in html, "the satin bundle is not inlined"
