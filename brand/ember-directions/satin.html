@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember satin cloth</title>
+<style>
+  :root{--ink:#EEECEA;--ground:#080808}
+  html,body{margin:0;height:100%;background:var(--ground);color:var(--ink);font:13px/1.4 "Space Grotesk",system-ui,sans-serif;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;cursor:none}
+  .bar{position:fixed;left:16px;bottom:16px;display:flex;gap:6px;flex-wrap:wrap;z-index:2;align-items:center}
+  .bar button{all:unset;cursor:pointer;padding:7px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);letter-spacing:.06em}
+  .bar button[aria-pressed="true"]{background:#EEECEA;color:#080808}
+  .bar .sep{width:12px}
+  .note{position:fixed;right:16px;top:16px;max-width:40ch;padding:10px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);z-index:2}
+  .note b{display:block;font-weight:500;margin-bottom:2px}
+  body.clean .bar, body.clean .note{display:none}
+</style>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body>
+<div class="bar" role="toolbar" aria-label="Weight and page">
+  <button data-d="V1" aria-pressed="false">V1 · Silk</button>
+  <button data-d="V2" aria-pressed="true">V2 · Satin</button>
+  <button data-d="V3" aria-pressed="false">V3 · Heavy satin</button>
+  <span class="sep"></span>
+  <button data-s=".2" aria-pressed="false">A fifth</button>
+  <button data-s=".1" aria-pressed="false">A tenth</button>
+  <button data-s=".05" aria-pressed="false">A twentieth</button>
+  <button data-s=".025" aria-pressed="false">A fortieth</button>
+  <span class="sep"></span>
+  <button data-p="03" aria-pressed="false">03 gold</button>
+  <button data-p="09" aria-pressed="false">09 rose card</button>
+  <button data-p="11" aria-pressed="true">11 ember</button>
+  <button data-p="16" aria-pressed="false">16 night</button>
+</div>
+<div class="note" id="note"></div>
+<script type="module">
+// Ember rerun (14 Oct 2026): the ground is a real sheet of cloth. A particle mesh held together like woven fabric, its edges
+// anchored so it springs back flat. The cursor grabs and drags it; where it is compressed it buckles into folds. Shaded as satin
+// in the ground's own colour; type and photographs stay pinned on top.
+import * as THREE from "three";
+
+const NOTES = {
+  V1: ["V1 · Silk", "A light silk: quick, fine folds that let go fast."],
+  V2: ["V2 · Satin", "A satin: the cursor grabs the cloth and drags it; long folds run with the pull and bunch where it is held, then slacken into low swells and lie flat."],
+  V3: ["V3 · Heavy satin", "A heavy satin: fewer, deeper folds that settle slowly."],
+};
+// grab: how much of the drag the cloth takes; reach (css px); home: pull back to flat per step; damp; bend: fold stiffness; depth: shading relief
+const WEIGHT = {
+  V1: { grab: 1.0, reach: 200, home: .0028, damp: .9, bend: .35, iters: 4, depth: 2.2 },
+  V2: { grab: 1.0, reach: 250, home: .0022, damp: .91, bend: .45, iters: 5, depth: 2.4 },
+  V3: { grab: 1.0, reach: 310, home: .0018, damp: .92, bend: .55, iters: 6, depth: 2.6 },
+};
+const q = new URLSearchParams(location.search);
+if (q.has("clean")) document.body.classList.add("clean");
+let weight = q.get("d") || "V2", page = q.get("p") || "11", strength = +(q.get("s") || ".1");   // how much of the satin shows: the folds are a hint in the ground, not an object
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+document.body.prepend(renderer.domElement);
+let W = innerWidth, H = innerHeight;
+const camera = new THREE.OrthographicCamera(0, W, H, 0, -2000, 2000);
+const scene = new THREE.Scene();
+const loader = new THREE.TextureLoader();
+const tex = { page: null, ground: null };
+
+// the cloth
+const NX = 120, NY = 72, OVER = .3;   // the cloth reaches 30% past every edge of the screen, so where it is held is never seen
+let pos, prev, rest, geo, mesh, mat;
+function build() {
+  W = innerWidth; H = innerHeight;
+  renderer.setSize(W, H); camera.right = W; camera.top = H; camera.updateProjectionMatrix();
+  if (mesh) { scene.remove(mesh); geo.dispose(); }
+  geo = new THREE.PlaneGeometry(W * (1 + 2 * OVER), H * (1 + 2 * OVER), NX - 1, NY - 1);
+  geo.translate(W / 2, H / 2, 0);
+  const a = geo.attributes.position.array;
+  rest = new Float32Array(a); pos = new Float32Array(a); prev = new Float32Array(a);
+  // the weave is never perfectly flat: a whisper of relief lets compression buckle into folds
+  for (let i = 0; i < NX * NY; i++) { const x = rest[i * 3], y = rest[i * 3 + 1];
+    const z = (Math.sin(x * .031 + y * .017) + Math.sin(x * .013 - y * .029 + 2.)) * .35; pos[i * 3 + 2] = prev[i * 3 + 2] = z; rest[i * 3 + 2] = z; }
+  geo.setAttribute("move", new THREE.BufferAttribute(new Float32Array(NX * NY), 1));
+  mesh = new THREE.Mesh(geo, mat); scene.add(mesh);
+}
+mat = new THREE.ShaderMaterial({
+  uniforms: { page: { value: null }, ground: { value: null }, res: { value: new THREE.Vector2(1, 1) }, rect: { value: new THREE.Vector4(0, 0, 1, 1) }, depth: { value: 1 }, amount: { value: 1 } },
+  vertexShader: `
+    attribute float move; varying vec3 vN; varying float vZ; varying float vMove;
+    void main(){ vN = normalize(normalMatrix * normal); vZ = position.z; vMove = move; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D page, ground; uniform vec2 res; uniform vec4 rect; uniform float depth, amount;
+    varying vec3 vN; varying float vZ; varying float vMove;
+    vec3 screen(vec3 a, vec3 b){ return 1. - (1. - a) * (1. - b); }
+    float lum(vec3 c){ return dot(c, vec3(.2126, .7152, .0722)); }
+    void main(){
+      vec2 f = gl_FragCoord.xy;   // screen px: the page is pinned, only the cloth moves
+      vec2 p = vec2(f.x, res.y - f.y); vec2 iu = (p - rect.xy) / rect.zw;
+      vec3 pg = texture2D(page, iu).rgb, gd = texture2D(ground, iu).rgb;
+      vec3 n = normalize(vN); n.xy *= depth * smoothstep(.0, 2.5, vMove); n = normalize(n);   // only cloth that has really moved shows relief
+      vec3 L = normalize(vec3(-.42, .6, .68)), V = vec3(0., 0., 1.), Hh = normalize(L + V);
+      float diff = dot(n, L) - L.z;   // relative to the flat sheet: at rest the ground is exactly as drawn
+      // satin: a narrow sheen that runs along the folds (anisotropic, threads running across the page)
+      vec3 T = normalize(vec3(1., 0., 0.) - n * n.x); float th = dot(T, Hh);
+      float aniso = pow(sqrt(max(0., 1. - th * th)), 26.) - pow(sqrt(max(0., 1. - pow(dot(normalize(vec3(1.,0.,0.)), Hh), 2.))), 26.);   // low, wide satin sheen
+      float dark = smoothstep(.42, .22, lum(gd));
+      float up = clamp(diff * 1.7 + max(0., aniso) * .45, 0., 1.), down = clamp(-diff * 2.6, 0., 1.);
+      vec3 hi = mix(screen(gd, vec3(.40, .34, .24)), screen(gd, gd * .9 + vec3(.08)), dark);
+      vec3 lo = mix(gd * .66, gd * .42, dark);   // deep, soft valleys
+      float grain = (fract(sin(dot(floor(f), vec2(12.9898, 78.233))) * 43758.5453) - .5) * .06 * smoothstep(.0, .02, 1. - n.z);
+      vec3 sat = mix(gd, mix(mix(gd, hi, up), lo, down) + grain, amount);
+      float onTop = smoothstep(.006, .025, distance(pg, gd));
+      gl_FragColor = vec4(mix(pg * (sat / max(gd, vec3(.004))), pg, onTop), 1.);
+    }`,
+});
+
+// cloth step: verlet, then fabric constraints (stretch, shear, bend), then a gentle pull back to flat
+let cursor = null, lastCursor = null;
+addEventListener("pointermove", e => { cursor = { x: e.clientX, y: H - e.clientY }; });
+const idx = (i, j) => j * NX + i;
+function constrain(a, b, len, k) {
+  const ax = a * 3, bx = b * 3;
+  const dx = pos[bx] - pos[ax], dy = pos[bx + 1] - pos[ax + 1], dz = pos[bx + 2] - pos[ax + 2];
+  const d = Math.hypot(dx, dy, dz) || 1e-6, c = (d - len) / d * .5 * k;
+  pos[ax] += dx * c; pos[ax + 1] += dy * c; pos[ax + 2] += dz * c; pos[bx] -= dx * c; pos[bx + 1] -= dy * c; pos[bx + 2] -= dz * c;
+}
+function step() {
+  const o = WEIGHT[weight];
+  const sx = W * (1 + 2 * OVER) / (NX - 1), sy = H * (1 + 2 * OVER) / (NY - 1), dg = Math.hypot(sx, sy);
+  // the grab: cloth near the cursor moves with it
+  let gx = 0, gy = 0;
+  if (cursor && lastCursor) { gx = cursor.x - lastCursor.x; gy = cursor.y - lastCursor.y; }
+  for (let i = 0; i < NX * NY; i++) {
+    const k = i * 3;
+    const vx = (pos[k] - prev[k]) * o.damp, vy = (pos[k + 1] - prev[k + 1]) * o.damp, vz = (pos[k + 2] - prev[k + 2]) * o.damp;
+    prev[k] = pos[k]; prev[k + 1] = pos[k + 1]; prev[k + 2] = pos[k + 2];
+    pos[k] += vx; pos[k + 1] += vy; pos[k + 2] += vz;
+    if (cursor && (gx || gy)) {
+      const ddx = rest[k] - cursor.x, ddy = rest[k + 1] - cursor.y;   // grabbed by where it belongs, so the grab travels with the cursor
+      const ex = pos[k] - cursor.x, ey = pos[k + 1] - cursor.y;
+      const w = Math.exp(-(ex * ex + ey * ey) / (o.reach * o.reach));
+      pos[k] += gx * w * o.grab; pos[k + 1] += gy * w * o.grab;
+    }
+    pos[k] += (rest[k] - pos[k]) * o.home; pos[k + 1] += (rest[k + 1] - pos[k + 1]) * o.home; pos[k + 2] += (rest[k + 2] - pos[k + 2]) * o.home;
+  }
+  for (let it = 0; it < o.iters; it++) {
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const a = idx(i, j);
+      if (i < NX - 1) constrain(a, idx(i + 1, j), sx, 1);
+      if (j < NY - 1) constrain(a, idx(i, j + 1), sy, 1);
+      if (i < NX - 1 && j < NY - 1) { constrain(a, idx(i + 1, j + 1), dg, .5); constrain(idx(i + 1, j), idx(i, j + 1), dg, .5); }
+      if (i < NX - 2) constrain(a, idx(i + 2, j), sx * 2, o.bend);
+      if (j < NY - 2) constrain(a, idx(i, j + 2), sy * 2, o.bend);
+      if (i < NX - 4) constrain(a, idx(i + 4, j), sx * 4, o.bend * .35);   // long-range stiffness: a few broad swells, never pleats
+      if (j < NY - 4) constrain(a, idx(i, j + 4), sy * 4, o.bend * .35);
+    }
+    // the edges are held
+    for (let i = 0; i < NX; i++) for (const j of [0, NY - 1]) { const k = idx(i, j) * 3; pos[k] = rest[k]; pos[k + 1] = rest[k + 1]; pos[k + 2] = rest[k + 2]; }
+    for (let j = 0; j < NY; j++) for (const i of [0, NX - 1]) { const k = idx(i, j) * 3; pos[k] = rest[k]; pos[k + 1] = rest[k + 1]; pos[k + 2] = rest[k + 2]; }
+  }
+  lastCursor = cursor ? { ...cursor } : null;
+  // what is drawn is the cloth with its relief smoothed once, so the mesh never shows as a stitched crest
+  const out = geo.attributes.position.array; out.set(pos);
+  for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) { const k = idx(i, j) * 3 + 2;
+    out[k] = pos[k] * .4 + (pos[idx(i - 1, j) * 3 + 2] + pos[idx(i + 1, j) * 3 + 2] + pos[idx(i, j - 1) * 3 + 2] + pos[idx(i, j + 1) * 3 + 2]) * .15; }
+  const mv = geo.attributes.move.array;
+  for (let i = 0; i < NX * NY; i++) { const k = i * 3; mv[i] = Math.hypot(pos[k] - rest[k], pos[k + 1] - rest[k + 1], (pos[k + 2] - rest[k + 2]) * 2); }
+  geo.attributes.move.needsUpdate = true;
+  geo.attributes.position.needsUpdate = true; geo.computeVertexNormals();
+}
+
+function load(p) {
+  page = p; let n = 0;
+  const done = () => { if (++n < 2) return; mat.uniforms.page.value = tex.page; mat.uniforms.ground.value = tex.ground; fit(); };
+  tex.page = loader.load(`r/s${p}.png`, done); tex.ground = loader.load(`r/g${p}.png`, done);
+  for (const t of [tex.page, tex.ground]) { t.colorSpace = THREE.NoColorSpace; t.flipY = false; t.minFilter = THREE.LinearFilter; }
+  build();
+}
+function fit() {
+  const im = tex.page.image, dpr = renderer.getPixelRatio();
+  const s = Math.max(W / im.width, H / im.height);
+  mat.uniforms.res.value.set(W * dpr, H * dpr);
+  mat.uniforms.rect.value.set((W - im.width * s) / 2 * dpr, 0, im.width * s * dpr, im.height * s * dpr);
+  mat.uniforms.depth.value = WEIGHT[weight].depth; mat.uniforms.amount.value = strength;
+}
+function note() { const [h, t] = NOTES[weight]; document.getElementById("note").innerHTML = `<b>${h}</b>${t}`; }
+document.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { weight = b.dataset.d; document.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", x === b)); build(); fit(); note(); });
+document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { document.querySelectorAll("[data-p]").forEach(x => x.setAttribute("aria-pressed", x === b)); load(b.dataset.p); });
+document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { strength = +b.dataset.s; document.querySelectorAll("[data-s]").forEach(x => x.setAttribute("aria-pressed", x === b)); fit(); });
+document.querySelectorAll("[data-s]").forEach(x => x.setAttribute("aria-pressed", +x.dataset.s === strength));
+document.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", x.dataset.d === weight));
+document.querySelectorAll("[data-p]").forEach(x => x.setAttribute("aria-pressed", x.dataset.p === page));
+addEventListener("resize", () => { build(); fit(); });
+note(); load(page);
+renderer.setAnimationLoop(() => { if (mesh) { step(); step(); } renderer.render(scene, camera); });
+</script>
+</body>
+</html>

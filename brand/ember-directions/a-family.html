@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember A family</title>
+<style>
+  :root{--ink:#EEECEA;--ground:#080808}
+  html,body{margin:0;height:100%;background:var(--ground);color:var(--ink);font:13px/1.4 "Space Grotesk",system-ui,sans-serif;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;cursor:none}
+  .bar{position:fixed;left:16px;bottom:16px;display:flex;gap:6px;flex-wrap:wrap;z-index:2;align-items:center;max-width:calc(100vw - 32px)}
+  .bar button{all:unset;cursor:pointer;padding:7px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);letter-spacing:.06em}
+  .bar button[aria-pressed="true"]{background:#EEECEA;color:#080808}
+  .bar .sep{width:12px}
+  .note{position:fixed;right:16px;top:16px;max-width:40ch;padding:10px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);z-index:2}
+  .note b{display:block;font-weight:500;margin-bottom:2px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="bar" role="toolbar" aria-label="Variant and page">
+  <button data-d="a1" aria-pressed="true">A1 · Afterglow</button>
+  <button data-d="a2" aria-pressed="false">A2 · Cools as it fades</button>
+  <button data-d="a3" aria-pressed="false">A3 · Film halation</button>
+  <button data-d="a4" aria-pressed="false">A4 · Low raking light</button>
+  <button data-d="a5" aria-pressed="false">A5 · Catches surfaces</button>
+  <span class="sep"></span>
+  <button data-p="p11-ember" aria-pressed="true">11</button>
+  <button data-p="p06-grid" aria-pressed="false">06</button>
+  <button data-p="p03-fall" aria-pressed="false">03</button>
+</div>
+<div class="note" id="note"></div>
+<script>
+const NOTES = {
+  a1: ["A1 · Afterglow", "A, refined. The page is lit in its own colour and the light lingers about 1.5 s. On light pages it deepens the colour instead of whitening it."],
+  a2: ["A2 · Cools as it fades", "Fresh light is warm; as it fades it cools down the fall, through rose to deep violet. Warm to cool, never back."],
+  a3: ["A3 · Film halation", "The afterglow with grain, and a red-orange halo bleeding round the light, as on film."],
+  a4: ["A4 · Low raking light", "A long, low wash stretched along the way the cursor travels, like a low sun across a wall."],
+  a5: ["A5 · Catches surfaces", "The ground barely changes. Only what is already there catches the light: type, photographs, swatches."],
+};
+const FALL = [[216,178,96],[188,111,76],[137,58,80],[52,29,94]];   // gold, after gold, rose, deep violet
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const fx = document.createElement("canvas"), fctx = fx.getContext("2d");
+const tmp = document.createElement("canvas"), tctx = tmp.getContext("2d");
+const probe = document.createElement("canvas"), pctx = probe.getContext("2d", { willReadFrequently: true });
+let W = 0, H = 0, DPR = 1, dir = "a1", img = new Image(), ready = false, light = false;
+let fresh = [], trail = [], last = null, lastT = 0;
+
+const grain = document.createElement("canvas"); grain.width = grain.height = 256;
+{ const g = grain.getContext("2d"), d = g.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; }
+  g.putImageData(d, 0, 0); }
+
+function size() {
+  DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+  for (const c of [cv, fx, tmp]) { c.width = W * DPR; c.height = H * DPR; }
+  probe.width = 192; probe.height = Math.round(192 * H / W);
+  if (ready) pctx.drawImage(img, ...cover(probe.width, probe.height));
+}
+function cover(w, h) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  return [0, 0, img.naturalWidth, img.naturalHeight, (w - img.naturalWidth * s) / 2, 0, img.naturalWidth * s, img.naturalHeight * s];
+}
+function load(name) {
+  ready = false; img = new Image();
+  img.onload = () => { ready = true; size(); const [r, g, b] = pctx.getImageData(probe.width >> 1, probe.height >> 1, 1, 1).data; light = (0.2126 * r + 0.7152 * g + 0.0722 * b) > 140; };
+  img.src = name + ".jpg"; reset();
+}
+function reset() { fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.clearRect(0, 0, fx.width, fx.height); fresh = []; trail = []; }
+const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+function sample(x, y) {
+  const px = Math.max(0, Math.min(probe.width - 1, Math.round(x / W * probe.width)));
+  const py = Math.max(0, Math.min(probe.height - 1, Math.round(y / H * probe.height)));
+  return Array.from(pctx.getImageData(px, py, 1, 1).data.slice(0, 3));
+}
+// the page colour, lifted in chroma; on light pages it is not lifted in lightness
+function lift(c, k = 1.6) { const L = lum(c), up = light ? 1 : 1.1, add = light ? 0 : 8; return c.map(v => Math.max(0, Math.min(255, (L + (v - L) * k) * up + add))); }
+const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+
+addEventListener("pointermove", e => {
+  const now = performance.now(), p = { x: e.clientX, y: e.clientY, t: now };
+  const dx = last ? p.x - last.x : 0, dy = last ? p.y - last.y : 0, dist = Math.hypot(dx, dy);
+  const sp = last ? Math.min(1.5, dist / Math.max(8, now - last.t)) : 0, ang = Math.atan2(dy, dx);
+  const n = last ? Math.max(1, Math.ceil(dist / 10)) : 1;
+  for (let i = 1; i <= n; i++) {
+    const x = last ? last.x + dx * i / n : p.x, y = last ? last.y + dy * i / n : p.y, c = sample(x, y);
+    const q = { x, y, t: now, sp, ang, base: c, c: lift(c) };
+    fresh.push(q); trail.push(q);
+  }
+  last = p;
+});
+document.querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
+  dir = b.dataset.d; document.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", x === b)); reset(); note();
+});
+document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-p]").forEach(x => x.setAttribute("aria-pressed", x === b)); load(b.dataset.p);
+});
+function note() { const [h, t] = NOTES[dir]; document.getElementById("note").innerHTML = `<b>${h}</b>${t}`; }
+
+// the persistent light buffer: cools exponentially, new light is added softly
+function accumulate(dt, stamp) {
+  fctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  fctx.globalCompositeOperation = "destination-out";
+  fctx.fillStyle = `rgba(0,0,0,${1 - Math.exp(-dt / 1.1)})`; fctx.fillRect(0, 0, W, H);
+  fctx.globalCompositeOperation = "lighter";
+  for (const p of fresh) stamp(p);
+  fresh = []; fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.globalCompositeOperation = "source-over";
+}
+function round(p, r = 90 + 110 * p.sp, a = 0.10, c = p.c) {
+  const g = fctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+  g.addColorStop(0, rgba(c, a)); g.addColorStop(0.5, rgba(c, a * 0.4)); g.addColorStop(1, rgba(c, 0));
+  fctx.fillStyle = g; fctx.fillRect(p.x - r, p.y - r, 2 * r, 2 * r);
+}
+// how the light meets the page: screen on dark grounds; on light grounds, overlay, so colour deepens rather than whitens
+function composite(src, blur = 6, alpha = 1) {
+  ctx.save(); ctx.globalAlpha = alpha; ctx.filter = `blur(${blur * DPR}px)`;
+  ctx.globalCompositeOperation = light ? "soft-light" : "screen"; ctx.drawImage(src, 0, 0);
+  if (light) ctx.drawImage(src, 0, 0);
+  ctx.restore();
+}
+
+const V = {
+  a1(dt) { accumulate(dt, p => round(p)); composite(fx); },
+
+  a2(dt, now) {
+    const LIFE = 1600; trail = trail.filter(p => now - p.t < LIFE); fresh = [];
+    fctx.setTransform(DPR, 0, 0, DPR, 0, 0); fctx.clearRect(0, 0, W, H); fctx.globalCompositeOperation = "lighter";
+    trail.forEach((p, i) => {
+      if (i % 2 && i !== trail.length - 1) return;
+      const age = (now - p.t) / LIFE, k = Math.min(2.999, age * 3), j = k | 0;
+      const cooled = mix(FALL[j], FALL[j + 1], k - j);                 // walks down the fall as it ages
+      const c = mix(lift(mix(p.base, FALL[0], 0.35), 1.5), cooled, Math.min(1, age * 1.4));
+      round(p, (90 + 110 * p.sp) * (1 + age * 0.5), 0.16 * (1 - age) ** 1.3, c);
+    });
+    fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.globalCompositeOperation = "source-over";
+    composite(fx, 8);
+  },
+
+  a3(dt) {
+    accumulate(dt, p => round(p, 80 + 90 * p.sp, 0.11));
+    // halation: the light, tinted red-orange and spread wide
+    tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.clearRect(0, 0, tmp.width, tmp.height);
+    tctx.drawImage(fx, 0, 0); tctx.globalCompositeOperation = "source-in"; tctx.fillStyle = "rgb(255,70,30)"; tctx.fillRect(0, 0, tmp.width, tmp.height);
+    tctx.globalCompositeOperation = "source-over";
+    composite(tmp, 34, 0.7);
+    // grain inside the light only
+    tctx.clearRect(0, 0, tmp.width, tmp.height); tctx.drawImage(fx, 0, 0);
+    tctx.globalCompositeOperation = "source-atop"; tctx.globalAlpha = 0.22; tctx.fillStyle = tctx.createPattern(grain, "repeat");
+    tctx.translate((Math.random() * 256) | 0, (Math.random() * 256) | 0); tctx.fillRect(-256, -256, tmp.width + 512, tmp.height + 512);
+    tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.globalAlpha = 1; tctx.globalCompositeOperation = "source-over";
+    composite(tmp, 3);
+  },
+
+  a4(dt) {
+    accumulate(dt, p => {
+      fctx.save(); fctx.translate(p.x, p.y); fctx.rotate(p.ang); fctx.scale(2.8, 0.75);
+      const r = 110 + 90 * p.sp, g = fctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      g.addColorStop(0, rgba(p.c, 0.07)); g.addColorStop(0.55, rgba(p.c, 0.03)); g.addColorStop(1, rgba(p.c, 0));
+      fctx.fillStyle = g; fctx.fillRect(-r, -r, 2 * r, 2 * r); fctx.restore();
+    });
+    composite(fx, 10);
+  },
+
+  a5(dt) {
+    accumulate(dt, p => round(p, 110 + 120 * p.sp, 0.30, lift(p.c, 1.3)));
+    // light times the page: bright things (type, photographs) catch it, the ground hardly does
+    tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.clearRect(0, 0, tmp.width, tmp.height);
+    tctx.filter = `blur(${6 * DPR}px)`; tctx.drawImage(fx, 0, 0); tctx.filter = "none";
+    tctx.globalCompositeOperation = "multiply";   // twice, so the ground (L ~0.3) all but drops out and pale type and photographs keep it
+    tctx.drawImage(img, ...cover(tmp.width, tmp.height)); tctx.drawImage(img, ...cover(tmp.width, tmp.height)); tctx.drawImage(img, ...cover(tmp.width, tmp.height));
+    tctx.globalCompositeOperation = "destination-in"; tctx.filter = `blur(${6 * DPR}px)`; tctx.drawImage(fx, 0, 0); tctx.filter = "none";
+    tctx.globalCompositeOperation = "source-over";
+    ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.drawImage(tmp, 0, 0); ctx.drawImage(tmp, 0, 0); ctx.restore();
+  },
+};
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
+  if (ready) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, ...cover(cv.width, cv.height));
+    if (dir !== "a2") trail = [];
+    V[dir](dt, now);
+  }
+  requestAnimationFrame(frame);
+}
+addEventListener("resize", size); size(); note(); load("p11-ember"); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

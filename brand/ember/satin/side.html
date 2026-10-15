@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satin modules side-by-side</title>
+<!-- For the side-by-side checks only (plan Tasks 5 and 6): the satin modules alone over the prototype's own captures of a
+     page (brand/ember-directions/r/sNN.png as the page, gNN.png as the ground), wired as the prototype's frame for X1.
+     ?p=11 picks the page. window.cloth.canvas is the cloth's own canvas; #gl is the final frame. -->
+<style>
+  html,body{margin:0;height:100%;background:#080808;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;cursor:none}
+</style>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<script type="module">
+import { createC3 } from "./c3.js";
+import { createCloth } from "./cloth.js";
+import { createRake } from "./rake.js";
+import { tier } from "./satin-math.js";
+
+const q = new URLSearchParams(location.search), p = q.get("p") || "11";
+const W = innerWidth, H = innerHeight, T = tier(W, matchMedia("(pointer: coarse)").matches), DPR = Math.min(T.dprCap, devicePixelRatio || 1);
+const c3 = createC3(); c3.attach();
+const rake = createRake(document.getElementById("gl"), { mediump: T.name === "phone" });
+const cloth = createCloth({ light: c3.light, tier: T, dpr: DPR, mediump: T.name === "phone" });
+window.cloth = { canvas: cloth.canvas };
+const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+const [img, gimg] = await Promise.all([load(`../../ember-directions/r/s${p}.png`), load(`../../ember-directions/r/g${p}.png`)]);
+c3.size(W, H, DPR); rake.size(W, H, DPR); c3.setPage(img); rake.upload(img, gimg);
+cloth.build(W, H); cloth.setViews(img, gimg);
+function frame(now) {
+  c3.frame(now, cloth.tick(now) ? cloth.canvas : null);
+  rake.setPage(c3.canvas); rake.draw(now, c3.trail);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.sideReady = true;
+</script>
+</body>
+</html>

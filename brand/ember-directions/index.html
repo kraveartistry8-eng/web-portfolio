@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember directions</title>
+<style>
+  :root{--ink:#EEECEA;--ground:#080808}
+  html,body{margin:0;height:100%;background:var(--ground);color:var(--ink);font:13px/1.4 "Space Grotesk",system-ui,sans-serif;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;cursor:none}
+  .bar{position:fixed;left:16px;bottom:16px;display:flex;gap:6px;flex-wrap:wrap;z-index:2;align-items:center}
+  .bar button{all:unset;cursor:pointer;padding:7px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);letter-spacing:.06em}
+  .bar button[aria-pressed="true"]{background:#EEECEA;color:#080808}
+  .bar .sep{width:12px}
+  .note{position:fixed;right:16px;bottom:16px;max-width:42ch;padding:10px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);z-index:2}
+  .note b{display:block;font-weight:500;margin-bottom:2px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="bar" role="toolbar" aria-label="Direction and page">
+  <button data-d="a" aria-pressed="true">A · Light, then afterglow</button>
+  <button data-d="b" aria-pressed="false">B · Long exposure</button>
+  <button data-d="c" aria-pressed="false">C · Heat haze</button>
+  <span class="sep"></span>
+  <button data-p="p11-ember" aria-pressed="true">11</button>
+  <button data-p="p06-grid" aria-pressed="false">06</button>
+  <button data-p="p03-fall" aria-pressed="false">03</button>
+</div>
+<div class="note" id="note"></div>
+<script>
+const NOTES = {
+  a: ["Light, then afterglow", "No object and no edge. Where the cursor passes, the page is lit in its own colour; the light lingers and fades over about a second and a half."],
+  b: ["Long exposure", "A smeared streak of light with a warm core and grain, like light painted across a slow shutter. It thins and fades as it ages."],
+  c: ["Heat haze", "Nothing is drawn on top. The page shimmers and warms where the cursor has been, then settles."],
+};
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const fx = document.createElement("canvas"), fctx = fx.getContext("2d");
+const tmp = document.createElement("canvas"), tctx = tmp.getContext("2d");
+const probe = document.createElement("canvas"), pctx = probe.getContext("2d", { willReadFrequently: true });
+let W = 0, H = 0, DPR = 1, dir = "a", img = new Image(), ready = false;
+let pts = [], last = null, lastT = 0;
+
+// grain, made once
+const grain = document.createElement("canvas"); grain.width = grain.height = 256;
+{ const g = grain.getContext("2d"), d = g.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; }
+  g.putImageData(d, 0, 0); }
+
+function size() {
+  DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+  for (const c of [cv, fx, tmp]) { c.width = W * DPR; c.height = H * DPR; }
+  probe.width = 192; probe.height = Math.round(192 * H / W);
+  if (ready) pctx.drawImage(img, ...cover(probe.width, probe.height));
+}
+// the page image covers the viewport, top-aligned
+function cover(w, h) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  return [0, 0, img.naturalWidth, img.naturalHeight, (w - img.naturalWidth * s) / 2, 0, img.naturalWidth * s, img.naturalHeight * s];
+}
+function load(name) {
+  ready = false; img = new Image(); img.onload = () => { ready = true; size(); }; img.src = name + ".jpg";
+  fctx.clearRect(0, 0, fx.width, fx.height); pts = [];
+}
+// the colour of the page beneath, lifted: more chroma, a little lighter, never white
+function pageColour(x, y) {
+  const px = Math.max(0, Math.min(probe.width - 1, Math.round(x / W * probe.width)));
+  const py = Math.max(0, Math.min(probe.height - 1, Math.round(y / H * probe.height)));
+  const [r, g, b] = pctx.getImageData(px, py, 1, 1).data;
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b, k = 1.6, lift = 1.1;
+  const f = v => Math.max(0, Math.min(255, (L + (v - L) * k) * lift + 8));
+  return [f(r), f(g), f(b)];
+}
+addEventListener("pointermove", e => {
+  const now = performance.now(), p = { x: e.clientX, y: e.clientY, t: now };
+  const sp = last ? Math.hypot(p.x - last.x, p.y - last.y) / Math.max(8, now - last.t) : 0;   // px per ms
+  // fill the segment so fast strokes stay continuous
+  const n = last ? Math.max(1, Math.ceil(Math.hypot(p.x - last.x, p.y - last.y) / 10)) : 1;
+  for (let i = 1; i <= n; i++) {
+    const x = last ? last.x + (p.x - last.x) * i / n : p.x, y = last ? last.y + (p.y - last.y) * i / n : p.y;
+    pts.push({ x, y, t: now, sp: Math.min(1.5, sp), c: pageColour(x, y) });
+  }
+  last = p;
+});
+document.querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
+  dir = b.dataset.d; document.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  fctx.clearRect(0, 0, fx.width, fx.height); pts = []; note();
+});
+document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-p]").forEach(x => x.setAttribute("aria-pressed", x === b)); load(b.dataset.p);
+});
+function note() { const [h, t] = NOTES[dir]; document.getElementById("note").innerHTML = `<b>${h}</b>${t}`; }
+const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+
+// A: light on the page that lingers. A persistent light buffer cools exponentially; new light is added softly.
+function drawA(dt) {
+  fctx.save(); fctx.scale(DPR, DPR);
+  fctx.globalCompositeOperation = "destination-out";
+  fctx.fillStyle = `rgba(0,0,0,${1 - Math.exp(-dt / 1.1)})`; fctx.fillRect(0, 0, W, H);   // the afterglow: about 1.5 s to fade
+  fctx.globalCompositeOperation = "lighter";
+  for (const p of pts) {
+    const r = 90 + 110 * p.sp, g = fctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    g.addColorStop(0, rgba(p.c, 0.10)); g.addColorStop(0.5, rgba(p.c, 0.04)); g.addColorStop(1, rgba(p.c, 0));
+    fctx.fillStyle = g; fctx.fillRect(p.x - r, p.y - r, 2 * r, 2 * r);
+  }
+  fctx.restore(); pts = [];
+  ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.filter = "blur(6px)"; ctx.drawImage(fx, 0, 0); ctx.restore();
+}
+
+// B: a streak of light on a slow shutter: a blurred outer smear, a warm narrow core, grain inside it only.
+function drawB(now) {
+  const LIFE = 1300; pts = pts.filter(p => now - p.t < LIFE);
+  fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.clearRect(0, 0, fx.width, fx.height); if (pts.length < 2) return;
+  for (const [blur, wid, alpha, core] of [[18, 46, 0.75, false], [4, 10, 0.95, true]]) {
+    tctx.setTransform(DPR, 0, 0, DPR, 0, 0); tctx.clearRect(0, 0, W, H); tctx.lineCap = "round";
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i], life = (1 - (now - b.t) / LIFE) ** 1.6;
+      const c = core ? b.c.map(v => v + (255 - v) * 0.45) : b.c;
+      tctx.strokeStyle = rgba(c, alpha * life); tctx.lineWidth = wid * (0.35 + 0.65 * life) * (0.7 + 0.5 * b.sp);
+      tctx.beginPath(); tctx.moveTo(a.x, a.y); tctx.lineTo(b.x, b.y); tctx.stroke();
+    }
+    fctx.filter = `blur(${blur * DPR}px)`; fctx.globalCompositeOperation = "lighter"; fctx.drawImage(tmp, 0, 0); fctx.filter = "none";
+  }
+  fctx.globalCompositeOperation = "source-atop"; fctx.globalAlpha = 0.18;
+  fctx.fillStyle = fctx.createPattern(grain, "repeat");
+  fctx.translate((Math.random() * 256) | 0, (Math.random() * 256) | 0); fctx.fillRect(-256, -256, fx.width + 512, fx.height + 512);
+  fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.globalAlpha = 1; fctx.globalCompositeOperation = "source-over";
+  ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.drawImage(fx, 0, 0); ctx.restore();
+}
+
+// C: heat haze. Rows of the page are displaced sideways near the path, masked softly; a faint warmth sits under it.
+function drawC(now) {
+  const LIFE = 1800; pts = pts.filter(p => now - p.t < LIFE);
+  const src = pts.filter((p, i) => i % 3 === 0 || i === pts.length - 1);
+  ctx.save(); ctx.scale(DPR, DPR);
+  for (const p of src) {
+    const life = (1 - (now - p.t) / LIFE) ** 1.4, R = 70 + 50 * p.sp, amp = 5 * life * (0.6 + p.sp);
+    const s = DPR, x0 = p.x - R, y0 = p.y - R, d = 2 * R;
+    tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.clearRect(0, 0, d * s, d * s);
+    for (let y = 0; y < d; y += 2) {
+      const dx = amp * Math.sin((y0 + y) * 0.09 + now * 0.007) + amp * 0.5 * Math.sin((y0 + y) * 0.23 - now * 0.011);
+      tctx.drawImage(cv, (x0 + dx) * s, (y0 + y) * s, d * s, 2 * s, 0, y * s, d * s, 2 * s);
+    }
+    tctx.globalCompositeOperation = "destination-in";
+    const m = tctx.createRadialGradient(R * s, R * s, 0, R * s, R * s, R * s);
+    m.addColorStop(0, "rgba(0,0,0,1)"); m.addColorStop(1, "rgba(0,0,0,0)"); tctx.fillStyle = m; tctx.fillRect(0, 0, d * s, d * s);
+    tctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(tmp, 0, 0, d * s, d * s, x0, y0, d, d);
+    const w = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, R);
+    w.addColorStop(0, rgba(p.c, 0.07 * life)); w.addColorStop(1, rgba(p.c, 0));
+    ctx.globalCompositeOperation = "soft-light"; ctx.fillStyle = w; ctx.fillRect(x0, y0, d, d); ctx.globalCompositeOperation = "source-over";
+  }
+  ctx.restore();
+}
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
+  if (ready) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, ...cover(cv.width, cv.height));
+    if (dir === "a") drawA(dt); else if (dir === "b") drawB(now); else drawC(now);
+  }
+  requestAnimationFrame(frame);
+}
+addEventListener("resize", size); size(); note(); load("p11-ember"); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

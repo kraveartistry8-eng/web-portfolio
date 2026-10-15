@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember on dark pages</title>
+<base href="../">
+<style data-proof>
+  :root{--ink:#EEECEA;--ground:#080808}
+  #proofui{font:13px/1.4 "Space Grotesk",system-ui,sans-serif;color:#EEECEA}
+  #c2,#gl{position:fixed;inset:0;width:100vw;height:100vh;display:block;pointer-events:none;z-index:5}
+  /* the real guide stays in the page for links, selection and screen readers; what is seen is its rasterised image, drawn on */
+  body.live .deck{opacity:0}
+  .bar{z-index:6!important;position:fixed;left:16px;bottom:16px;display:flex;gap:6px;flex-wrap:wrap;z-index:2;align-items:center;max-width:calc(100vw - 32px)}
+  .bar button{all:unset;font:13px/1.4 "Space Grotesk",system-ui,sans-serif;color:#EEECEA;cursor:pointer;padding:7px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);letter-spacing:.06em}
+  .bar button[aria-pressed="true"]{background:#EEECEA;color:#080808}
+  .bar .sep{width:12px}
+  .note{z-index:6!important;position:fixed;right:16px;top:16px;max-width:40ch;padding:10px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);z-index:2}
+  .note b{display:block;font-weight:500;margin-bottom:2px}
+  body.clean .bar, body.clean .note{display:none}
+</style>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="c2"></canvas>
+<canvas id="gl"></canvas>
+<div class="bar" role="toolbar" aria-label="Dark pages">
+  <button data-dg="0" aria-pressed="false">As built</button>
+  <button data-dg="1" aria-pressed="false">G1 · Glow on the ground</button>
+  <button data-dg="2" aria-pressed="false">G2 · Warm satin</button>
+  <button data-dg="3" aria-pressed="false">G3 · Both, gentler</button>
+</div>
+<div class="note" id="note"></div>
+<div id="guide"></div>
+<script src="ember-directions/proof/raster.js"></script>
+<script>
+// Ember satin proof, 14 Oct 2026: the same pipeline as satin-combined.html (P2d, satin a third, raking light a third, c3),
+// fed from the live hour-lite guide rasterised in the browser instead of from page captures.
+(async () => {
+  const src = await (await fetch("2026-10-12-guide-hour-lite.html")).text(), doc = new DOMParser().parseFromString(src, "text/html");
+  for (const l of doc.querySelectorAll('link[rel="stylesheet"],link[rel="preconnect"]')) document.head.appendChild(l);
+  for (const st of doc.querySelectorAll("style")) document.head.appendChild(st);
+  const g = document.getElementById("guide"); g.replaceWith(doc.querySelector("main.deck"));
+  await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  window.liveViews = { page: img, ground: gimg };
+  await rasterNear(); viewDirty = true; refreshLive(performance.now());
+  document.body.classList.add("live");
+  if (window.cloth) window.cloth.load(); else addEventListener("cloth-ready", () => window.cloth.load(), { once: true });
+})();
+</script>
+<script>
+// Ember rerun, Step 3 directions (13 Oct 2026). c3 runs here exactly as in a2-family.html; A, B and C share its input and glide.
+const NOTES = {
+  X1: ["Satin + c3 + A, half", "The ground is satin at a tenth: the cursor drags faint folds into it that settle flat. Over it, c3 exactly as it is, and the raking light of A at half strength on the edges facing it."],
+  A: ["A · Raking light", "From the grazing-light film. The ground never lights; only edges do (type, hairlines, swatch and photo edges), and mostly the side facing the light. Warm where fresh, cooling down the fall as it fades in under a second."],
+  B: ["B · Dusk passes, did not clear the floor", "Lost to c3 in two blind rounds: read as fog or a smudge rather than light. Kept for reference only. From the glacier title screen. No edges and no light on type or photographs: the ground itself answers. On gold and rose it falls a step further toward night where you pass; on night pages it lifts in tone. Wide, soft, slow to settle."],
+  C: ["C · Contour", "From the glaciers. The cursor shapes the ground into a field drawn only as hairlines, the guide's own 1px rule, with every fourth line in the next stage of the fall. Lines bend around the path and relax as it settles. Type and photographs are never touched."],
+  c3: ["c3 · the floor", "The chosen prototype, unchanged: a short warm light that cools down the fall, seen on surfaces, with the glide."],
+  X2: ["c3 + A, a third", "As half, with the raking light at a third of its strength."],
+  D: ["D · Bend", "From the glaciers: the page is a soft surface. Ground, type and photographs are pushed aside around the cursor's path, as the mountains bend around it, then spring back as it settles. Form only, no light."],
+  E: ["E · Relief, did not clear the floor", "Lost to c3 blind: broke into pale puffs that read as smoke. Kept for reference only. The ground rises into a soft ridge along the path, and a low light from the upper left finds its lit flank in the colours of the fall. Light only, never a darker side. Type and photographs stay still."],
+  S1: ["S1 · Satin", "From the glacier title screen: the ground is a sheet of satin in the page's own colour. The cursor drags long soft folds into it, a sheen along each crest and a gentle trough beside it, stretched the way you move, relaxing over about two seconds. The folds pass under type and photographs; nothing on top moves."],
+  S2: ["S2 · Satin, sheen only", "As Satin, but only the light on each crest: nothing goes darker than the ground."],
+  U1: ["U1 · Sheet, silk", "The ground is a sheet of satin under tension. Drag, and long wrinkles run with the pull right across the page: a narrow sheen on each crest, a shadow on its far side. As the pull lets go they broaden into soft swells and the sheet lies flat again, in about two seconds. Type and photographs sit on top, untouched. Light, close wrinkles."],
+  U2: ["U2 · Sheet, satin", "As silk, a heavier satin: wider wrinkles that hold a little longer."],
+  U3: ["U3 · Sheet, heavy", "As satin, heavier still: a few broad, slow folds."],
+  T1: ["T1 · Crease", "Satin that folds. The cursor presses a crease into the sheet and two soft folds rise either side of it, running the way you move: rounded crests with a narrow satin sheen, a sharp line at the bottom of each crease, a faint weave seen only inside the folds. They relax flat in about a second and a half. Type and photographs sit on top, untouched."],
+  T2: ["T2 · Drape", "As Crease, with one broad, deep fold either side of the path, like heavy satin drawn by a finger."],
+  T3: ["T3 · Gathered", "As Crease, with several finer folds bunched along the path, like light satin gathered."],
+  S3: ["S3 · Satin, warm crest", "As Satin, with c3's light on the crest: gold where the fold is fresh, cooling down the fall to deep violet as it relaxes."],
+  F: ["F · Strata", "Fine hairline strata, like the glacier's striations, appear in the ground near the cursor and bow around it, then settle straight and go out. Every fifth line in the next stage of the fall. Type and photographs stay clear."],
+};
+const FALL = [[216,178,96],[188,111,76],[137,58,80],[52,29,94]];
+const c2 = document.getElementById("c2"), ctx = c2.getContext("2d"), glc = document.getElementById("gl");
+const fx = document.createElement("canvas"), fctx = fx.getContext("2d"); window.emberFx = fx;   // the satin reads the ember's shape from here
+const tmp = document.createElement("canvas"), tctx = tmp.getContext("2d");
+const probe = document.createElement("canvas"), pctx = probe.getContext("2d", { willReadFrequently: true });
+let W = 0, H = 0, DPR = 1, dir = "A", page = "03", img = document.createElement("canvas"), gimg = document.createElement("canvas"), ready = false, light = false;
+let fresh = [], trail = [], last = null, lastT = 0;
+
+function size() {
+  DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+  for (const c of [c2, fx, tmp, glc]) { c.width = W * DPR; c.height = H * DPR; }
+  probe.width = 192; probe.height = Math.round(192 * H / W);
+  viewDirty = true;
+  if (gl) fieldSize();
+}
+function cover(w, h) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  return [0, 0, img.naturalWidth, img.naturalHeight, (w - img.naturalWidth * s) / 2, 0, img.naturalWidth * s, img.naturalHeight * s];
+}
+// live: the guide's sheets are rasterised as they come near the viewport, then laid into a page view and a ground view of the window
+const shot = new Map();   // sheet -> { page, ground, w } at the current width
+async function rasterNear() {
+  const sheets = [...document.querySelectorAll(".deck .sheet")];
+  for (const el of sheets) { const r = el.getBoundingClientRect(), near = r.bottom > -innerHeight && r.top < innerHeight * 2;
+    const have = shot.get(el);
+    if (!near) { if (have && (r.bottom < -innerHeight * 3 || r.top > innerHeight * 4)) shot.delete(el); continue; }
+    if (have && have.w === innerWidth) continue;
+    shot.set(el, { pending: true, w: innerWidth });
+    const [page, ground] = await Promise.all([Raster.sheet(el, { dpr: DPR }), Raster.sheet(el, { dpr: DPR, ground: true })]);
+    shot.set(el, { page, ground, w: innerWidth }); viewDirty = true;
+  }
+}
+let viewDirty = true, lastKeep = 0;
+function drawViews() { viewStamp++;
+  for (const [v, k] of [[img, "page"], [gimg, "ground"]]) {
+    if (v.width !== W * DPR || v.height !== H * DPR) { v.width = W * DPR; v.height = H * DPR; }
+    v.naturalWidth = v.width; v.naturalHeight = v.height;
+    const g = v.getContext("2d"); g.fillStyle = "#080808"; g.fillRect(0, 0, v.width, v.height);
+    for (const [el, s] of shot) { if (!s[k]) continue; const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > H) continue; g.drawImage(s[k], r.left * DPR, r.top * DPR, s[k].width, s[k].height); }
+  }
+}
+function refreshLive(now) {
+  if (!viewDirty) return;
+  viewDirty = false; drawViews(); ready = true;
+  pctx.drawImage(img, ...cover(probe.width, probe.height));
+  const [r, g, b] = pctx.getImageData(probe.width >> 1, probe.height >> 1, 1, 1).data; light = (0.2126 * r + 0.7152 * g + 0.0722 * b) > 140;
+  if (now - lastKeep > 120) { upload(); lastKeep = now; }   // the keep mask is the costly part; on a long scroll it follows within 120 ms
+  else { for (const [t, im] of [[tPage, img], [tGround, gimg]]) { gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im); } setTimeout(() => { viewDirty = true; }, 130); }
+  if (window.cloth) window.cloth.refresh();
+}
+addEventListener("scroll", () => { viewDirty = true; rasterNear(); }, { passive: true });
+function load(name) {
+  ready = false; page = name; img = new Image(); gimg = new Image(); let n = 0;
+  const done = () => { if (++n < 2) return; ready = true; size(); upload();
+    const [r, g, b] = pctx.getImageData(probe.width >> 1, probe.height >> 1, 1, 1).data; light = (0.2126 * r + 0.7152 * g + 0.0722 * b) > 140; };
+  img.onload = done; gimg.onload = done; img.src = "r/s" + name + ".png"; gimg.src = "r/g" + name + ".png";   // lossless, so compression ringing around type is not read as content reset();
+}
+function reset() { fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.clearRect(0, 0, fx.width, fx.height); fresh = []; trail = []; if (typeof sheetSize === 'function' && gl) sheetSize(); }
+const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+function sample(x, y) {
+  const px = Math.max(0, Math.min(probe.width - 1, Math.round(x / W * probe.width)));
+  const py = Math.max(0, Math.min(probe.height - 1, Math.round(y / H * probe.height)));
+  return Array.from(pctx.getImageData(px, py, 1, 1).data.slice(0, 3));
+}
+function lift(c, k = 1.6) { const L = lum(c), up = light ? 1 : 1.1, add = light ? 0 : 8; return c.map(v => Math.max(0, Math.min(255, (L + (v - L) * k) * up + add))); }
+const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+function lay(x, y, t, sp, ang) { const c = sample(x, y), q = { x, y, t, sp, ang, base: c, c: lift(c) }; fresh.push(q); trail.push(q); }
+let vel = { x: 0, y: 0 }, glide = null;
+const GLIDE_T = 320, GLIDE_V = 0.6, STOP = 34;
+addEventListener("pointermove", e => {
+  const now = performance.now(), p = { x: e.clientX, y: e.clientY, t: now };
+  const dx = last ? p.x - last.x : 0, dy = last ? p.y - last.y : 0, dist = Math.hypot(dx, dy);
+  const sp = last ? Math.min(1.5, dist / Math.max(8, now - last.t)) : 0, ang = Math.atan2(dy, dx);
+  if (last) { const k = 0.5, ddt = Math.max(8, now - last.t); vel = { x: vel.x * (1 - k) + dx / ddt * k, y: vel.y * (1 - k) + dy / ddt * k }; }
+  const n = last ? Math.max(1, Math.ceil(dist / 10)) : 1;
+  for (let i = 1; i <= n; i++) lay(last ? last.x + dx * i / n : p.x, last ? last.y + dy * i / n : p.y, now, sp, ang);
+  last = p; glide = null;
+});
+function glideStep(now) {
+  if (!last || now - last.t < STOP) return;
+  if (!glide) {
+    const v = Math.hypot(vel.x, vel.y); if (v < 0.02) return;
+    const v0 = Math.min(GLIDE_V, v);
+    glide = { x0: last.x, y0: last.y, ux: vel.x / v, uy: vel.y / v, v0, t0: now, d: 0, done: false };
+  }
+  if (glide.done) return;
+  const t = Math.min(1, (now - glide.t0) / GLIDE_T), dist = glide.v0 * GLIDE_T / 3 * (1 - (1 - t) ** 3), sp = glide.v0 * (1 - t) ** 2;
+  while (glide.d + 10 <= dist) { glide.d += 10; lay(glide.x0 + glide.ux * glide.d, glide.y0 + glide.uy * glide.d, now, sp, Math.atan2(glide.uy, glide.ux)); }
+  if (t >= 1) glide.done = true;
+}
+
+// ---- c3, verbatim from a2-family.html ----
+function round(p, r = 90 + 110 * p.sp, a = 0.10, c = p.c) {
+  const g = fctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+  g.addColorStop(0, rgba(c, a)); g.addColorStop(0.5, rgba(c, a * 0.4)); g.addColorStop(1, rgba(c, 0));
+  fctx.fillStyle = g; fctx.fillRect(p.x - r, p.y - r, 2 * r, 2 * r);
+}
+function cooling(now, o) {
+  trail = trail.filter(p => now - p.t < o.life); fresh = [];
+  fctx.setTransform(DPR, 0, 0, DPR, 0, 0); fctx.clearRect(0, 0, W, H); fctx.globalCompositeOperation = "lighter";
+  const every = o.every || 2;
+  trail.forEach((p, i) => {
+    if (i % every && i !== trail.length - 1) return;
+    const age = (now - p.t) / o.life, k = Math.min(2.999, age * 3), j = k | 0;
+    const cooled = mix(FALL[j], FALL[j + 1], k - j);
+    const c = mix(lift(mix(p.base, FALL[0], 0.35), 1.5), cooled, Math.min(1, age * 1.4));
+    round(p, (o.r + o.rs * p.sp) * (1 + age * o.grow), o.a * (1 - age) ** 1.3, c);
+  });
+  fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.globalCompositeOperation = "source-over";
+}
+function surfaces() {
+  tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.clearRect(0, 0, tmp.width, tmp.height);
+  tctx.filter = `blur(${6 * DPR}px)`; tctx.drawImage(fx, 0, 0); tctx.filter = "none";
+  tctx.globalCompositeOperation = "multiply";
+  for (let i = 0; i < 3; i++) tctx.drawImage(img, ...cover(tmp.width, tmp.height));
+  tctx.globalCompositeOperation = "destination-in"; tctx.filter = `blur(${6 * DPR}px)`; tctx.drawImage(fx, 0, 0); tctx.filter = "none";
+  tctx.globalCompositeOperation = "source-over";
+  ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.drawImage(tmp, 0, 0); ctx.drawImage(tmp, 0, 0); ctx.restore();
+}
+// 14 Oct, Aaron: "the ember stops glowing once we get to the darker colors". c3 carries its light by the page's own brightness
+// (cubed), so on near-black it vanishes. G1 lays the same light on the ground in proportion to how dark it is, the mirror image.
+const DARK = { 0: { glow: 0, satin: 0 }, 1: { glow: .9, satin: 0 }, 2: { glow: 0, satin: 1 }, 3: { glow: .55, satin: .6 } };
+let dg = +(new URLSearchParams(location.search).get("dg") || 1);
+const inv = document.createElement("canvas"), ictx = inv.getContext("2d"), tmp2 = document.createElement("canvas"), t2 = tmp2.getContext("2d");
+let invFor = null;
+function groundGlow() {
+  const k = DARK[dg].glow; if (!k) return;
+  if (inv.width !== tmp.width || inv.height !== tmp.height) { inv.width = tmp2.width = tmp.width; inv.height = tmp2.height = tmp.height; invFor = null; }
+  if (invFor !== viewStamp) {   // how dark the page is under each pixel: the page inverted, cubed
+    ictx.globalCompositeOperation = "source-over"; ictx.drawImage(img, ...cover(inv.width, inv.height));
+    ictx.globalCompositeOperation = "difference"; ictx.fillStyle = "#fff"; ictx.fillRect(0, 0, inv.width, inv.height);
+    ictx.globalCompositeOperation = "multiply"; const cp = document.createElement("canvas"); cp.width = inv.width; cp.height = inv.height; cp.getContext("2d").drawImage(inv, 0, 0);
+    ictx.drawImage(cp, 0, 0); ictx.drawImage(cp, 0, 0); ictx.globalCompositeOperation = "source-over"; invFor = viewStamp;
+  }
+  t2.setTransform(1, 0, 0, 1, 0, 0); t2.globalCompositeOperation = "source-over"; t2.clearRect(0, 0, tmp2.width, tmp2.height);
+  t2.filter = `blur(${10 * DPR}px)`; t2.drawImage(fx, 0, 0); t2.filter = "none";
+  t2.globalCompositeOperation = "multiply"; t2.drawImage(inv, 0, 0);
+  t2.globalCompositeOperation = "destination-in"; t2.filter = `blur(${10 * DPR}px)`; t2.drawImage(fx, 0, 0); t2.filter = "none"; t2.globalCompositeOperation = "source-over";
+  ctx.save(); ctx.globalCompositeOperation = "screen"; ctx.globalAlpha = k; ctx.drawImage(tmp2, 0, 0); ctx.restore();
+}
+let viewStamp = 0;
+function setDg(v) { dg = v; document.querySelectorAll("[data-dg]").forEach(x => x.setAttribute("aria-pressed", +x.dataset.dg === v)); }
+document.querySelectorAll("[data-dg]").forEach(b => b.onclick = () => setDg(+b.dataset.dg)); setDg(dg);
+function c3(now) { glideStep(now); cooling(now, { r: 52, rs: 40, a: 0.42, life: 900, grow: 0.25 }); surfaces(); groundGlow(); }
+
+// ---- A, B, C: WebGL2. A field of light is splatted from the trail, then one pass draws the page with it. ----
+const gl = glc.getContext("webgl2", { premultipliedAlpha: false, antialias: false });
+gl.getExtension("EXT_color_buffer_float");
+const SET = {   // life ms, radius px, radius per speed, growth with age, how fast light fades (power)
+  A: { life: 900, r: 56, rs: 40, grow: 0.25, fade: 1.3 },
+  B: { life: 1500, r: 110, rs: 80, grow: 0.5, fade: 1.6 },
+  C: { life: 1300, r: 120, rs: 70, grow: 0.15, fade: 1.2 },
+};
+const FOLD = {   // the folds: how many across a splat, how deep the crease, relief, how long a fold is along the path
+  T1: { life: 1700, r: 300, rs: 110, folds: 2.6, base: .25, relief: 160, aniso: 1.6 },
+  T2: { life: 1800, r: 340, rs: 120, folds: 1.6, base: .3, relief: 190, aniso: 1.7 },
+  T3: { life: 1600, r: 280, rs: 100, folds: 3.8, base: .2, relief: 120, aniso: 1.5 },
+};
+SET.T1 = SET.T2 = SET.T3 = SET.A;
+SET.U1 = SET.U2 = SET.U3 = SET.A;
+const SHEET = {   // wrinkle spacing when tight (page px), relief, drag, how fast the pull lets go and the cloth fades (per step), reach, grain, pull that reads as fully tight (page px)
+  U1: { scale: 230, relief: 1.0, drag: 3.0, decay: .986, reveal: 1, revealDecay: .99, diffuse: .24, R: 190, grain: .07, tightAt: 40 },
+  U2: { scale: 320, relief: 1.15, drag: 3.4, decay: .989, reveal: 1, revealDecay: .992, diffuse: .24, R: 250, grain: .08, tightAt: 55 },
+  U3: { scale: 440, relief: 1.3, drag: 3.8, decay: .991, reveal: 1, revealDecay: .994, diffuse: .24, R: 320, grain: .09, tightAt: 70 },
+};
+SET.S1 = SET.S2 = SET.S3 = { life: 1700, r: 230, rs: 120, grow: 0.3, fade: 1.2, shapePow: 1.7 };   // a fold relaxes over about a second and a half
+SET.D = { life: 1100, r: 90, rs: 60, grow: 0.2, fade: 1.4 };
+SET.E = { life: 1300, r: 110, rs: 70, grow: 0.3, fade: 1.3 };
+SET.F = { life: 1400, r: 100, rs: 70, grow: 0.2, fade: 1.2 };
+SET.X1 = SET.X2 = SET.A;   // the combined versions use A's light exactly, at a lower strength
+const GAIN = { X1: +(new URLSearchParams(location.search).get("g") || 0.33), X2: 0.33 };   // picked by eye, 14 Oct: a third (was half)
+document.querySelectorAll("[data-g]").forEach(b => { b.setAttribute("aria-pressed", +b.dataset.g === GAIN.X1);
+  b.onclick = () => { GAIN.X1 = +b.dataset.g; document.querySelectorAll("[data-g]").forEach(x => x.setAttribute("aria-pressed", x === b)); }; });
+const ANISO = { S1: 1.35, S2: 1.35, S3: 1.35 };
+function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); return s; }
+function prog(vs, fs) { const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw gl.getProgramInfoLog(p); return p; }
+// splat: a gaussian per trail point. r = light (fades with age), g = light x age (for the cooling colour), b = shape (fades slower)
+const splat = prog(`#version 300 es
+in vec2 corner; in vec2 ctr; in vec4 pa; in float pw;   // pa: radius, light, age, shape (A: light x cos of travel); pw: A, light x sin of travel; satin, the angle of travel
+uniform vec2 res; uniform float aniso; out vec2 q; out vec4 v;
+void main(){ q = corner; v = vec4(pa.yzw, aniso > 0. ? 0. : pw);
+  vec2 c = corner * pa.x;
+  if (aniso > 0.) { c = vec2(corner.x * pa.x * aniso, corner.y * pa.x); float a = -pw; c = mat2(cos(a), sin(a), -sin(a), cos(a)) * c; }   // a fold is long along the way you move
+  vec2 p = ctr + c; gl_Position = vec4(p / res * 2.0 - 1.0, 0.0, 1.0); }`,
+`#version 300 es
+precision highp float; in vec2 q; in vec4 v; out vec4 o;
+void main(){ float g = exp(-dot(q, q) * 3.1); o = vec4(v.x * g, v.x * v.y * g, v.z * g, v.w * g); }`);
+// folds: each splat is long along the way you move, and across it carries the profile of a pressed crease with rounded folds either side
+const foldSplat = prog(`#version 300 es
+in vec2 corner; in vec2 ctr; in vec4 pa; in float pw;   // pa: radius, strength, age, unused; pw: angle of travel
+uniform vec2 res; uniform float aniso; out vec2 q; out float e; out float wv;
+void main(){ q = corner; e = pa.y; wv = pa.w;
+  vec2 c = vec2(corner.x * pa.x * aniso, corner.y * pa.x); float a = -pw; c = mat2(cos(a), sin(a), -sin(a), cos(a)) * c;
+  gl_Position = vec4((ctr + c) / res * 2.0 - 1.0, 0.0, 1.0); }`,
+`#version 300 es
+precision highp float; in vec2 q; in float e; in float wv; uniform float folds, base; out vec4 o;
+void main(){ float g = exp(-dot(q, q) * 3.1); float sn = sin(q.y * folds * (1. + .28 * wv) + .6 * wv);
+  float fold = sqrt(sn * sn + .015);   // low on the crease, rounded between; the crease softened so it never reads as a scratch
+  o = vec4(e * g * mix(base, 1., fold), e * g, 0., 0.); }`);
+// the fabric's drag: r,g = how far the cloth has been dragged (sheet px), b = how much of it the cursor has revealed. First order, so it never rings.
+const simStep = prog(`#version 300 es
+in vec2 corner; out vec2 uv; void main(){ uv = corner * 0.5 + 0.5; gl_Position = vec4(corner, 0.0, 1.0); }`,
+`#version 300 es
+precision highp float; in vec2 uv; out vec4 o;
+uniform sampler2D prev; uniform vec2 res, p0, p1, vel; uniform float R, drag, decay, reveal, revealDecay, diffuse, on;
+void main(){
+  vec2 px = 1. / res, x = uv * res;
+  vec2 a = x - p1, b = p0 - p1; float t = clamp(dot(a, b) / max(dot(b, b), 1e-4), 0., 1.);
+  float w = on * exp(-pow(length(a - b * t) / R, 2.));
+  vec4 c = texture(prev, uv), l = texture(prev, uv + vec2(px.x, 0.)), r = texture(prev, uv - vec2(px.x, 0.)), u = texture(prev, uv + vec2(0., px.y)), d = texture(prev, uv - vec2(0., px.y));
+  vec4 lap = l + r + u + d - 4. * c;
+  vec2 D = (c.rg + diffuse * lap.rg) * decay + w * vel * drag;   // dragged with the cursor, spreading softly, sliding back
+  float wr = on * exp(-pow(length(a - b * t) / (R * 3.2), 2.));   // the cloth is revealed well beyond where the cursor touches it
+  float V = max((c.b + diffuse * lap.b) * revealDecay, wr * min(1., .35 + length(vel) * .5) * reveal);
+  o = vec4(D, V, 1.);
+}`);
+const show = prog(`#version 300 es
+in vec2 corner; out vec2 uv; void main(){ uv = corner * 0.5 + 0.5; gl_Position = vec4(corner, 0.0, 1.0); }`,
+`#version 300 es
+precision highp float;
+uniform sampler2D page, ground, field, keep, fold, sheet; uniform vec2 res; uniform vec4 rect; uniform int mode; uniform float px; uniform int dbg; uniform float gain; uniform int live; uniform float relief; uniform vec2 sres; uniform float grainAmt;
+in vec2 uv; out vec4 o;
+const vec3 F0 = vec3(216.,178.,96.)/255., F1 = vec3(188.,111.,76.)/255., F2 = vec3(137.,58.,80.)/255., F3 = vec3(52.,29.,94.)/255., INK = vec3(8.)/255.;
+vec3 fall(float t){ t = clamp(t, 0., 1.) * 4.; if (t < 1.) return mix(F0, F1, t); if (t < 2.) return mix(F1, F2, t - 1.); if (t < 3.) return mix(F2, F3, t - 2.); return mix(F3, INK, t - 3.); }
+float lum(vec3 c){ return dot(c, vec3(.2126, .7152, .0722)); }
+vec2 iuv(vec2 frag){ vec2 p = vec2(frag.x, res.y - frag.y); return (p - rect.xy) / rect.zw; }   // screen px (top-left origin) to image uv
+vec3 tex(sampler2D s, vec2 frag){ return texture(s, iuv(frag)).rgb; }
+// the page as drawn: the screenshot, or, when combined, c3's frame (a viewport-sized canvas, top row first)
+vec3 texP(vec2 frag){ return live == 1 ? texture(page, vec2(frag.x / res.x, 1. - frag.y / res.y)).rgb : texture(page, iuv(frag)).rgb; }
+float where(vec3 g){ float best = 0., d = 9.; for (int i = 0; i <= 32; i++){ float t = float(i) / 32.; float e = distance(g, fall(t)); if (e < d){ d = e; best = t; } } return best; }
+vec3 screen(vec3 a, vec3 b){ return 1. - (1. - a) * (1. - b); }
+uniform float clothScale, W6, tightAt;
+float hsh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(hsh(i), hsh(i + vec2(1., 0.)), f.x), mix(hsh(i + vec2(0., 1.)), hsh(i + vec2(1., 1.)), f.x), f.y); }
+float fbm(vec2 p){ return vn(p) * .65 + vn(p * 2.03 + 7.1) * .35; }
+// the cloth: long, soft, curving folds, from noise warped by noise
+float cloth(vec2 P){ vec2 p = P / clothScale; vec2 q = p + vec2(fbm(p * .7), fbm(p * .7 + 3.3)) * 1.6;
+  return fbm(q * vec2(1., .55)); }
+// type and photographs, with a clearance around them so nothing on the ground runs into a line of text
+float near(vec2 f, float r){ float m = 0.; for (int i = 0; i < 12; i++){ float a = float(i) * .5236; vec2 o = vec2(cos(a), sin(a)) * r;
+  m = max(m, smoothstep(.035, .11, distance(tex(page, f + o), tex(ground, f + o)))); } return m; }
+void main(){
+  vec2 f = gl_FragCoord.xy;
+  vec3 pg = texP(f), gd = tex(ground, f);
+  vec4 fl = texture(field, uv);
+  float L = fl.r, age = fl.g / max(fl.r, 1e-4);
+  float content = smoothstep(.035, .11, distance(pg, gd));
+  float dark = smoothstep(.42, .22, lum(gd));
+  vec3 outc = pg;
+  if (mode == 0) {   // A: raking light, on edges only
+    vec2 gr = vec2(0.);   // the edge at two widths, so the light is a soft rim and not a drawn outline
+    for (int k = 1; k <= 2; k++) { float e = px * 1.5 * float(k);
+      gr += .5 * vec2(lum(texP(f + vec2(e, 0.))) - lum(texP(f - vec2(e, 0.))), lum(texP(f - vec2(0., e))) - lum(texP(f + vec2(0., e)))); }
+    float edge = clamp(length(gr) * 2.6, 0., 1.);
+    vec2 n = length(gr) > 1e-4 ? normalize(gr) : vec2(0.);   // points toward the brighter side, in page orientation
+    vec2 u = length(fl.ba) > 1e-5 ? normalize(fl.ba) : vec2(0.);   // the way the light is travelling, in page orientation
+    vec2 outw = lum(pg) > lum(gd) ? -n : n;   // out of the type or panel, toward the ground
+    float face = smoothstep(.15, .7, dot(outw, -u));   // edges facing the oncoming light take it; the far sides stay dark, so nothing is ringed
+    // small type on a light ground keeps its edges: if the dark side of the edge is back to ground within 4 px, it is a thin stroke
+    vec2 into = -vec2(n.x, -n.y) * 4. * px;
+    float thin = 1. - smoothstep(.10, .24, distance(texP(f + into), tex(ground, f + into)));
+    vec3 warm = screen(F0, vec3(.18, .12, .05));
+    vec3 pale = screen(F0, vec3(.62, .55, .42));   // on gold the light has to be paler than the ground to read as light
+    vec3 col = mix(mix(pale, warm, dark), fall(age * .9), clamp(age * 1.3, 0., 1.) * mix(.55, 1., dark));
+    float obj = smoothstep(.05, .2, distance(pg, gd));   // light lands on the object's own edge, never on the ground beside it
+    float I = min(1., clamp(L, 0., 1.6) * edge * face * obj * mix(1.1, 2.2, dark) * (1. - thin * (1. - dark) * .9)) * gain;
+    bool bright = lum(pg) > lum(gd) + .08;
+    vec3 tint = mix(F0, screen(F0, vec3(.25, .2, .1)), .5);   // light type turns gold on its lit edge rather than whiter
+    outc = bright ? mix(pg, mix(tint, col, clamp(age * 1.3, 0., 1.)), I * .85) : screen(pg, col * I);
+  } else if (mode == 1) {   // B: dusk passes, on the ground only
+    float k = clamp(L, 0., 1.) * (1. - content);
+    vec3 paper = screen(gd, mix(vec3(.30, .24, .14), fall(age * .5) * .4, .3));   // light ground: warmer and lighter, like light on paper
+    vec3 lifted = screen(gd, fall(max(0., where(gd) - .3 - age * .1)) * .42);   // night and rose grounds: lifted in the colour of the stage before, never grey
+    outc = mix(pg, mix(paper, lifted, dark), k);
+  } else if (mode == 10) {   // U: satin under tension. Wrinkles run with the pull, tight while it is fresh, broadening into soft swells as it relaxes
+    vec4 sh = texture(sheet, uv);
+    vec2 P = vec2(f.x, res.y - f.y) / px;   // page px
+    vec2 D = vec2(sh.r, -sh.g) * W6;        // the pull, page px, page orientation
+    float Lp = length(D), rev = smoothstep(0., .9, sh.b);
+    vec2 dir = Lp > 1e-3 ? D / Lp : vec2(1., 0.), n = vec2(-dir.y, dir.x);
+    float tension = smoothstep(0., tightAt, Lp) * rev;
+    // where the pull points every way at once (right at the cursor) the cloth bunches rather than wrinkles: no rings
+    vec2 Dx = vec2(texture(sheet, uv + vec2(4. / sres.x, 0.)).r, -texture(sheet, uv + vec2(4. / sres.x, 0.)).g), Dy = vec2(texture(sheet, uv + vec2(0., 4. / sres.y)).r, -texture(sheet, uv + vec2(0., 4. / sres.y)).g);
+    float agree = max(0., dot(dir, normalize(Dx + 1e-4))) * max(0., dot(dir, normalize(Dy + 1e-4)));
+    tension *= smoothstep(.75, .97, agree);
+    float lambda = mix(clothScale * 1.9, clothScale, tension);   // tight wrinkles under pull, broad swells as it lets go
+    float wob = fbm(P / 420.) * 5.5 + fbm(P / 160. + 4.) * 1.4;   // uneven widths, never a pattern
+    float phase = dot(P, n) / lambda * 6.2832 + wob;
+    float A = rev * (.15 + .85 * tension * tension) * smoothstep(.25, .75, fbm(P / 260. + 9.));   // only a few folds carry: most of the sheet is a soft swell
+    vec2 slope = n * cos(phase) * A * relief;
+    vec3 nrm = normalize(vec3(-slope, 1.)), Ld = normalize(vec3(-.4, .62, .68));
+    float diff = dot(nrm, Ld) - Ld.z;
+    vec3 hv = normalize(Ld + vec3(0., 0., 1.));
+    float sheen = pow(max(0., dot(nrm, hv)), 46.) - pow(dot(vec3(0., 0., 1.), hv), 46.);   // a narrow, bright line on each crest
+    float grain = (fract(sin(dot(floor(f / px), vec2(12.9898, 78.233))) * 43758.5453) - .5) * grainAmt * (.4 + .6 * rev);
+    float ease = 1. - .4 * texture(keep, iuv(f)).r;
+    float up = clamp((diff * 2.2 + max(0., sheen) * 1.1) * ease, 0., 1.), down = clamp(-diff * 3.2 * ease, 0., 1.);
+    vec3 hi = mix(screen(gd, vec3(.40, .34, .24)), screen(gd, gd * .9 + vec3(.08)), dark);
+    vec3 lo = mix(gd * .72, gd * .48, dark);
+    vec3 sat = mix(mix(gd, hi, up), lo, down) + grain * rev;
+    float onTop = smoothstep(.006, .025, distance(pg, gd));
+    outc = mix(pg * (sat / max(gd, vec3(.004))), pg, onTop);
+  } else if (mode == 9) {   // T: satin that folds. h is the folded sheet; it is shaded in the ground's own hue
+    float h = texture(fold, uv).r, env = texture(fold, uv).g;
+    vec2 g = vec2(0.);
+    for (int k = 1; k <= 2; k++) { vec2 t = vec2(3. / res.x, 3. / res.y) * px * float(k);
+      g += vec2(texture(fold, uv + vec2(t.x, 0.)).r - texture(fold, uv - vec2(t.x, 0.)).r,
+                texture(fold, uv + vec2(0., t.y)).r - texture(fold, uv - vec2(0., t.y)).r) / (6. * px * float(k)) / 2.; }
+    vec3 nrm = normalize(vec3(-g * relief, 1.)), Ld = normalize(vec3(-.45, .6, .66));
+    float diff = dot(nrm, Ld) - Ld.z;   // above zero where a fold faces the light, below on its far side and in the crease
+    vec3 hv = normalize(Ld + vec3(0., 0., 1.));
+    float sheen = pow(max(0., dot(nrm, hv)), 18.) - pow(dot(vec3(0., 0., 1.), hv), 18.);   // a broad, matte satin sheen along each crest, never foil
+    float weave = (fract(sin(dot(floor(f / px), vec2(12.9898, 78.233))) * 43758.5453) - .5) * .022 * smoothstep(.02, .3, env);
+    float ease = 1. - .55 * texture(keep, iuv(f)).r;   // folds ease off near blocks of text, so no trough crosses a label
+    float up = clamp((diff * 2.2 + max(0., sheen) * .55 + weave) * ease, 0., 1.), down = clamp((-diff * 3. - weave) * ease, 0., 1.);
+    vec3 hi = mix(screen(gd, vec3(.40, .34, .24)), screen(gd, gd * .9 + vec3(.07)), dark);
+    vec3 lo = mix(gd * .74, gd * .5, dark);
+    vec3 sat = mix(mix(gd, hi, up), lo, down);
+    float onTop = smoothstep(.006, .025, distance(pg, gd));
+    outc = mix(pg * (sat / max(gd, vec3(.004))), pg, onTop);   // the fold changes the ground in proportion, so any light already on it is kept
+  } else if (mode >= 6) {   // S1, S2: satin. h is the fold; it is shaded as a soft sheet lit from the upper left, in the ground's own hue
+    vec2 g = vec2(0.);   // the slope of the fold, measured wide so the sheet stays smooth and never hairy
+    for (int k = 1; k <= 3; k++) { vec2 t = vec2(6. / res.x, 6. / res.y) * px * float(k);
+      g += vec2(texture(field, uv + vec2(t.x, 0.)).b - texture(field, uv - vec2(t.x, 0.)).b,
+                texture(field, uv + vec2(0., t.y)).b - texture(field, uv - vec2(0., t.y)).b) / (12. * px * float(k)) / 3.; }
+    vec3 nrm = normalize(vec3(-g * 70., 1.)), Ld = normalize(vec3(-.5, .55, .67));
+    float shade = dot(nrm, Ld) - Ld.z;   // above zero on the lit flank, below in the trough
+    float sheen = pow(max(0., dot(reflect(-Ld, nrm), vec3(0., 0., 1.))), 8.) - pow(Ld.z, 8.);   // flat satin reflects nothing extra
+    float up = clamp(shade * 3. + max(0., sheen) * 1.2, 0., 1.), down = clamp(-shade * 3., 0., 1.);
+    if (mode == 7) down = 0.;
+    vec3 hi = mix(screen(gd, vec3(.42, .36, .26)), screen(gd, gd * .9 + vec3(.06)), dark);   // the crest: the ground's own colour, lighter
+    vec3 lo = mix(gd * .78, gd * .55, dark);                                                 // the trough: the same colour, deeper, never black
+    if (mode == 8) hi = mix(hi, screen(gd, fall(age * .9) * .75), .7);   // S3: the crest takes c3's warm light, cooling as the fold relaxes
+    vec3 sat = mix(mix(gd, hi, up), lo, down);
+    float onTop = smoothstep(.006, .025, distance(pg, gd));   // type, down to its faintest anti-aliased pixel, and photographs sit on top, untouched
+    outc = mix(sat, pg, onTop);
+  } else if (mode >= 3) {   // D, E, F: the page bends around the cursor. h is the push of the path; its slope says which way
+    vec2 t = vec2(4. / res.x * px, 4. / res.y * px) * 2.;
+    float h = fl.b;
+    vec2 g = vec2(texture(field, uv + vec2(t.x, 0.)).b - texture(field, uv - vec2(t.x, 0.)).b,
+                  texture(field, uv + vec2(0., t.y)).b - texture(field, uv - vec2(0., t.y)).b) / (16. * px);   // per screen px, GL orientation
+    float kp = 1. - texture(keep, iuv(f)).r;
+    if (mode == 3) {   // D: the whole page pushed aside, up to about 12 px
+      vec2 d = g * 380. * px;
+      outc = texP(f + d);
+    } else if (mode == 4) {   // E: a ridge lit from the upper left, the lit side only
+      vec3 nrm = normalize(vec3(-g * 26., 1.)), Ld = normalize(vec3(-.55, .6, .58));
+      float lit = max(0., dot(nrm, Ld) - Ld.z) * 2.4;
+      vec3 c = mix(screen(F0, vec3(.35, .3, .2)), fall(max(0., where(gd) - .25)), dark);
+      outc = mix(pg, screen(pg, c * .9), clamp(lit, 0., 1.) * kp);
+    } else {   // F: strata that bow around the path
+      vec2 d = g * 520. * px;
+      float y = (res.y - f.y - d.y * -1.) / px;   // page px, pushed with the bend
+      float v = y / 9.;
+      float w = fwidth(v);
+      float line = 1. - smoothstep(.45, 1.25, abs(fract(v - .5) - .5) / max(w, 1e-4));
+      float idx = step(abs(mod(floor(v + .5), 5.)), .5);
+      float fade = smoothstep(.04, .5, h) * kp;
+      vec3 hair = mix(INK, vec3(192.) / 255., dark);
+      vec3 index = dark > .5 ? F1 : fall(min(1., where(gd) + .3)) * .8;
+      float a = line * fade * mix(mix(.22, .2, dark), mix(.6, .55, dark), idx);
+      outc = mix(pg, mix(hair, index, idx), a);
+    }
+  } else {   // C: contour, on the ground only
+    float h = fl.b;
+    float v = h * 3.;
+    float w = fwidth(v);
+    float d = abs(fract(v - .5) - .5) / max(w, 1e-4);
+    float line = 1. - smoothstep(.45, 1.25, d);
+    float idx = step(abs(mod(floor(v + .5), 4.)), .5);
+    float fade = smoothstep(.04, .4, L) * (1. - texture(keep, iuv(f)).r);   // the lines live as long as the fresh light, then go out
+    float t = where(gd);
+    vec3 hair = mix(INK, vec3(192.) / 255., dark);
+    vec3 index = dark > .5 ? F1 : fall(min(1., t + .3)) * .8;
+    float a = line * fade * mix(mix(.26, .22, dark), mix(.75, .7, dark), idx);
+    outc = mix(pg, mix(hair, index, idx), a);
+  }
+  if (dbg == 1) outc = vec3(fl.b / 2., texture(keep, iuv(f)).r, fl.r / 2.);
+  if (dbg == 2) { float vv = fl.b * 7.; outc = vec3(fract(vv), fwidth(vv) * 20., 0.); }
+  o = vec4(outc, 1.);
+}`);
+const quad = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
+const qbuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, qbuf); gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+const ibuf = gl.createBuffer();
+const tKeep = gl.createTexture(), tPage = gl.createTexture(), tGround = gl.createTexture(), tField = gl.createTexture(), fbo = gl.createFramebuffer();
+const tFold = gl.createTexture(), fbo2 = gl.createFramebuffer();
+const tSim = [gl.createTexture(), gl.createTexture()], fboSim = [gl.createFramebuffer(), gl.createFramebuffer()]; let simI = 0, SW = 1, SH = 1, simHead = null;
+let FW = 1, FH = 1;
+function texParams(t, filter) { gl.bindTexture(gl.TEXTURE_2D, t); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); }
+function upload() {
+  for (const [t, im] of [[tPage, img], [tGround, gimg]]) { texParams(t, gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im); }
+  // where the ground may be drawn on: away from type, panels and photographs by about 40 px, so a block of text or a table reads as one block and stays clear
+  const w = img.naturalWidth >> 2, h = img.naturalHeight >> 2, a = document.createElement("canvas"), b = document.createElement("canvas");
+  a.width = b.width = w; a.height = b.height = h; const ac = a.getContext("2d", { willReadFrequently: true }), bc = b.getContext("2d", { willReadFrequently: true });
+  ac.drawImage(img, 0, 0, w, h); bc.drawImage(gimg, 0, 0, w, h);
+  const A = ac.getImageData(0, 0, w, h), B = bc.getImageData(0, 0, w, h);
+  for (let i = 0; i < A.data.length; i += 4) { const d = Math.hypot(A.data[i] - B.data[i], A.data[i+1] - B.data[i+1], A.data[i+2] - B.data[i+2]) / 255;
+    const v = d > 0.025 ? 255 : 0; A.data[i] = A.data[i+1] = A.data[i+2] = v; A.data[i+3] = 255; }
+  ac.putImageData(A, 0, 0); bc.clearRect(0, 0, w, h); bc.filter = "blur(11px)"; for (let i = 0; i < 6; i++) bc.drawImage(a, 0, 0); bc.filter = "none";
+  const K = bc.getImageData(0, 0, w, h); for (let i = 0; i < K.data.length; i += 4) { const v = Math.min(255, K.data[i] * 5); K.data[i] = K.data[i+1] = K.data[i+2] = v; } bc.putImageData(K, 0, 0);
+  texParams(tKeep, gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, b);
+}
+function drawFolds(now, fo) {
+  const v = new Float32Array(trail.length * 6 * 9); let k = 0; const s = FW / W;
+  for (const p of trail) {
+    const age = (now - p.t) / fo.life; if (age >= 1) continue;
+    const r = (fo.r + fo.rs * p.sp) * (1 + age * 0.3), e = 10 / (r * 0.64) / fo.aniso * (1 - age) ** 1.7;
+    const wander = Math.sin(p.x * 0.0061 + p.y * 0.0043) * 0.6 + Math.sin(p.x * 0.0023 - p.y * 0.0071 + 1.7) * 0.4;   // folds widen and narrow along the path, never evenly
+    for (let i = 0; i < 6; i++) { v.set([quad[i * 2], quad[i * 2 + 1], p.x * s, (H - p.y) * s, r * s, e, age, wander, p.ang], k); k += 9; }
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2); gl.viewport(0, 0, FW, FH); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  if (!k) return;
+  gl.useProgram(foldSplat); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+  gl.bindBuffer(gl.ARRAY_BUFFER, ibuf); gl.bufferData(gl.ARRAY_BUFFER, v, gl.DYNAMIC_DRAW);
+  const at = n => gl.getAttribLocation(foldSplat, n);
+  [["corner", 2, 0], ["ctr", 2, 8], ["pa", 4, 16], ["pw", 1, 32]].forEach(([n, c, off]) => { gl.enableVertexAttribArray(at(n)); gl.vertexAttribPointer(at(n), c, gl.FLOAT, false, 36, off); });
+  gl.uniform2f(gl.getUniformLocation(foldSplat, "res"), FW, FH);
+  gl.uniform1f(gl.getUniformLocation(foldSplat, "aniso"), fo.aniso);
+  gl.uniform1f(gl.getUniformLocation(foldSplat, "folds"), fo.folds);
+  gl.uniform1f(gl.getUniformLocation(foldSplat, "base"), fo.base);
+  gl.drawArrays(gl.TRIANGLES, 0, k / 9); gl.disable(gl.BLEND);
+  for (const n of ["corner", "ctr", "pa", "pw"]) gl.disableVertexAttribArray(at(n));
+}
+// the sheet runs at about a sixth of the page's resolution, so its forms are broad; two steps a frame
+function stepSheet(o) {
+  const hd = trail.length ? trail[trail.length - 1] : null, sx = SW / W;
+  const head = hd ? { x: hd.x * sx, y: (H - hd.y) * sx } : simHead;
+  const p0 = simHead || head, on = head && p0 ? 1 : 0;
+  const vel = on ? { x: (head.x - p0.x) / 2, y: (head.y - p0.y) / 2 } : { x: 0, y: 0 };
+  gl.useProgram(simStep); gl.bindBuffer(gl.ARRAY_BUFFER, qbuf); const ac = gl.getAttribLocation(simStep, "corner");
+  gl.enableVertexAttribArray(ac); gl.vertexAttribPointer(ac, 2, gl.FLOAT, false, 0, 0); gl.viewport(0, 0, SW, SH);
+  const U = n => gl.getUniformLocation(simStep, n);
+  for (let i = 0; i < 2; i++) {
+    const a = on ? { x: p0.x + (head.x - p0.x) * i / 2, y: p0.y + (head.y - p0.y) * i / 2 } : { x: -1e4, y: -1e4 };
+    const b = on ? { x: p0.x + (head.x - p0.x) * (i + 1) / 2, y: p0.y + (head.y - p0.y) * (i + 1) / 2 } : a;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboSim[1 - simI]);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tSim[simI]); gl.uniform1i(U("prev"), 0);
+    gl.uniform2f(U("res"), SW, SH); gl.uniform2f(U("p0"), a.x, a.y); gl.uniform2f(U("p1"), b.x, b.y);
+    gl.uniform2f(U("vel"), vel.x, vel.y); gl.uniform1f(U("R"), o.R * sx);
+    gl.uniform1f(U("drag"), o.drag); gl.uniform1f(U("decay"), o.decay); gl.uniform1f(U("reveal"), o.reveal); gl.uniform1f(U("revealDecay"), o.revealDecay); gl.uniform1f(U("diffuse"), o.diffuse);
+    gl.uniform1f(U("on"), on && (head.x !== p0.x || head.y !== p0.y) ? 1 : 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6); simI = 1 - simI;
+  }
+  gl.disableVertexAttribArray(ac); simHead = head;
+}
+function sheetSize() {
+  SW = Math.max(8, Math.round(W / 6)); SH = Math.max(8, Math.round(H / 6)); simHead = null;
+  for (let i = 0; i < 2; i++) { texParams(tSim[i], gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, SW, SH, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboSim[i]); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tSim[i], 0);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+function fieldSize() {
+  sheetSize();
+  FW = Math.max(1, Math.round(glc.width / 2)); FH = Math.max(1, Math.round(glc.height / 2));
+  texParams(tField, gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, FW, FH, 0, gl.RGBA, gl.HALF_FLOAT, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tField, 0); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  texParams(tFold, gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, FW, FH, 0, gl.RGBA, gl.HALF_FLOAT, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tFold, 0); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+function drawGL(now) {
+  glideStep(now);
+  const o = SET[dir], fo = FOLD[dir]; trail = trail.filter(p => now - p.t < Math.max(o.life, fo ? fo.life : 0)); fresh = [];
+  if (fo) drawFolds(now, fo);
+  if (SHEET[dir]) stepSheet(SHEET[dir]);
+  // the field, at half resolution
+  const v = new Float32Array(trail.length * 6 * 9); let k = 0;
+  const s = FW / W;   // css px to field px
+  for (const p of trail) {
+    if (now - p.t >= o.life) continue;
+    const age = (now - p.t) / o.life, r = (o.r + o.rs * p.sp) * (1 + age * o.grow);
+    const peak = 10 / (r * 0.64) / (ANISO[dir] || 1);   // a stroke reads the same at any radius: overlapping splats along the path sum to about one
+    const lightv = peak * (1 - age) ** o.fade, shape = peak * (1 - age) ** (o.shapePow || 0.8);
+    const isA = dir === "A" || dir[0] === "X";
+    const b3 = isA ? lightv * Math.cos(p.ang) : shape, b4 = isA ? lightv * Math.sin(p.ang) : ANISO[dir] ? p.ang : 0;   // A: which way the light is travelling
+    for (let i = 0; i < 6; i++) { v.set([quad[i * 2], quad[i * 2 + 1], p.x * s, (H - p.y) * s, r * s, lightv, age, b3, b4], k); k += 9; }
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, FW, FH); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  if (trail.length) {
+    gl.useProgram(splat); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+    gl.bindBuffer(gl.ARRAY_BUFFER, ibuf); gl.bufferData(gl.ARRAY_BUFFER, v, gl.DYNAMIC_DRAW);
+    const at = n => gl.getAttribLocation(splat, n);
+    gl.enableVertexAttribArray(at("corner")); gl.vertexAttribPointer(at("corner"), 2, gl.FLOAT, false, 36, 0);
+    gl.enableVertexAttribArray(at("ctr")); gl.vertexAttribPointer(at("ctr"), 2, gl.FLOAT, false, 36, 8);
+    gl.enableVertexAttribArray(at("pa")); gl.vertexAttribPointer(at("pa"), 4, gl.FLOAT, false, 36, 16);
+    gl.enableVertexAttribArray(at("pw")); gl.vertexAttribPointer(at("pw"), 1, gl.FLOAT, false, 36, 32);
+    gl.uniform2f(gl.getUniformLocation(splat, "res"), FW, FH);
+    gl.uniform1f(gl.getUniformLocation(splat, "aniso"), ANISO[dir] || 0);
+    gl.drawArrays(gl.TRIANGLES, 0, k / 9); gl.disable(gl.BLEND);
+    for (const n of ["corner", "ctr", "pa", "pw"]) gl.disableVertexAttribArray(at(n));
+  }
+  // the page with it
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, glc.width, glc.height); gl.useProgram(show);
+  gl.bindBuffer(gl.ARRAY_BUFFER, qbuf); const ac = gl.getAttribLocation(show, "corner");
+  gl.enableVertexAttribArray(ac); gl.vertexAttribPointer(ac, 2, gl.FLOAT, false, 0, 0);
+  [[tPage, "page"], [tGround, "ground"], [tField, "field"], [tKeep, "keep"], [tFold, "fold"], [tSim[simI], "sheet"]].forEach(([t, n], i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, t); gl.uniform1i(gl.getUniformLocation(show, n), i); });
+  const [, , , , dx, dy, dw, dh] = cover(glc.width, glc.height);
+  gl.uniform2f(gl.getUniformLocation(show, "res"), glc.width, glc.height);
+  gl.uniform4f(gl.getUniformLocation(show, "rect"), dx, dy, dw, dh);
+  gl.uniform1i(gl.getUniformLocation(show, "mode"), { A: 0, B: 1, C: 2, X1: 0, X2: 0, D: 3, E: 4, F: 5, S1: 6, S2: 7, S3: 8, T1: 9, T2: 9, T3: 9, U1: 10, U2: 10, U3: 10 }[dir]);
+  gl.uniform1f(gl.getUniformLocation(show, "px"), DPR);
+  gl.uniform1f(gl.getUniformLocation(show, "gain"), GAIN[dir] ?? 1);
+  gl.uniform1f(gl.getUniformLocation(show, "relief"), (FOLD[dir] || SHEET[dir] || {}).relief || 0);
+  gl.uniform2f(gl.getUniformLocation(show, "sres"), SW, SH);
+  gl.uniform1f(gl.getUniformLocation(show, "grainAmt"), (SHEET[dir] || {}).grain || 0);
+  gl.uniform1f(gl.getUniformLocation(show, "clothScale"), (SHEET[dir] || {}).scale || 1);
+  gl.uniform1f(gl.getUniformLocation(show, "W6"), W / SW);
+  gl.uniform1f(gl.getUniformLocation(show, "tightAt"), (SHEET[dir] || {}).tightAt || 1);
+  gl.uniform1i(gl.getUniformLocation(show, "live"), dir[0] === "X" ? 1 : 0);
+  gl.uniform1i(gl.getUniformLocation(show, "dbg"), +(q.get("dbg") || 0));
+  gl.drawArrays(gl.TRIANGLES, 0, 6); gl.disableVertexAttribArray(ac);
+}
+
+document.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { setDir(b.dataset.d); });
+document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { setPage(b.dataset.p); });
+function setDir(d) { dir = d; document.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", x.dataset.d === d)); reset(); note(); vis(); if (ready) upload(); }
+function setPage(p) { document.querySelectorAll("[data-p]").forEach(x => x.setAttribute("aria-pressed", x.dataset.p === p)); load(p); }
+function vis() { c2.style.display = dir === "c3" ? "block" : "none"; glc.style.display = dir === "c3" ? "none" : "block"; }
+function note() { const [h, t] = NOTES[dir]; document.getElementById("note").innerHTML = `<b>${h}</b>${t}`; }
+// for recorded comparisons: ?d=A&p=09&clean
+const q = new URLSearchParams(location.search); if (q.has("clean")) document.body.classList.add("clean");
+function frame(now) {
+  refreshLive(now);
+  const dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
+  if (ready) {
+    if (dir === "c3" || dir[0] === "X") { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c2.width, c2.height); if (window.cloth && window.cloth.tick()) ctx.drawImage(window.cloth.canvas, 0, 0, c2.width, c2.height); else ctx.drawImage(img, ...cover(c2.width, c2.height)); c3(now); }
+    if (dir[0] === "X") {   // c3's frame becomes the page the raking light reads from and draws on
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tPage); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c2);
+    }
+    if (dir !== "c3") drawGL(now);
+  }
+  requestAnimationFrame(frame);
+}
+addEventListener("resize", () => { size(); shot.clear(); rasterNear(); }); size();
+dir = "X1"; setDir(dir);
+document.querySelectorAll("[data-p]").forEach(x => x.setAttribute("aria-pressed", x.dataset.p === (q.get("p") || "03")));
+requestAnimationFrame(frame);
+</script>
+<script type="module">
+// Ember rerun (14 Oct 2026): the ground is a real sheet of cloth. A particle mesh held together like woven fabric, its edges
+// anchored so it springs back flat. The cursor grabs and drags it; where it is compressed it buckles into folds. Shaded as satin
+// in the ground's own colour; type and photographs stay pinned on top.
+import * as THREE from "three";
+
+const NOTES = {
+  V1: ["V1 · Silk", "A light silk: quick, fine folds that let go fast."],
+  V2: ["V2 · Satin", "A satin: the cursor grabs the cloth and drags it; long folds run with the pull and bunch where it is held, then slacken into low swells and lie flat."],
+  V3: ["V3 · Heavy satin", "A heavy satin: fewer, deeper folds that settle slowly."],
+};
+// grab: how much of the drag the cloth takes; reach (css px); home: pull back to flat per step; damp; bend: fold stiffness; depth: shading relief
+const WEIGHT = {
+  V1: { grab: 1.0, reach: 200, home: .0028, damp: .9, bend: .35, iters: 4, depth: 2.2 },
+  V2: { grab: 1.0, reach: 250, home: .0022, damp: .91, bend: .45, iters: 5, depth: 2.4 },
+  V3: { grab: 1.0, reach: 310, home: .0018, damp: .92, bend: .55, iters: 6, depth: 2.6 },
+};
+const q = new URLSearchParams(location.search);
+// where the folds may show: only inside the ember's own shape and a short way past its rim (14 Oct: "they should contour the
+// shape of the ember and only radiate a short distance from it"). reach/home override the cloth; rim: how far past the ember, css px
+const RIPPLE = {   // cloth: overrides of the V2 weight; rim: how far past the ember, css px; hold: how long the shape lingers after the ember has gone, s
+  P2d: { mask: true, elem: 2, ease: true, rim: 76, hold: 1.7, press: 17, cloth: { grab: 0, home: .0035, bend: .32, damp: .97, depth: 3 }, note: ["P2d · Slow swell", "The ember sinks into the satin and two broad, low swells roll out from its outline. Type, panels and photographs take the swell's light and bend with it, easing back true over about a second. c3 and the raking light of A at half sit on top."] },
+  P2e: { mask: true, elem: 2, ease: true, crisp: 1, rim: 76, hold: 1.7, press: 17, cloth: { grab: 0, home: .0035, bend: .32, damp: .97, depth: 4 }, note: ["P2e · Crisp folds", "The slow swell at the same strength, but with clearer fold shapes: a narrow sheen on each crest and a firmer shadow in each trough, while the broad tone stays as quiet as before."] },
+};
+let ripple = RIPPLE[q.get("r")] ? q.get("r") : "P2d";   // picked by eye, 14 Oct: P2d, satin a third, raking light a third
+let weight = "V2", page = q.get("p") || "03", strength = +(q.get("s") || .33);   // picked by eye, 14 Oct: P2d at a third   // how much of the satin shows: the folds are a hint in the ground, not an object
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+let W = innerWidth, H = innerHeight;
+const camera = new THREE.OrthographicCamera(0, W, H, 0, -2000, 2000);
+const scene = new THREE.Scene();
+const loader = new THREE.TextureLoader();
+const tex = { page: null, ground: null };
+
+// the cloth
+const NX = 120, NY = 72, OVER = .3;   // the cloth reaches 30% past every edge of the screen, so where it is held is never seen
+let pos, prev, rest, geo, mesh, mat, bendA;
+function build() {
+  W = innerWidth; H = innerHeight;
+  renderer.setSize(W, H); camera.right = W; camera.top = H; camera.updateProjectionMatrix();
+  if (mesh) { scene.remove(mesh); geo.dispose(); }
+  geo = new THREE.PlaneGeometry(W * (1 + 2 * OVER), H * (1 + 2 * OVER), NX - 1, NY - 1);
+  geo.translate(W / 2, H / 2, 0);
+  const a = geo.attributes.position.array;
+  rest = new Float32Array(a); pos = new Float32Array(a); prev = new Float32Array(a);
+  // the weave is never perfectly flat: a whisper of relief lets compression buckle into folds
+  for (let i = 0; i < NX * NY; i++) { const x = rest[i * 3], y = rest[i * 3 + 1];
+    const z = (Math.sin(x * .031 + y * .017) + Math.sin(x * .013 - y * .029 + 2.)) * .35; pos[i * 3 + 2] = prev[i * 3 + 2] = z; rest[i * 3 + 2] = z; }
+  geo.setAttribute("move", new THREE.BufferAttribute(new Float32Array(NX * NY), 1));
+  geo.setAttribute("bend", new THREE.BufferAttribute(new Float32Array(NX * NY * 2), 2)); bendA = new Float32Array(NX * NY * 2);
+  mesh = new THREE.Mesh(geo, mat); scene.add(mesh);
+}
+mat = new THREE.ShaderMaterial({
+  uniforms: { page: { value: null }, ground: { value: null }, res: { value: new THREE.Vector2(1, 1) }, rect: { value: new THREE.Vector4(0, 0, 1, 1) }, depth: { value: 1 }, amount: { value: 1 }, mask: { value: null }, useMask: { value: 0 }, band: { value: 0 }, elem: { value: 0 }, easeBend: { value: 0 }, bendGain: { value: 3 }, crisp: { value: 0 }, warmSatin: { value: 0 } },
+  vertexShader: `
+    attribute float move; attribute vec2 bend; varying vec3 vN; varying float vZ; varying float vMove; varying vec2 vBend;
+    void main(){ vN = normalize(normalMatrix * normal); vZ = position.z; vMove = move; vBend = bend; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D page, ground; uniform vec2 res; uniform vec4 rect; uniform float depth, amount; uniform sampler2D mask; uniform float useMask, band, elem;
+    varying vec3 vN; varying float vZ; varying float vMove; varying vec2 vBend; uniform float easeBend, bendGain, crisp, warmSatin;
+    vec3 screen(vec3 a, vec3 b){ return 1. - (1. - a) * (1. - b); }
+    float lum(vec3 c){ return dot(c, vec3(.2126, .7152, .0722)); }
+    void main(){
+      vec2 f = gl_FragCoord.xy;   // screen px: the page is pinned, only the cloth moves
+      vec2 p = vec2(f.x, res.y - f.y); vec2 iu = (p - rect.xy) / rect.zw;
+      vec3 n = normalize(vN); n.xy *= depth * smoothstep(.0, 2.5, vMove); n = normalize(n);   // only cloth that has really moved shows relief
+      float ma = texture2D(mask, p / res).a;
+      float m = useMask > .5 ? smoothstep(.0, .6, ma) * (1. - band * smoothstep(.45, .85, ma)) : 1.;   // the ember's shape, softened by its rim; band: only the ring around its outline
+      // elem 2 and 3: type, panels and photographs are printed on the satin, so they bend a few px with the swell
+      if (elem > 1.5) iu = (p - (easeBend > .5 ? vBend * bendGain : n.xy * m) * 4. * res.x / 1440.   /* the bend is fixed at what was picked at a tenth (x3), whatever the satin's strength */ - rect.xy) / rect.zw;
+      vec3 pg = texture2D(page, iu).rgb, gd = texture2D(ground, iu).rgb;
+      vec3 L = normalize(vec3(-.42, .6, .68)), V = vec3(0., 0., 1.), Hh = normalize(L + V);
+      float diff = dot(n, L) - L.z;   // relative to the flat sheet: at rest the ground is exactly as drawn
+      // satin: a narrow sheen that runs along the folds (anisotropic, threads running across the page)
+      vec3 T = normalize(vec3(1., 0., 0.) - n * n.x); float th = dot(T, Hh);
+      float shp = 26. + crisp * 50.;   // crisp: a narrower sheen
+      float aniso = pow(sqrt(max(0., 1. - th * th)), shp) - pow(sqrt(max(0., 1. - pow(dot(normalize(vec3(1.,0.,0.)), Hh), 2.))), shp);   // low, wide satin sheen
+      float dark = smoothstep(.42, .22, lum(gd));
+      float up = clamp(diff * 1.7 + max(0., aniso) * .45, 0., 1.), down = clamp(-diff * 2.6, 0., 1.);
+      vec3 hi = mix(screen(gd, vec3(.40, .34, .24)), screen(gd, gd * .9 + vec3(.08)), dark);
+      hi = mix(hi, screen(gd, vec3(.62, .34, .22)), dark * warmSatin * m);   // dark pages: the crest catches the ember's warmth
+      vec3 lo = mix(gd * .66, gd * .42, dark);   // deep, soft valleys
+      float grain = (fract(sin(dot(floor(f), vec2(12.9898, 78.233))) * 43758.5453) - .5) * .06 * smoothstep(.0, .02, 1. - n.z);
+      // crisp: the broad tone stays at the chosen strength, but each crest and the deepest part of each trough are drawn up to four times as strongly, so the fold reads as a shape
+      float am = amount * m * (1. + crisp * (3. * smoothstep(.2, .6, up) + 1.5 * smoothstep(.3, .7, down)));
+      vec3 sat = mix(gd, mix(mix(gd, hi, up), lo, down) + grain * (1. - crisp * .7), am);
+      float onTop = smoothstep(.006, .025, distance(pg, gd));
+      // elem 1 and 2: the elements take the same light and shade as the satin they sit on, in their own colour
+      vec3 el = pg;
+      if (elem > .5 && elem < 2.5) el = mix(pg, mix(mix(pg, screen(pg, vec3(.40, .34, .24)), up), pg * .66, down), am);
+      gl_FragColor = vec4(mix(pg * (sat / max(gd, vec3(.004))), el, onTop), 1.);
+    }`,
+});
+
+// cloth step: verlet, then fabric constraints (stretch, shear, bend), then a gentle pull back to flat
+let cursor = null, lastCursor = null;
+addEventListener("pointermove", e => { cursor = { x: e.clientX, y: H - e.clientY }; });
+const idx = (i, j) => j * NX + i;
+function constrain(a, b, len, k) {
+  const ax = a * 3, bx = b * 3;
+  const dx = pos[bx] - pos[ax], dy = pos[bx + 1] - pos[ax + 1], dz = pos[bx + 2] - pos[ax + 2];
+  const d = Math.hypot(dx, dy, dz) || 1e-6, c = (d - len) / d * .5 * k;
+  pos[ax] += dx * c; pos[ax + 1] += dy * c; pos[ax + 2] += dz * c; pos[bx] -= dx * c; pos[bx + 1] -= dy * c; pos[bx + 2] -= dz * c;
+}
+function step() {
+  const rp = RIPPLE[ripple], o = { ...WEIGHT[weight], ...(rp.cloth || {}) };
+  const sx = W * (1 + 2 * OVER) / (NX - 1), sy = H * (1 + 2 * OVER) / (NY - 1), dg = Math.hypot(sx, sy);
+  // the grab: cloth near the cursor moves with it
+  let gx = 0, gy = 0;
+  if (cursor && lastCursor) { gx = cursor.x - lastCursor.x; gy = cursor.y - lastCursor.y; }
+  for (let i = 0; i < NX * NY; i++) {
+    const k = i * 3;
+    const vx = (pos[k] - prev[k]) * o.damp, vy = (pos[k + 1] - prev[k + 1]) * o.damp, vz = (pos[k + 2] - prev[k + 2]) * o.damp;
+    prev[k] = pos[k]; prev[k + 1] = pos[k + 1]; prev[k + 2] = pos[k + 2];
+    pos[k] += vx; pos[k + 1] += vy; pos[k + 2] += vz;
+    if (cursor && (gx || gy)) {
+      const ddx = rest[k] - cursor.x, ddy = rest[k + 1] - cursor.y;   // grabbed by where it belongs, so the grab travels with the cursor
+      const ex = pos[k] - cursor.x, ey = pos[k + 1] - cursor.y;
+      const w = Math.exp(-(ex * ex + ey * ey) / (o.reach * o.reach));
+      pos[k] += gx * w * o.grab; pos[k + 1] += gy * w * o.grab;
+    }
+    let zr = rest[k + 2];
+    if (rp.press && md) {   // the ember presses the cloth down where it lies
+      const mx = Math.min(MW - 1, Math.max(0, pos[k] / W * MW | 0)), my = Math.min(MH - 1, Math.max(0, (H - pos[k + 1]) / H * MH | 0));
+      zr -= rp.press * md[(my * MW + mx) * 4 + 3] / 255;
+    }
+    pos[k] += (rest[k] - pos[k]) * o.home; pos[k + 1] += (rest[k + 1] - pos[k + 1]) * o.home; pos[k + 2] += (zr - pos[k + 2]) * Math.max(o.home, rp.press ? .08 : 0);
+  }
+  for (let it = 0; it < o.iters; it++) {
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const a = idx(i, j);
+      if (i < NX - 1) constrain(a, idx(i + 1, j), sx, 1);
+      if (j < NY - 1) constrain(a, idx(i, j + 1), sy, 1);
+      if (i < NX - 1 && j < NY - 1) { constrain(a, idx(i + 1, j + 1), dg, .5); constrain(idx(i + 1, j), idx(i, j + 1), dg, .5); }
+      if (i < NX - 2) constrain(a, idx(i + 2, j), sx * 2, o.bend);
+      if (j < NY - 2) constrain(a, idx(i, j + 2), sy * 2, o.bend);
+      if (i < NX - 4) constrain(a, idx(i + 4, j), sx * 4, o.bend * .35);   // long-range stiffness: a few broad swells, never pleats
+      if (j < NY - 4) constrain(a, idx(i, j + 4), sy * 4, o.bend * .35);
+    }
+    // the edges are held
+    for (let i = 0; i < NX; i++) for (const j of [0, NY - 1]) { const k = idx(i, j) * 3; pos[k] = rest[k]; pos[k + 1] = rest[k + 1]; pos[k + 2] = rest[k + 2]; }
+    for (let j = 0; j < NY; j++) for (const i of [0, NX - 1]) { const k = idx(i, j) * 3; pos[k] = rest[k]; pos[k + 1] = rest[k + 1]; pos[k + 2] = rest[k + 2]; }
+  }
+  lastCursor = cursor ? { ...cursor } : null;
+  // what is drawn is the cloth with its relief smoothed once, so the mesh never shows as a stitched crest
+  const out = geo.attributes.position.array; out.set(pos);
+  for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) { const k = idx(i, j) * 3 + 2;
+    out[k] = pos[k] * .4 + (pos[idx(i - 1, j) * 3 + 2] + pos[idx(i + 1, j) * 3 + 2] + pos[idx(i, j - 1) * 3 + 2] + pos[idx(i, j + 1) * 3 + 2]) * .15; }
+  const mv = geo.attributes.move.array;
+  for (let i = 0; i < NX * NY; i++) { const k = i * 3; mv[i] = Math.hypot(pos[k] - rest[k], pos[k + 1] - rest[k + 1], (pos[k + 2] - rest[k + 2]) * 2); }
+  geo.attributes.move.needsUpdate = true;
+  geo.attributes.position.needsUpdate = true; geo.computeVertexNormals();
+}
+
+function load() {
+  tex.page = new THREE.CanvasTexture(window.liveViews.page); tex.ground = new THREE.CanvasTexture(window.liveViews.ground);
+  for (const t of [tex.page, tex.ground]) { t.colorSpace = THREE.NoColorSpace; t.flipY = false; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false; }
+  mat.uniforms.page.value = tex.page; mat.uniforms.ground.value = tex.ground;
+  build(); fit();
+}
+function fit() {
+  if (!tex.page || !tex.page.image) return;
+  const im = tex.page.image, dpr = renderer.getPixelRatio(); if (!im.width) return;
+  const s = Math.max(W / im.width, H / im.height);
+  mat.uniforms.res.value.set(W * dpr, H * dpr);
+  mat.uniforms.rect.value.set((W - im.width * s) / 2 * dpr, 0, im.width * s * dpr, im.height * s * dpr);
+  mat.uniforms.depth.value = (RIPPLE[ripple].cloth || {}).depth || WEIGHT[weight].depth; mat.uniforms.amount.value = strength;
+}
+addEventListener("resize", () => { build(); fit(); });
+// the ember's shape, small and softened by the rim, for the mask and the press
+const MW = 180, mc = document.createElement("canvas"), mx2 = mc.getContext("2d", { willReadFrequently: true }); let MH = 112, md = null;
+const maskTex = new THREE.CanvasTexture(mc); maskTex.flipY = false; maskTex.colorSpace = THREE.NoColorSpace; maskTex.minFilter = maskTex.magFilter = THREE.LinearFilter;
+function emberShape() {
+  const rp = RIPPLE[ripple]; mat.uniforms.useMask.value = rp.mask ? 1 : 0; mat.uniforms.band.value = rp.band || 0; mat.uniforms.elem.value = rp.elem || 0; mat.uniforms.easeBend.value = rp.ease ? 1 : 0; mat.uniforms.crisp.value = rp.crisp || 0; if (!rp.mask || !window.emberFx) { md = null; return; }
+  MH = Math.round(MW * H / W); if (mc.height !== MH) { mc.width = MW; mc.height = MH; }
+  const k = MW / W;
+  if (rp.hold) { mx2.globalCompositeOperation = "destination-out"; mx2.fillStyle = `rgba(0,0,0,${Math.min(1, 1 / (60 * rp.hold) * 3)})`; mx2.fillRect(0, 0, MW, MH); mx2.globalCompositeOperation = "lighter"; }   // the shape lingers, fading over hold
+  else mx2.clearRect(0, 0, MW, MH);
+  mx2.filter = `blur(${rp.rim * k}px)`;
+  for (let i = 0; i < (rp.hold ? 1 : 3); i++) mx2.drawImage(window.emberFx, 0, 0, MW, MH); mx2.filter = "none"; mx2.globalCompositeOperation = "source-over";   // drawn three times, so the rim reaches out rather than only fading
+  md = rp.press ? mx2.getImageData(0, 0, MW, MH).data : null;
+  maskTex.needsUpdate = true; mat.uniforms.mask.value = maskTex;
+}
+// the bend the elements follow is eased on its own: it gathers over about a fifth of a second and lets go over about a second,
+// through two smoothing stages, so it starts and finishes softly instead of snapping back as the swell lies down
+let bendB = null;
+function easeTheBend() {
+  const rp = RIPPLE[ripple]; if (!rp.ease) return;
+  if (!bendB || bendB.length !== NX * NY * 2) bendB = new Float32Array(NX * NY * 2);
+  const z = geo.attributes.position.array, mv = geo.attributes.move.array, out = geo.attributes.bend.array, d = (RIPPLE[ripple].cloth || {}).depth || 3;
+  const sx = W * (1 + 2 * OVER) / (NX - 1), sy = H * (1 + 2 * OVER) / (NY - 1);
+  for (let j = 1; j < NY - 1; j++) for (let i = 1; i < NX - 1; i++) {
+    const v = idx(i, j), k = v * 3;
+    let gx = -(z[(v + 1) * 3 + 2] - z[(v - 1) * 3 + 2]) / (2 * sx) * d, gy = -(z[(v + NX) * 3 + 2] - z[(v - NX) * 3 + 2]) / (2 * sy) * d;
+    const l = Math.hypot(gx, gy, 1), on = Math.min(1, Math.max(0, mv[v] / 2.5)), g = on * on * (3 - 2 * on);
+    let mk = 1;
+    if (md) { const mx = Math.min(MW - 1, Math.max(0, rest[k] / W * MW | 0)), my = Math.min(MH - 1, Math.max(0, (H - rest[k + 1]) / H * MH | 0)), a = Math.min(1, md[(my * MW + mx) * 4 + 3] / 255 / .6); mk = a * a * (3 - 2 * a); }
+    const tx = gx / l * g * mk * .65, ty = gy / l * g * mk * .65;   // matched to P2b's deepest bend
+    for (const [c, t] of [[0, tx], [1, ty]]) {
+      const b = v * 2 + c, rising = Math.abs(t) > Math.abs(bendA[b]), kA = rising ? .2 : .06, kB = rising ? .25 : .08;
+      bendA[b] += (t - bendA[b]) * kA; bendB[b] += (bendA[b] - bendB[b]) * kB; out[b] = bendB[b];
+    }
+  }
+  geo.attributes.bend.needsUpdate = true;
+}
+function setRipple(r) { ripple = r; document.querySelectorAll("[data-r]").forEach(x => x.setAttribute("aria-pressed", x.dataset.r === r));
+  const n = RIPPLE[r].note; if (n) document.getElementById("note").innerHTML = `<b>${n[0]}</b>${n[1]}`; mx2.clearRect(0, 0, MW, MH); build(); fit(); }
+document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => setRipple(b.dataset.r));
+// how far the elements bend in P2d (14 Oct: "barely noticeable now, intensify it a bit")
+function setBend(v) { mat.uniforms.bendGain.value = v; document.querySelectorAll("[data-b]").forEach(x => x.setAttribute("aria-pressed", +x.dataset.b === v)); }
+document.querySelectorAll("[data-b]").forEach(b => b.onclick = () => setBend(+b.dataset.b));
+function setStrength(v) { strength = v; mat.uniforms.amount.value = v; document.querySelectorAll("[data-s]").forEach(x => x.setAttribute("aria-pressed", +x.dataset.s === v)); }
+document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => setStrength(+b.dataset.s));
+setStrength(strength);
+setBend(+(q.get("b") || 3));   // picked by eye, 14 Oct: ×3
+setRipple(ripple);
+window.cloth = { canvas: renderer.domElement, load, refresh() { if (tex.page) { tex.page.needsUpdate = tex.ground.needsUpdate = true; fit(); } }, tick() { if (!mesh || !mat.uniforms.page.value) return false; mat.uniforms.warmSatin.value = DARK[dg].satin; emberShape(); step(); step(); easeTheBend(); renderer.render(scene, camera); return true; } };
+dispatchEvent(new Event("cloth-ready"));
+</script>
+</body>
+</html>

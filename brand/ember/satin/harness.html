@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember satin harness</title>
+<base href="../../">
+<!-- The satin engine over a copy of the hour-lite guide, for the checks (plan Task 8). Like the proof
+     (brand/ember-directions/satin-live.html) it fetches the guide, keeps its styles and deck, drops the v23 container and
+     scripts, loads the satin bundle and starts it on the deck.
+     Flags: ?layers=0 switches the three layers off and draws the page view straight to the canvas; ?clean hides the label;
+     ?budget=0 turns the frame-budget step-down off. -->
+<style data-satin>
+  .satin-label{position:fixed;left:16px;bottom:16px;z-index:6;padding:7px 12px;background:rgba(8,8,8,.72);border:1px solid rgba(238,236,234,.22);
+    font:13px/1.4 "Space Grotesk",system-ui,sans-serif;color:#EEECEA;letter-spacing:.06em;pointer-events:none}
+  html.clean .satin-label{display:none}
+</style>
+</head>
+<body>
+<div class="satin-label" aria-hidden="true">Ember satin harness · P2d · satin a third · raking light a third</div>
+<div id="guide"></div>
+<script src="ember/satin/ember-satin.bundle.js"></script>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  if (q.has("clean")) document.documentElement.classList.add("clean");
+  const src = await (await fetch("2026-10-12-guide-hour-lite.html")).text(), doc = new DOMParser().parseFromString(src, "text/html");
+  for (const l of doc.querySelectorAll('link[rel="stylesheet"],link[rel="preconnect"]')) document.head.appendChild(l);
+  for (const st of doc.querySelectorAll("style")) document.head.appendChild(st);
+  const deck = doc.querySelector("main.deck");   // the v23 container (#ember) and the scripts are left behind
+  document.getElementById("guide").replaceWith(deck);
+  await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  EmberSatin.start(deck, { layers: q.get("layers") !== "0", budget: q.get("budget") !== "0", prof: q.has("prof"), ...(q.has("lift") ? { lift: +q.get("lift") } : {}) });
+})();
+</script>
+</body>
+</html>
