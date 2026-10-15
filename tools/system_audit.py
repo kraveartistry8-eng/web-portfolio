@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Audit for brand/2026-10-09-afterglow-design-system.html.
+"""Audit for brand/guide-sources/2026-10-09-afterglow-design-system.html.
 
 Deliberately small. The old guideline document needed thirty-odd checks because its
 ground was a function of scroll position; this one is flat, so almost nothing can be
@@ -16,7 +16,7 @@ try:
 except SystemExit:
     pass
 
-DOC = ROOT / "brand/2026-10-09-afterglow-design-system.html"
+DOC = ROOT / "brand/guide-sources/2026-10-09-afterglow-design-system.html"
 PDF = DOC.with_suffix(".pdf")
 T = json.loads(io.open(ROOT / "brand/resources/design-tokens.json", encoding="utf-8").read())
 OK, FAIL = [], []

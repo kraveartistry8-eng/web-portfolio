@@ -6,7 +6,7 @@ violet across its whole length and the document is an example of the brand rathe
 description of it. Readings sit in void panels, because a number read off a mid-ramp
 colour is a number nobody can check.
 
-Medium-agnostic on purpose. The event art direction in brand/2026-10-03-afterglow-brief.md
+Medium-agnostic on purpose. The event art direction in brand/guide-sources/2026-10-03-afterglow-brief.md
 (four rooms, the bottle revealed last, no wordmark in sight) governs the launch night and
 not the brand, which is settled in the design spec. None of it is carried here.
 
@@ -23,7 +23,7 @@ except SystemExit:
     pass
 
 T = json.loads(io.open(ROOT / "brand/resources/design-tokens.json", encoding="utf-8").read())
-OUT = ROOT / "brand/2026-10-09-afterglow-brand-guide.html"
+OUT = ROOT / "brand/guide-sources/2026-10-09-afterglow-brand-guide.html"
 C = T["color"]
 STAGES = [C["stages"][str(n)] for n in (1, 2, 3, 4)]
 RAMP = [s["value"] for s in STAGES]

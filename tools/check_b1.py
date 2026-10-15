@@ -2,7 +2,10 @@ import os, re, sys
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from afterglow_hours import HOURS, sheet_times
-DECK = os.path.abspath("brand/2026-10-10-density-b1-column.html")
+import afterglow_specimen as A
+import subprocess as _sp
+BASE = _sp.run(["git", "show", f"{A.BASE_REF}:brand/2026-10-10-density-b1-column.html"], capture_output=True, text=True).stdout
+DECK = os.path.abspath("brand/guide-sources/2026-10-10-density-b1-column.html")
 fails = []
 html = open(DECK).read()
 srcs = re.findall(r'moodboard-media/[^"\')]+\.jpg', html)
@@ -16,33 +19,40 @@ if not re.search(r"\.fallband\{[^}]*#BF15B7", html): fails.append("fall band lac
 secs = re.split(r'(?=<section class="sheet)', html)[1:]
 for i, (want, lead) in enumerate(zip(HOURS, ("wRU1tGM", "tLwiMVf", "gE_ypMW", "7BF3FrZ")), 7):
     sx = secs[i] if len(secs) > i else ''
+    if 'class="strip"' in sx:  # the specimen colour page (spec 2026-10-12 §4): the strip, four stamps, the hour under it
+        if len(re.findall(r'<figure[^>]*>', sx.split('class="strip"', 1)[1])) != 5: fails.append(f'sheet {i + 1} strip wants 5 figures')
+        if len(re.findall(r'<p class="stamp">', sx)) != 4: fails.append(f'sheet {i + 1} wants 4 minute stamps')
+        if not re.search(r'class="lead"[^>]*>\s*<img[^>]+' + lead, sx): fails.append(f'sheet {i + 1} strip does not lead with {lead}')
+        if not re.search(r'<p class="hour">' + want + '</p>', sx): fails.append(f"sheet {i + 1} hour is not {want!r}")
+        continue
     m = re.search(r'<p class="hour[^"]*"[^>]*>(.*?)</p>', sx)
     if not m or m.group(1) != want: fails.append(f"sheet {i + 1} hour is {m and m.group(1)!r}, want {want!r}")
     if not re.search(r'class="hpanel"[^>]*>\s*<img[^>]+' + lead, sx): fails.append(f'sheet {i + 1} panel does not hold {lead}')
     if len(re.findall(r'<figure[^>]*>', sx.split('class="stamps"', 1)[1]) if 'class="stamps"' in sx else []) != 4: fails.append(f'sheet {i + 1} wants 4 .stamps figures')
-m = re.search(r'<p class="hour[^"]*"[^>]*>(.*?)</p>', secs[0] if secs else '')
-if not m or m.group(1) != '19:12': fails.append(f"cover hour is {m and m.group(1)!r}, want '19:12'")
-if "One fragrance in four stages, each an hour of one evening, from 19:12 until it is dark." not in (secs[0] if secs else ''): fails.append("cover note missing")
+# the specimen sheets 01-05 (spec 2026-10-12 §4); their old readings now live on reference sheet 16
+if "One fragrance in four stages, from 19:12 until it is dark." not in (secs[0] if secs else ''): fails.append("cover line missing")
+if "<svg" not in (secs[0] if secs else ''): fails.append("cover lacks the mark")
 s3 = secs[2] if len(secs) > 2 else ''
-got = re.findall(r'<div class="sw[^"]*"[^>]*>.*?<p class="hour[^"]*"[^>]*>(.*?)</p>', s3, re.S)
+got = re.findall(r'<div class="sws">.*?<p class="hour[^"]*"[^>]*>(.*?)</p>', s3, re.S)
 if got != HOURS: fails.append(f"sheet 3 hours {got}, want {HOURS}")
-import subprocess  # sheet 3's readings as committed before the hour (e71db09): none may be lost
+import subprocess  # the readings as committed before the hour (e71db09): none may be lost, and they now sit on sheet 16
 base = subprocess.run(["git", "show", "e71db09:brand/2026-10-10-density-b1-column.html"], capture_output=True, text=True).stdout
 b3 = re.split(r'(?=<section class="sheet)', base)[3]
+s16 = secs[15] if len(secs) > 15 else ''
 for t in sorted(set(re.findall(r'<(?:dd|p class="sw[nr]")[^>]*>(.*?)</', b3))):
-    if t not in s3: fails.append(f"sheet 3 lost the reading {t!r}")
-tk = re.search(r'<div class="ticks">(.*?)</div>', secs[3] if len(secs) > 3 else '', re.S)
+    if t not in s16: fails.append(f"sheet 16 lacks the reading {t!r}")
+tk = re.search(r'<div class="ticks">(.*?)</div>', s16, re.S)
 spans = re.findall(r'<span[^>]*>(.*?)</span>', tk.group(1)) if tk else []
 hrs = [re.search(r'class="thr">(.*?)<', x) for x in spans]
-if [m and m.group(1) for m in hrs] != ["19:12", "19:40", "20:15", "21:30", "dark", None]: fails.append(f"sheet 4 tick hours {[m and m.group(1) for m in hrs]}")
-if not re.search(r'<p class="fbig serif">Afterglow.*?19:12.*?</p>', secs[4] if len(secs) > 4 else ''): fails.append("sheet 5 display specimen lacks 19:12")
-if "Images are made between 19:12 and 21:30, or lit to look as though they were." not in (secs[6] if len(secs) > 6 else ''): fails.append("sheet 7 lacks the 19:12-21:30 line")
+if [m and m.group(1) for m in hrs] != ["19:12", "19:40", "20:15", "21:30", "dark", None]: fails.append(f"sheet 16 tick hours {[m and m.group(1) for m in hrs]}")
+if not re.search(r'<p class="fbig serif">Afterglow.*?19:12.*?</p>', secs[16] if len(secs) > 16 else ''): fails.append("sheet 17 display specimen lacks 19:12")
+if "Images are made between 19:12 and 21:30, or lit to look as though they were." not in html: fails.append("the deck lacks the 19:12-21:30 line")
 if "Images are made at the end of the day or lit to look as though they were." in html: fails.append("sheet 7 still has the old line")
 n_img = len(re.findall(r'<img[^>]+src="[^"]*moodboard-media', html))
-if n_img != 33: fails.append(f'{n_img} guide images, want 33 (34 before the hour, less f3MgZ_1 off sheet 3; it stays on sheet 9)')
+if n_img != 31: fails.append(f'{n_img} guide images, want 31 (33 before the specimen, less the second 7BF3FrZ and gE_ypMW)')
 # the Ember page and the rule that makes room for it (Task 4)
 n_sheets = html.count('<section class="sheet')
-if n_sheets != 15: fails.append(f"sheet count {n_sheets}, want 15")
+if n_sheets != 19: fails.append(f"sheet count {n_sheets}, want 19")
 if "f3MgZ_1" not in (secs[8] if len(secs) > 8 else ''): fails.append("f3MgZ_1 is gone from sheet 9")
 if html.count("R6euaYP") != 1: fails.append(f"R6euaYP appears {html.count('R6euaYP')} times, want once")
 if "No state change brightens." in html: fails.append("the old rule 'No state change brightens.' is still in the deck")
@@ -92,33 +102,51 @@ def crossing_contrast(pg, i):
 with sync_playwright() as p:
     # headless on the real GPU only: a headed window picks up Aaron's real mouse
     br = p.chromium.launch(headless=True, args=["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"])
-    for w in (1440, 768, 390):
+    for w in (1440, 1024, 768, 390):
         pg = br.new_page(viewport={"width": w, "height": 1000})
         pg.goto("file://" + DECK); pg.wait_for_timeout(800)
         r = pg.evaluate(MEASURE)
         if r["hscroll"] > 0: fails.append(f"{w}px: sideways scroll {r['hscroll']}px")
         for s in r["sheets"]:
             if s["over"] > 1: fails.append(f"{w}px sheet {s['n']}: content overflows by {s['over']}px")
-            if w == 1440 and s["h"] != 820: fails.append(f"1440px sheet {s['n']}: height {s['h']}, want 820")
+            if w == 1440 and (s["h"] < 820 if s["n"] >= 16 else s["h"] != 820): fails.append(f"1440px sheet {s['n']}: height {s['h']}, want 820" + (" or more" if s["n"] >= 16 else ""))
         if w == 1440:
             r12 = pg.evaluate("""() => { const s = document.querySelectorAll('.sheet')[11], h = s && s.querySelector('h2');
               return {h2: h && h.textContent.trim(), bg: s && s.getAttribute('style'), text: document.body.textContent.replace(/\\s+/g, ' ')}; }""")
-            if r12["h2"] != "The ember": fails.append(f"sheet 12 h2 is {r12['h2']!r}, want 'The ember'")
+            if "The ember" not in r12["text"]: fails.append("the deck lost the heading 'The ember'")  # it moved to sheet 17 (spec 2026-10-12)
             if "linear-gradient(180deg,#321C5B,#1D1231)" not in (r12["bg"] or ""): fails.append(f"sheet 12 ground {r12['bg']!r}")
             for t in WANT:
                 if t not in r12["text"]: fails.append(f"missing text: {t!r}")
         if w == 390:
-            tops = pg.evaluate("() => [...document.querySelectorAll('.sheet')[11].querySelectorAll('.tri > span')].map(e => e.getBoundingClientRect().top)")
-            if len(tops) != 3 or not all(a < b for a, b in zip(tops, tops[1:])): fails.append(f"390px sheet 12: label line not stacked, tops {tops}")
+            # page 14 (spec 2026-10-12 §6): the label first, then the poster and the card side by side
+            pr = pg.evaluate("() => { const s = document.querySelectorAll('.sheet')[13]; return ['.label', '.poster', '.card'].map(q => { const r = s.querySelector(q).getBoundingClientRect(); return [r.top, r.bottom]; }); }")
+            if not (pr[0][1] <= pr[1][0] and abs(pr[1][1] - pr[2][1]) <= 1): fails.append(f"390px sheet 14: want the label above, poster and card side by side: {pr}")
+        if w == 1440:
+            g = pg.evaluate("""() => [...document.querySelectorAll('.sheet')].slice(0, 15).map(s => { const z = new Set(); let obj = 0;
+              s.querySelectorAll('*').forEach(e => { if (![...e.childNodes].some(c => c.nodeType === 3 && c.textContent.trim()) || !e.getClientRects().length) return;
+                if (e.closest('.oo, .strip, .swc, .fhrs, .hline .hour, .rspec, .wmc, .amark')) obj = 1; else z.add(getComputedStyle(e).fontSize); });
+              const caps = [...s.querySelectorAll('.obj > .cap')].map(c => Math.round(c.getBoundingClientRect().height / parseFloat(getComputedStyle(c).lineHeight)));
+              return [z.size + obj, [...z], caps]; })""")
+            for n, (k, z, caps) in enumerate(g, 1):
+                if k > 3: fails.append(f"1440px sheet {n}: {k} type sizes, want 3 or fewer ({z} + object)")
+                if any(c > 2 for c in caps): fails.append(f"1440px sheet {n}: a caption runs to {max(caps)} lines")
+        # mark_min_width (spec §2): no mark under 48 px at any width
+        mw = pg.evaluate("() => [...document.querySelectorAll('svg.amark')].map(e => Math.round(e.getBoundingClientRect().width))")
+        if not mw or min(mw) < 48: fails.append(f"{w}px: a mark under 48 px wide: {mw}")
+        # preserved_strings_visible (spec 2026-10-12 §4): every string of the committed deck is on a rendered element
+        vis = pg.evaluate("""() => { const w = document.createTreeWalker(document.querySelector('main'), NodeFilter.SHOW_TEXT); const out = [];
+          for (let n; (n = w.nextNode());) { const e = n.parentElement, c = getComputedStyle(e);
+            if (e.getClientRects().length && c.visibility !== 'hidden' && +c.opacity > 0) out.push(n.textContent); }
+          return out.join(' '); }""")
+        vis = re.sub(r"\s+", " ", vis)
+        chrome = set(A.texts("".join(re.findall(r'<footer class="foot">.*?</footer>', BASE))))  # the running head's labels fold away on a phone by design
+        hidden = [t for t in A.lost_strings(BASE, "") if t not in vis and t not in chrome] if w in (1440, 390) else []
+        if hidden: fails.append(f"{w}px: {len(hidden)} preserved strings not visible, e.g. {hidden[:4]}")
         # the hour (spec 2026-10-11-afterglow-guide-hour-design.md §3): every running head carries its sheet's time
         hr = pg.evaluate("() => [...document.querySelectorAll('.sheet')].map(s => { const e = s.querySelector('.foot .hr'); "
                          "return e ? [e.textContent.trim(), Math.round(e.getBoundingClientRect().width)] : [null, 0]; })")
         if [t for t, _ in hr] != sheet_times(len(hr)): fails.append(f"{w}px: running-head times {[t for t, _ in hr]}, want {sheet_times(len(hr))}")
         if any(wd == 0 for _, wd in hr): fails.append(f"{w}px: a running-head time is hidden on sheets {[i + 1 for i, (_, wd) in enumerate(hr) if wd == 0]}")
-        sw = pg.evaluate("() => [...document.querySelectorAll('.sheet')[2].querySelectorAll('.sw')].map(e => { const r = e.getBoundingClientRect(); return [r.width, r.top]; })")
-        if w == 1440 and (len(sw) != 4 or any(abs(a[0] / sw[0][0] - k / 1.6) > .02 for a, k in zip(sw, (1.6, 1, .8, .6)))):
-            fails.append(f"1440px sheet 3: column widths {[round(a[0]) for a in sw]}, want 1.6 : 1 : 0.8 : 0.6")
-        if w == 768 and not (len(sw) == 4 and all(a[1] < b[1] for a, b in zip(sw, sw[1:]))): fails.append(f"768px sheet 3: the four stages do not stack {sw}")
         if w == 390:
             e = pg.evaluate("() => { const s = document.querySelectorAll('.sheet')[7], h = s.querySelector('p.hour'); "
                             "return h ? [h.getBoundingClientRect().right, s.getBoundingClientRect().right] : null; }")
@@ -127,9 +155,32 @@ with sync_playwright() as p:
             feet = {s["foot"] for s in r["sheets"]}
             if len(feet) > 1: fails.append(f"1440px: running head offsets differ {sorted(x for x in feet if x is not None)}")
             if "#BF15B7" not in r["sheets"][-1]["bg"]: fails.append("last sheet ground does not end on #BF15B7")
+            if any("#BF15B7" in x["bg"] for x in r["sheets"][:-1]): fails.append("a sheet before the last carries the magenta")
+            # ref_sheets_never_clip: the reference sheets grow; their type never drops under 11 px
+            small = pg.evaluate("""() => [...document.querySelectorAll('.sheet.ref')].flatMap((s, i) => [...s.querySelectorAll('*')].filter(e =>
+              [...e.childNodes].some(c => c.nodeType === 3 && c.textContent.trim()) && parseFloat(getComputedStyle(e).fontSize) < 11).map(e => (16 + i) + ':' + e.textContent.trim().slice(0, 30)))""")
+            if small: fails.append(f"reference type under 11 px: {small[:5]}")
+    # the strips (spec 2026-10-12 §6): one row at 1024; at 768 the lead alone then four at 140; at 390 the lead full width, then 2 x 2
+    STRIP = """() => [...document.querySelectorAll('.sheet')].slice(6, 11).map(s => [...s.querySelectorAll('.strip figure')].map(f => {
+      const r = (f.closest('.fr') || f).getBoundingClientRect();  /* a frame's foot is under its stamp */ return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.bottom)]; }))"""
+    for w in (1024, 768, 390):
+        pg = br.new_page(viewport={"width": w, "height": 1000}); pg.goto("file://" + DECK); pg.wait_for_timeout(500)
+        for n, figs in enumerate(pg.evaluate(STRIP), 7):
+            if not figs: continue
+            lead, rest = figs[0], figs[1:]
+            if w == 1024 and not all(abs(f[3] - lead[3]) <= 1 for f in rest): fails.append(f"1024px sheet {n}: strip not on one row, feet {[f[3] for f in figs]}")
+            if w == 768 and (abs(lead[2] - 260) > 1 or any(abs(f[2] - 140) > 1 or f[1] <= lead[3] - 1 for f in rest) or len({f[1] for f in rest}) != 1):
+                fails.append(f"768px sheet {n}: want the lead at 260 alone, then a row at 140: {figs}")
+            if w == 390 and (abs(lead[2] - (390 - 32)) > 1 or len({f[1] for f in rest}) != min(2, (len(rest) + 1) // 2)):
+                fails.append(f"390px sheet {n}: want the lead full width less 32, the rest two by two: {figs}")
+        r = pg.evaluate(MEASURE)
+        if w == 1024:
+            for x in r["sheets"]:
+                if x["over"] > 1: fails.append(f"1024px sheet {x['n']}: content overflows by {x['over']}px")
+        pg.close()
     # the hour crossing the photograph passes 3:1 against what is behind it (no scrim, no shadow)
     pg = br.new_page(viewport={"width": 1440, "height": 1000}); pg.goto("file://" + DECK); pg.wait_for_timeout(800)
-    for i in [7, 8, 9, 10]:
+    for i in [i for i in [7, 8, 9, 10] if 'class="strip"' not in secs[i]]:  # the specimen pages set the hour on the ground, not over a photograph
         cr = crossing_contrast(pg, i)
         if cr is None or cr < 3: fails.append(f'1440px sheet {i + 1}: hour over the photograph at {cr}:1, want 3:1')
     pg.close()
@@ -151,7 +202,7 @@ with sync_playwright() as p:
             fails.append(f"ember: sheet {i + 1} keeps its ground with ember-on ({s['bc']}, {s['bi'][:40]})")
     # everything reacts (Aaron, 11 Oct): a photograph, a colour swatch and body text each catch the ember's light
     pg.evaluate("() => scrollTo(0, document.querySelectorAll('.sheet')[2].offsetTop)"); pg.wait_for_timeout(300)
-    for sel in (".sheet:nth-child(2) figure", ".sheet:nth-child(3) .sw", ".sheet:nth-child(3) .fine2", ".sheet:nth-child(8) p.hour"):
+    for sel in (".sheet:nth-child(2) figure", ".sheet:nth-child(3) .swc", ".sheet:nth-child(16) dd", ".sheet:nth-child(8) p.hour"):
         if not pg.evaluate(f"() => !!document.querySelector('{sel}')"): fails.append(f"everything reacts: no {sel}"); continue
         pg.evaluate(f"() => scrollTo(0, document.querySelector('{sel}').getBoundingClientRect().top + scrollY - 200)"); pg.wait_for_timeout(300)
         b = pg.evaluate(f"() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left, r.bottom]; }}")
@@ -186,7 +237,7 @@ with sync_playwright() as p:
     pg = ctx.new_page(); pg.goto("file://" + DECK); pg.evaluate("() => document.fonts.ready.then(() => 0)"); pg.wait_for_timeout(300)
     r = pg.evaluate(MEASURE)
     for s in r["sheets"]:
-        if s["over"] > 1 or s["h"] != 820: fails.append(f"no JS: sheet {s['n']} height {s['h']}, overflow {s['over']}")
+        if s["over"] > 1 or (s["h"] < 820 if s["n"] >= 16 else s["h"] != 820): fails.append(f"no JS: sheet {s['n']} height {s['h']}, overflow {s['over']}")
     if "gradient" not in pg.evaluate("() => getComputedStyle(document.querySelectorAll('.sheet')[1]).backgroundImage"):
         fails.append("no JS: sheet 2 lost its ground")
     ctx.close()
@@ -197,9 +248,8 @@ with sync_playwright() as p:
         pg = ctx.new_page(); pg.goto("file://" + DECK); pg.wait_for_timeout(400)
         hs = pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
         if hs > 0: fails.append(f"{w}px, fonts blocked: sideways scroll {hs}px")
-        hour_sheets = pg.evaluate("() => [...document.querySelectorAll('.sheet')].map((s, i) => s.querySelector('p.hour') ? i + 1 : 0).filter(Boolean)")
-        for s in pg.evaluate(MEASURE)["sheets"]:  # overflow-x:clip hides a too-wide numeral from the scroll test; measure the hour sheets
-            if s["n"] in hour_sheets and s["over"] > 1: fails.append(f"{w}px, fonts blocked: sheet {s['n']} overflows by {s['over']}px")
+        for s in pg.evaluate(MEASURE)["sheets"]:  # overflow-x:clip hides a too-wide numeral or wordmark from the scroll test; measure every sheet
+            if s["over"] > 1: fails.append(f"{w}px, fonts blocked: sheet {s['n']} overflows by {s['over']}px")
         ctx.close()
     br.close()
 print("\n".join(fails) or "PASS"); sys.exit(1 if fails else 0)

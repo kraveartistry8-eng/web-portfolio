@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Render brand/2026-10-07-afterglow-guidelines.html from design-tokens.json.
+"""Render brand/guide-sources/2026-10-07-afterglow-guidelines.html from design-tokens.json.
 
 The document renders from the tokens rather than restating them, so a value can
 only be wrong in one place. Every position in the fall is computed here from the
@@ -17,7 +17,7 @@ import brand_audit as B
 
 TOKENS = json.loads(io.open(ROOT / "brand" / "resources" / "design-tokens.json",
                             encoding="utf-8").read())
-OUT = ROOT / "brand" / "2026-10-07-afterglow-guidelines.html"
+OUT = ROOT / "brand" / "guide-sources" / "2026-10-07-afterglow-guidelines.html"
 
 C = TOKENS["color"]
 STAGES = [C["stages"][str(n)] for n in (1, 2, 3, 4)]

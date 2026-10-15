@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Audit for brand/2026-10-09-afterglow-brand-guide.html.
+"""Audit for brand/guide-sources/2026-10-09-afterglow-brand-guide.html.
 
 Deliberately small. The old guideline document needed thirty-odd checks because its
 ground was a function of scroll position; this one is flat, so almost nothing can be
@@ -26,7 +26,7 @@ except SystemExit:
 # The three inputs can be pointed elsewhere so the tests can audit a mutated copy of the
 # document and prove each check fails when it should; left alone, this audits the real files.
 DOC = pathlib.Path(os.environ.get("GUIDE_AUDIT_DOC")
-                   or ROOT / "brand/2026-10-09-afterglow-brand-guide.html")
+                   or ROOT / "brand/guide-sources/2026-10-09-afterglow-brand-guide.html")
 PDF = pathlib.Path(os.environ.get("GUIDE_AUDIT_PDF") or DOC.with_suffix(".pdf"))
 MANIFEST = pathlib.Path(os.environ.get("GUIDE_AUDIT_MANIFEST")
                         or ROOT / "brand/resources/imagery-manifest.json")

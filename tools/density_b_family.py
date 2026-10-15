@@ -926,6 +926,6 @@ if __name__ == "__main__":
     import afterglow_specimen  # b1 is the guide itself: the specimen build (spec 2026-10-12) wraps it
     for key in VARIANTS:
         html, n = afterglow_specimen.build() if key == "b1-column" else build(key)
-        p = D.ROOT / f"brand/2026-10-10-density-{key}.html"
+        p = D.ROOT / (f"brand/guide-sources/2026-10-10-density-{key}.html" if key == "b1-column" else f"archive/afterglow-explorations/2026-10-10-density-{key}.html")   # b1 feeds the guide; the rest are archived explorations (15 Oct)
         p.write_text(html)
         print(p.relative_to(D.ROOT), n, "photographs, none repeated")

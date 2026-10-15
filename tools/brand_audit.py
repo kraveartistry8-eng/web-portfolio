@@ -14,7 +14,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TOKENS = ROOT / "brand" / "resources" / "design-tokens.json"
-IDENTITY = ROOT / "brand" / "BRAND-IDENTITY.md"
+IDENTITY = ROOT / "brand" / "guide-sources" / "BRAND-IDENTITY.md"
 VOICE = ROOT / "brand" / "resources" / "voice-tone.md"
 
 VOID = "#080808"
@@ -150,7 +150,7 @@ TEXT_PROBE = """() => {""" + PAGE_T + """
             return out;
         }"""
 
-DOC = ROOT / "brand" / "2026-10-07-afterglow-guidelines.html"
+DOC = ROOT / "brand" / "guide-sources" / "2026-10-07-afterglow-guidelines.html"
 
 _HEX = re.compile(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b")
 _RGBA = re.compile(r"rgba?\(\s*([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)")
@@ -976,7 +976,7 @@ def document_checks(chk, tokens):
 
 def pdf_checks(chk, tokens):
     """The printed artifact, not the page that produced it."""
-    pdf = ROOT / "brand" / "2026-10-07-afterglow-guidelines.pdf"
+    pdf = ROOT / "brand" / "guide-sources" / "2026-10-07-afterglow-guidelines.pdf"
     if not pdf.exists():
         for n in ("pdf_edges", "no_cut_row", "pdf_current", "pdf_banding"):
             chk(False, "%-16s needs the rendered PDF  :: %s does not exist yet"

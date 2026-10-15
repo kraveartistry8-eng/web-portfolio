@@ -15,8 +15,8 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DOC = ROOT / "brand" / "2026-10-07-afterglow-guidelines.html"
-PDF = ROOT / "brand" / "2026-10-07-afterglow-guidelines.pdf"
+DOC = ROOT / "brand" / "guide-sources" / "2026-10-07-afterglow-guidelines.html"
+PDF = ROOT / "brand" / "guide-sources" / "2026-10-07-afterglow-guidelines.pdf"
 sys.path.insert(0, str(ROOT / "tools"))
 import brand_audit as B
 
@@ -31,7 +31,7 @@ def audit():
 
 def render(src=None):
     subprocess.run([sys.executable, "tools/render.py",
-                    "brand/2026-10-07-afterglow-guidelines.html"],
+                    "brand/guide-sources/2026-10-07-afterglow-guidelines.html"],
                    cwd=str(ROOT), capture_output=True, text=True, check=True)
 
 
@@ -226,7 +226,7 @@ def test_banding_is_falsifiable():
         d["color"]["stages"]["4"]["oklch"] = {"l": 0.4644, "c": 0.1093, "h": 5.4}
         io.open(tok, "w", encoding="utf-8").write(json.dumps(d, indent=2, ensure_ascii=False))
         built = run("tools/build_guidelines.py")
-        rendered = run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
+        rendered = run("tools/render.py", "brand/guide-sources/2026-10-07-afterglow-guidelines.html")
         if built.returncode or rendered.returncode:
             FAILED.append("I8 the mutated document never built, so nothing was measured"
                           " -> %s" % (built.stderr or rendered.stderr).strip().splitlines()[-1:])
@@ -239,8 +239,8 @@ def test_banding_is_falsifiable():
     finally:
         io.open(tok, "w", encoding="utf-8").write(bt)
         run("tools/build_guidelines.py")
-        run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
-        run("tools/render.py", "brand/2026-10-07-afterglow-guidelines.html")
+        run("tools/render.py", "brand/guide-sources/2026-10-07-afterglow-guidelines.html")
+        run("tools/render.py", "brand/guide-sources/2026-10-07-afterglow-guidelines.html")
         PDF.write_bytes(bp)
 
 

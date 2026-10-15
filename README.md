@@ -18,10 +18,12 @@ the Network table (peers, agencies, referrers), Weeks, and Months.
 | `research/` | ARIA reports. Start at `2026-10-03-aria-entry-point.html`, which links to the rest |
 | `design/` | September design artifacts for the sales page: hero, IA, layout architecture, cube spec |
 | `outreach/` | The LinkedIn export and the ranked lists built from it |
-| `brand/` | Afterglow, the fictional brand the demo store is built for |
+| `brand/` | Afterglow, the fictional brand the demo store is built for. The guide is `2026-10-12-guide-hour-lite.html` (live at afterglow-guide.vercel.app). `guide-sources/` holds what it is built from, `ember/` the ember engines (`satin/` is current, `v23/` frozen), `ember-directions/` the ember prototypes, `mark/` the mark, `moodboard-media/` the photographs |
+| `references/` | Captured reference sites, and `design-standards.md`. `references/ember/` is large and not committed |
+| `docs/superpowers/` | The current spec and plan; superseded ones are in `archive/` inside it |
 | `afterglow/` | The Skeleton theme clone. This is the dev store build |
 | `site/` | The Astro studio site. `npm run dev` inside it |
-| `archive/` | Superseded explorations, plus every roadmap backup |
+| `archive/` | Superseded explorations, including `afterglow-explorations/` (the guide directions that were not taken). Roadmap history is in git |
 
 ## Tools
 
@@ -40,3 +42,5 @@ document reference each other, and changing one by hand silently breaks three ot
 
 Dated filenames are `YYYY-MM-DD-slug`. The date is when the artifact was made, not when it
 was last edited. No em-dashes anywhere in anything that gets printed.
+
+Rebuild the Afterglow guide with `python3 tools/afterglow_specimen.py`; its checks are in `tools/check_ember_satin.py` and `tools/test_afterglow_specimen.py`.

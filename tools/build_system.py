@@ -20,7 +20,7 @@ except SystemExit:
     pass
 
 T = json.loads(io.open(ROOT / "brand/resources/design-tokens.json", encoding="utf-8").read())
-OUT = ROOT / "brand/2026-10-09-afterglow-design-system.html"
+OUT = ROOT / "brand/guide-sources/2026-10-09-afterglow-design-system.html"
 
 C = T["color"]
 STAGES = [C["stages"][str(n)] for n in (1, 2, 3, 4)]

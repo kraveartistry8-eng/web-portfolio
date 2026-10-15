@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Afterglow — Stages Three and Four</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+ :root{--void:#080808;--deep:#141414;--surf:#2B2B2B;--text:#EEECEA;--muted:#C0C0C0;
+   --line:rgba(192,192,192,.22);--s1:#D8B260;--s2:#BC6F4C;--s3:#893A50;--s4:#341D5E;
+   --pad:clamp(20px,5vw,72px)}
+ *{margin:0;padding:0;box-sizing:border-box}
+ body{background:var(--void);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;
+   font-weight:300;-webkit-font-smoothing:antialiased}
+ .pad{padding-inline:var(--pad)}
+ code{font-family:ui-monospace,monospace;font-size:.92em;color:var(--s1)}
+ em{font-style:italic;color:var(--text)}
+
+ header.top{padding-block:clamp(64px,10vh,120px) 48px;border-bottom:1px solid var(--line)}
+ .kick{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:rgba(238,236,234,.38)}
+ h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(38px,6.4vw,84px);
+   line-height:.98;letter-spacing:-.025em;margin-top:22px;max-width:17ch}
+ h1 em{color:var(--s3)}
+ .lede{max-width:64ch;margin-top:28px;font-size:15.5px;line-height:1.72;color:rgba(238,236,234,.6)}
+ .lede+.lede{margin-top:14px}
+
+ section{padding-block:clamp(52px,8vh,96px);border-bottom:1px solid var(--line)}
+ h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,3.6vw,46px);
+   letter-spacing:-.02em;line-height:1}
+ .sect-lede{max-width:66ch;margin-top:16px;font-size:14px;line-height:1.72;color:rgba(238,236,234,.5)}
+
+ /* the find */
+ .find{margin-top:40px;display:grid;grid-template-columns:repeat(5,1fr);gap:1px;
+   background:var(--line);border:1px solid var(--line)}
+ .find div{padding:26px 18px 22px;display:flex;flex-direction:column;gap:7px;min-height:170px;
+   justify-content:flex-end}
+ .find .lv{font-family:'Instrument Serif',serif;font-size:30px;line-height:1}
+ .find .nm{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+ .find .st{font-size:10.5px;letter-spacing:.06em;opacity:.55;margin-top:4px}
+ @media(max-width:860px){.find{grid-template-columns:repeat(2,1fr)}}
+
+ table{width:100%;border-collapse:collapse;margin-top:36px;font-size:13px}
+ th{text-align:left;font-weight:400;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+   color:rgba(238,236,234,.38);padding:0 14px 12px 0;border-bottom:1px solid var(--line)}
+ td{padding:13px 14px 13px 0;border-bottom:1px solid rgba(192,192,192,.1)}
+ td.n{font-family:ui-monospace,monospace;font-size:12px}
+ td .sw{display:inline-block;width:13px;height:13px;margin-right:10px;vertical-align:-2px}
+ .ok{color:#9fbf8f} .no{color:var(--s3)}
+ .no::after{content:" fail";font-size:9.5px;letter-spacing:.1em;opacity:.7}
+ .ok::after{content:" pass";font-size:9.5px;letter-spacing:.1em;opacity:.55}
+
+ .defs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+   border:1px solid var(--line);margin-top:40px}
+ .def{background:var(--void);padding:34px 28px 30px}
+ .def .band{height:90px;margin:-34px -28px 26px;display:flex;align-items:flex-end;padding:12px 28px;
+   font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+ .def h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;letter-spacing:-.02em}
+ .def dl{margin-top:20px;display:grid;grid-template-columns:auto 1fr;gap:11px 18px;font-size:13px;
+   line-height:1.6}
+ .def dt{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+   color:rgba(238,236,234,.38);padding-top:3px;white-space:nowrap}
+ .def dd{color:rgba(238,236,234,.78)}
+ @media(max-width:860px){.defs{grid-template-columns:1fr}}
+
+ .fam{margin-top:52px;border-top:1px solid var(--line);padding-top:30px}
+ .fam-head{display:grid;grid-template-columns:44px minmax(0,1fr);gap:0 20px;align-items:start}
+ .key{font-family:'Instrument Serif',serif;font-size:19px;color:var(--s1);padding-top:.35em}
+ .fam-head h3{font-family:'Instrument Serif',serif;font-weight:400;
+   font-size:clamp(28px,4vw,48px);letter-spacing:-.025em;line-height:1}
+ .sep{color:rgba(238,236,234,.28)}
+ .fam-head .sub{grid-column:2;margin-top:10px;font-size:13px;color:rgba(238,236,234,.48)}
+ .ramp{display:flex;margin-top:26px;border:1px solid var(--line)}
+ .ramp div{flex:1;height:104px;display:flex;flex-direction:column;justify-content:flex-end;
+   padding:11px 13px;font-size:11px;letter-spacing:.04em;gap:4px}
+ .ramp i{font-family:ui-monospace,monospace;font-size:9.5px;font-style:normal;opacity:.6}
+ .fam-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+   gap:clamp(20px,4vw,56px);margin-top:24px}
+ .note{font-size:14px;line-height:1.75;color:rgba(238,236,234,.62)}
+ .trade{font-size:13px;line-height:1.7;color:rgba(238,236,234,.45)}
+ .trade b{display:block;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+   color:var(--s1);margin-bottom:7px;font-weight:400}
+ @media(max-width:760px){.fam-body{grid-template-columns:1fr}.ramp{flex-direction:column}
+   .ramp div{height:56px}}
+
+ footer{padding-block:40px 96px;font-size:12px;color:rgba(238,236,234,.4);line-height:1.8}
+ footer a{color:var(--s1);text-decoration:none;border-bottom:1px solid rgba(216,178,96,.3)}
+</style></head><body><div class="pad">
+
+<header class="top">
+  <span class="kick">Afterglow · working artifact · 9 October 2026</span>
+  <h1>Stages three and four, <em>defined</em></h1>
+  <p class="lede">Both have a locked hex, locked OKLCH and measured contrast. What neither has is
+    a definition: the design system gives them the same one sentence, <em>ground only, never a
+    letterform</em>, which is true, is negative, and is identical for two values that do
+    completely different work.</p>
+  <p class="lede">Below: what the arithmetic already decided, then the one part that is still a
+    choice. Stage one is named for an hour and stage two was named in a pass of its own. Three
+    and four came verbatim out of the brief's prose and have never been through one.</p>
+</header>
+
+<section>
+  <h2>The void is the fifth step</h2>
+  <p class="sect-lede">Measuring the fall against the ground rather than within itself turns up
+    something that is not written down anywhere. The ramp steps 0.161, 0.158, 0.160 in OKLCH
+    lightness. The gap from deep violet to the void is <b style="color:var(--text);font-weight:400">0.167</b>
+    — the same step again. The light does not stop at stage four and then sit on a canvas. It
+    keeps deepening, one more time, into the ground.</p>
+  <div class="find">
+    <div style="background:var(--s1);color:var(--void)"><span class="lv">0.781</span><span class="nm">Gold of last light</span><span class="st">step 0.161 ↓</span></div>
+    <div style="background:var(--s2);color:var(--void)"><span class="lv">0.619</span><span class="nm">After gold</span><span class="st">step 0.158 ↓</span></div>
+    <div style="background:var(--s3);color:var(--text)"><span class="lv">0.461</span><span class="nm">Stage three</span><span class="st">step 0.160 ↓</span></div>
+    <div style="background:var(--s4);color:var(--text)"><span class="lv">0.301</span><span class="nm">Stage four</span><span class="st">step 0.167 ↓</span></div>
+    <div style="background:var(--void);color:var(--text);outline:1px solid var(--line);outline-offset:-1px"><span class="lv">0.134</span><span class="nm">Void</span><span class="st">the last step</span></div>
+  </div>
+  <p class="sect-lede" style="margin-top:26px">That is the strongest argument the deepening-light
+    rule has. It is not a dark theme with four accents on it. It is one fall in five even steps,
+    and the page ground is where it lands.</p>
+</section>
+
+<section>
+  <h2>The ramp has two halves, and they invert</h2>
+  <p class="sect-lede">Stages one and two read on the void and cannot carry text. Stages three
+    and four cannot read on the void and are the only two that can carry it. The crossover is
+    between stage two and stage three, which is the actual definition of what three and four are
+    for.</p>
+  <table>
+    <thead><tr><th>Stage</th><th>Hex</th><th>OKLCH L</th><th>ΔL vs void</th>
+      <th>As a mark on void</th><th>Text on it</th><th>Muted on it</th></tr></thead>
+    <tbody><tr><td><i class="sw" style="background:#D8B260"></i>Gold of last light</td>
+      <td class="n">#D8B260</td><td class="n">0.781</td>
+      <td class="n">+0.646</td>
+      <td class="n ok">9.97:1</td>
+      <td class="n no">1.70:1</td>
+      <td class="n no">1.10:1</td></tr><tr><td><i class="sw" style="background:#BC6F4C"></i>After gold</td>
+      <td class="n">#BC6F4C</td><td class="n">0.619</td>
+      <td class="n">+0.485</td>
+      <td class="n ok">5.26:1</td>
+      <td class="n no">3.23:1</td>
+      <td class="n no">2.09:1</td></tr><tr><td><i class="sw" style="background:#893A50"></i>Rose</td>
+      <td class="n">#893A50</td><td class="n">0.461</td>
+      <td class="n">+0.327</td>
+      <td class="n no">2.66:1</td>
+      <td class="n ok">6.40:1</td>
+      <td class="n no">4.14:1</td></tr><tr><td><i class="sw" style="background:#341D5E"></i>Deep violet</td>
+      <td class="n">#341D5E</td><td class="n">0.301</td>
+      <td class="n">+0.167</td>
+      <td class="n no">1.41:1</td>
+      <td class="n ok">12.01:1</td>
+      <td class="n ok">7.78:1</td></tr></tbody>
+  </table>
+  <div class="defs">
+    <div class="def">
+      <div class="band" style="background:var(--s3);color:var(--text)">Stage three · #893A50</div>
+      <h3>A field you notice</h3>
+      <dl>
+        <dt>Is</dt><dd>The first stage that can hold text, and the warmest ground in the system.
+          0.327 above the void, so it separates clearly and reads as a different room.</dd>
+        <dt>Does</dt><dd>Full-bleed section grounds that should feel like somewhere else. Text at
+          6.40:1 and muted at 4.14:1, so both pass on it.</dd>
+        <dt>Never</dt><dd>A letterform, rule, icon or border on the void. 2.66:1 is under every floor.</dd>
+        <dt>Evidence</dt><dd>Carried almost single-handed on the mood board by <code>gE_ypMW</code>,
+          the dusk silhouette. The one stage with no emitter behind it: rose is reflected, which is
+          why 106 saves produced none of it.</dd>
+      </dl>
+    </div>
+    <div class="def">
+      <div class="band" style="background:var(--s4);color:var(--text)">Stage four · #341D5E</div>
+      <h3>A field you do not</h3>
+      <dl>
+        <dt>Is</dt><dd>One ramp step above the ground. At ΔL 0.167 it reads as the void getting
+          heavier rather than as a panel laid on top of it.</dd>
+        <dt>Does</dt><dd>Weight without a box. The safest coloured ground in the system: text at
+          12.01:1, higher than anything else here, muted at 7.78:1.</dd>
+        <dt>Never</dt><dd>A letterform. 1.41:1 on the void is very close to invisible, which is
+          the point of it and also its only limit.</dd>
+        <dt>Evidence</dt><dd><code>4RH87Zk</code>, <code>mPNk84g</code> and <code>QOH4dl-</code>.
+          Violet behaving as light in a dark field, never as pigment on a lit one.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The part that is still a choice</h2>
+  <p class="sect-lede">Three families. Each is shown in the sequence it would join, because a
+    name only has to survive being read next to the other three. Every candidate draws at least
+    one word from the list in <code>voice-tone.md</code>, so <code>stage_named</code> passes
+    either way — that check only tests stage two today and should be widened to all four
+    whichever you pick.</p>
+  <article class="fam">
+    <div class="fam-head">
+      <span class="key">A</span>
+      <h3>Bloom <span class="sep">/</span> Hold</h3>
+      <p class="sub">One word each, the way Corridor was proposed for stage two.</p>
+    </div>
+    <div class="ramp"><div style="background:#D8B260;color:#080808">Gold of last light<i>#D8B260</i></div><div style="background:#BC6F4C;color:#080808">After gold<i>#BC6F4C</i></div><div style="background:#893A50;color:#EEECEA">Bloom<i>#893A50</i></div><div style="background:#341D5E;color:#EEECEA">Hold<i>#341D5E</i></div><div style="background:#080808;color:#EEECEA;outline:1px solid var(--line);outline-offset:-1px">Void<i>#080808</i></div></div>
+    <div class="fam-body">
+      <p class="note">Bloom is the brief's own verb: the deepening scent <em>lifts and blooms</em>. It names the peak rather than the pigment. Hold is the other half of the same sentence, the heat holding steady to close, and it is what the brand's last line claims: the night ends but its afterglow does not. Both are in the vocabulary, so <code>stage_named</code> passes.</p>
+      <p class="trade"><b>Trade</b>Reads as a sequence of events. Breaks form with stage one, which is a phrase.</p>
+    </div>
+  </article>
+  <article class="fam">
+    <div class="fam-head">
+      <span class="key">B</span>
+      <h3>Rose on skin <span class="sep">/</span> The room after</h3>
+      <p class="sub">Phrases naming the hour, the way Gold of last light does.</p>
+    </div>
+    <div class="ramp"><div style="background:#D8B260;color:#080808">Gold of last light<i>#D8B260</i></div><div style="background:#BC6F4C;color:#080808">After gold<i>#BC6F4C</i></div><div style="background:#893A50;color:#EEECEA">Rose on skin<i>#893A50</i></div><div style="background:#341D5E;color:#EEECEA">The room after<i>#341D5E</i></div><div style="background:#080808;color:#EEECEA;outline:1px solid var(--line);outline-offset:-1px">Void<i>#080808</i></div></div>
+    <div class="fam-body">
+      <p class="note">Rose on skin records the thing the colour analysis proved: rose is the only stage with no emitter behind it. It is reflected, which is why it was missing from 106 saves. The room after names where stage four actually is, and takes two vocabulary words rather than one.</p>
+      <p class="trade"><b>Trade</b>Matches stage one in form. Longer than the other three, and a UI token called <code>stage-3</code> reading &ldquo;Rose on skin&rdquo; is a mouthful in code.</p>
+    </div>
+  </article>
+  <article class="fam">
+    <div class="fam-head">
+      <span class="key">C</span>
+      <h3>Rose <span class="sep">/</span> Deep violet</h3>
+      <p class="sub">Leave them. Both are already in the vocabulary.</p>
+    </div>
+    <div class="ramp"><div style="background:#D8B260;color:#080808">Gold of last light<i>#D8B260</i></div><div style="background:#BC6F4C;color:#080808">After gold<i>#BC6F4C</i></div><div style="background:#893A50;color:#EEECEA">Rose<i>#893A50</i></div><div style="background:#341D5E;color:#EEECEA">Deep violet<i>#341D5E</i></div><div style="background:#080808;color:#EEECEA;outline:1px solid var(--line);outline-offset:-1px">Void<i>#080808</i></div></div>
+    <div class="fam-body">
+      <p class="note">These came straight from the brief's prose and have never been through a naming pass; stage two was the only stage <code>stage_named</code> checks. They are not wrong, they are just pigment names sitting beside two stages named for an hour.</p>
+      <p class="trade"><b>Trade</b>Zero churn, nothing to re-render. The ramp stays half named for light and half named for paint.</p>
+    </div>
+  </article>
+</section>
+
+<footer>
+  Measurements computed from the locked hexes, not transcribed. Ramp E, picked 9 October 2026.<br>
+  Precedent: <a href="2026-10-09-stage-two-names.html">stage two names</a> ·
+  Evidence: <a href="2026-10-09-afterglow-moodboard.html">mood board</a> ·
+  Tokens: <code>resources/design-tokens.json</code>
+</footer>
+
+</div></body></html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Afterglow — C1a, the crop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--void:#080808;--text:#EEECEA;--line:rgba(192,192,192,.22);--s1:#D8B260;--pad:clamp(20px,4vw,56px)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;font-weight:300}
+.wrap{max-width:1500px;margin:0 auto;padding:0 var(--pad)}
+header.top{padding:92px 0 40px;border-bottom:1px solid var(--line)}
+.kick{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:rgba(238,236,234,.36)}
+h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(32px,5vw,62px);
+ line-height:1;letter-spacing:-.025em;margin-top:18px;max-width:22ch}
+.lede{max-width:66ch;margin-top:20px;font-size:14.5px;line-height:1.72;color:rgba(238,236,234,.55)}
+.var{padding:70px 0 0}
+.vhead{display:grid;grid-template-columns:50px minmax(0,1fr);gap:0 20px;padding-bottom:20px;
+ border-bottom:1px solid var(--line);margin-bottom:24px}
+.key{font-family:'Instrument Serif',serif;font-size:19px;color:var(--s1);padding-top:.3em}
+.vhead h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(23px,3vw,38px);letter-spacing:-.02em;line-height:1}
+.premise{margin-top:10px;font-size:15px;line-height:1.6;color:rgba(238,236,234,.78);max-width:66ch}
+.why{margin-top:8px;font-size:13px;line-height:1.7;color:rgba(238,236,234,.46);max-width:74ch}
+.sheets{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:1000px){.sheets{grid-template-columns:1fr}}
+.sheet{aspect-ratio:11/8.5;position:relative;display:flex;flex-direction:column;
+ padding:28px 30px 0;overflow:hidden;color:var(--text)}
+.sheet.light{color:var(--void)}
+.foot{margin-top:auto;display:flex;justify-content:space-between;gap:12px;padding:11px 0;
+ font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.5}
+.col{flex:1;display:flex;flex-direction:column;min-height:0}
+.bighead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.bighead h3{font-family:'Instrument Serif',serif;font-weight:400;
+ font-size:clamp(26px,3.6vw,46px);line-height:.95;letter-spacing:-.025em}
+.meta{display:flex;align-items:center;gap:7px;padding-bottom:3px}
+.sw{width:11px;height:11px;outline:1px solid rgba(255,255,255,.3)}
+.hex{font-family:ui-monospace,monospace;font-size:7.5px;opacity:.7}
+.rule{margin-top:7px;font-size:10px;line-height:1.5;opacity:.72;max-width:44ch}
+/* 1 justified: no crop at all */
+.just{margin-top:auto;display:flex;gap:6px;height:66%;min-height:0}
+.jc{min-width:0;overflow:hidden}
+.just img,.just video{width:100%;height:100%;object-fit:cover;display:block}
+/* 2 four across */
+.four{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;height:66%;min-height:0}
+.four>*{min-height:0;overflow:hidden}
+.four img,.four video{width:100%;height:100%;object-fit:cover;display:block}
+/* 3 two rows of three */
+.two3{margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;
+ gap:6px;height:72%;min-height:0}
+.two3>*{min-height:0;overflow:hidden}
+.two3 img,.two3 video{width:100%;height:100%;object-fit:cover;display:block}
+footer{margin-top:80px;padding:30px 0 78px;border-top:1px solid var(--line);
+ font-size:12px;color:rgba(238,236,234,.42);line-height:1.8}
+</style></head><body><div class="wrap">
+<header class="top">
+  <span class="kick">Afterglow · working artifact · 10 October 2026</span>
+  <h1>C1a, three ways to stop cropping</h1>
+  <p class="lede">Head and ground unchanged. The references are the same six per sheet in options
+    one and three, four in option two. The source frames run 0.66 to 1.90 in aspect, mostly
+    portrait with three landscape, which is why a six-across row turns each one into a slit.</p>
+</header>
+<section class="var"><header class="vhead"><span class="key">1</span>
+<div><h2>Justified row, nothing cropped</h2><p class="premise">Every frame keeps its native proportion. Heights match, widths vary, so the row reads as one band and no image loses a pixel.</p><p class="why">Six references, zero crop. The landscape frames become wide and the portraits narrow, so the rhythm is irregular by design. Closest to how the photographs actually are.</p></div></header>
+<div class="sheets"><div class="sheet light" style="background:linear-gradient(180deg,#BC6F4C,#A85E4E)"><div class="col"><div class="bighead"><h3>After gold</h3><div class="meta"><span class="sw" style="background:#BC6F4C"></span><span class="hex">#BC6F4C · L 0.619</span></div></div><p class="rule">Warm to cool across a set, never back.</p><div class="just"><div class="jc" style="flex:0.14380479555801035"><img class="" src="moodboard-media/0x4Ubi2.jpg" alt=""></div><div class="jc" style="flex:0.1451923320791507"><img class="" src="moodboard-media/O6syNhj.jpg" alt=""></div><div class="jc" style="flex:0.17404978671679536"><img class="" src="moodboard-media/xy_NvPh.jpg" alt=""></div><div class="jc" style="flex:0.21772046047482765"><img class="" src="moodboard-media/f3MgZ_1.jpg" alt=""></div><div class="jc" style="flex:0.14505625679135392"><img class="" src="moodboard-media/k4KfGf3.jpg" alt=""></div><div class="jc" style="flex:0.17417636837986214"><video class="" src="moodboard-media/gm8x-Nc.mp4" autoplay muted loop playsinline></video></div></div></div><div class="foot"><span>Afterglow Imagery</span><span>Afterglow Brand Guide · October 2026</span><span>13</span></div></div><div class="sheet " style="background:linear-gradient(180deg,#45235B,#341D5E)"><div class="col"><div class="bighead"><h3>Deep violet</h3><div class="meta"><span class="sw" style="background:#45235B"></span><span class="hex">#45235B · L 0.301</span></div></div><p class="rule">The light only deepens. One step left before the ground.</p><div class="just"><div class="jc" style="flex:0.25450848649794283"><video class="" src="moodboard-media/4RH87Zk.mp4" autoplay muted loop playsinline></video></div><div class="jc" style="flex:0.10068817744394358"><video class="" src="moodboard-media/mPNk84g.mp4" autoplay muted loop playsinline></video></div><div class="jc" style="flex:0.10835660712577087"><video class="" src="moodboard-media/QOH4dl-.mp4" autoplay muted loop playsinline></video></div><div class="jc" style="flex:0.09599300120083"><img class="" src="moodboard-media/gE_ypMW.jpg" alt=""></div><div class="jc" style="flex:0.20186918105760526"><img class="" src="moodboard-media/Zul1TsA.jpg" alt=""></div><div class="jc" style="flex:0.23858454667390758"><img class="" src="moodboard-media/InhSf8F.jpg" alt=""></div></div></div><div class="foot"><span>Afterglow Imagery</span><span>Afterglow Brand Guide · October 2026</span><span>16</span></div></div></div></section><section class="var"><header class="vhead"><span class="key">2</span>
+<div><h2>Four per sheet, near square</h2><p class="premise">Drop to four references and give each a wider slot, so a portrait crops only at the top and bottom.</p><p class="why">Regular and calm, and the frames are large enough to read at print size. Costs two references per stage: 16 of the 49 reach the guide instead of 24.</p></div></header>
+<div class="sheets"><div class="sheet light" style="background:linear-gradient(180deg,#BC6F4C,#A85E4E)"><div class="col"><div class="bighead"><h3>After gold</h3><div class="meta"><span class="sw" style="background:#BC6F4C"></span><span class="hex">#BC6F4C · L 0.619</span></div></div><p class="rule">Warm to cool across a set, never back.</p><div class="four"><img class="" src="moodboard-media/0x4Ubi2.jpg" alt=""><img class="" src="moodboard-media/O6syNhj.jpg" alt=""><img class="" src="moodboard-media/xy_NvPh.jpg" alt=""><img class="" src="moodboard-media/f3MgZ_1.jpg" alt=""></div></div><div class="foot"><span>Afterglow Imagery</span><span>Afterglow Brand Guide · October 2026</span><span>13</span></div></div><div class="sheet " style="background:linear-gradient(180deg,#45235B,#341D5E)"><div class="col"><div class="bighead"><h3>Deep violet</h3><div class="meta"><span class="sw" style="background:#45235B"></span><span class="hex">#45235B · L 0.301</span></div></div><p class="rule">The light only deepens. One step left before the ground.</p><div class="four"><video class="" src="moodboard-media/4RH87Zk.mp4" autoplay muted loop playsinline></video><video class="" src="moodboard-media/mPNk84g.mp4" autoplay muted loop playsinline></video><video class="" src="moodboard-media/QOH4dl-.mp4" autoplay muted loop playsinline></video><img class="" src="moodboard-media/gE_ypMW.jpg" alt=""></div></div><div class="foot"><span>Afterglow Imagery</span><span>Afterglow Brand Guide · October 2026</span><span>16</span></div></div></div></section><section class="var"><header class="vhead"><span class="key">3</span>
+<div><h2>Two rows of three</h2><p class="premise">Keep six, but stack them three and three so each slot is landscape rather than a vertical slot.</p><p class="why">Keeps the count and roughly halves the crop. Two rows is also the only option here that fills the sheet without the strip having to get taller.</p></div></header>
+<div class="sheets"><div class="sheet light" style="background:linear-gradient(180deg,#BC6F4C,#A85E4E)"><div class="col"><div class="bighead"><h3>After gold</h3><div class="meta"><span class="sw" style="background:#BC6F4C"></span><span class="hex">#BC6F4C · L 0.619</span></div></div><p class="rule">Warm to cool across a set, never back.</p><div class="two3"><img class="" src="moodboard-media/0x4Ubi2.jpg" alt=""><img class="" src="moodboard-media/O6syNhj.jpg" alt=""><img class="" src="moodboard-media/xy_NvPh.jpg" alt=""><img class="" src="moodboard-media/f3MgZ_1.jpg" alt=""><img class="" src="moodboard-media/k4KfGf3.jpg" alt=""><video class="" src="moodboard-media/gm8x-Nc.mp4" autoplay muted loop playsinline></video></div></div><div class="foot"><span>Afterglow Imagery</span><span>Afterglow Brand Guide · October 2026</span><span>13</span></div></div><div class="sheet " style="background:linear-gradient(180deg,#45235B,#341D5E)"><div class="col"><div class="bighead"><h3>Deep violet</h3><div class="meta"><span class="sw" style="background:#45235B"></span><span class="hex">#45235B · L 0.301</span></div></div><p class="rule">The light only deepens. One step left before the ground.</p><div class="two3"><video class="" src="moodboard-media/4RH87Zk.mp4" autoplay muted loop playsinline></video><video class="" src="moodboard-media/mPNk84g.mp4" autoplay muted loop playsinline></video><video class="" src="moodboard-media/QOH4dl-.mp4" autoplay muted loop playsinline></video><img class="" src="moodboard-media/gE_ypMW.jpg" alt=""><img class="" src="moodboard-media/Zul1TsA.jpg" alt=""><img class="" src="moodboard-media/InhSf8F.jpg" alt=""></div></div><div class="foot"><span>Afterglow Imagery</span><span>Afterglow Brand Guide · October 2026</span><span>16</span></div></div></div></section>
+<footer>Native aspects measured from the files, not estimated. Floor:
+<code>references/2026-10-07-frameio-guidelines</code>.</footer>
+</div></body></html>

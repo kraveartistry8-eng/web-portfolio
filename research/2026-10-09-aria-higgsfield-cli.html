@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Studio in a Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#F0F0EE; --surface:#FFFFFF;
+  --ink:#161614; --ink-2:#6B6B66; --line:#D8D8D4; --accent:#575260;
+  --sans:'Epilogue',system-ui,sans-serif;
+  --mono:'Fragment Mono',ui-monospace,monospace;
+  --gutter:28px; --max:1080px; --warn:#A82A20; --ok:#2F5D46;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.page{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+h1,h2,h3,h4{font-weight:700;margin:0;letter-spacing:-.025em;line-height:1.1}
+h1{font-size:clamp(34px,5.2vw,62px);letter-spacing:-.042em;line-height:.97}
+h2{font-size:clamp(23px,2.9vw,33px)}
+h3{font-size:19px}
+h4{font-size:15px;letter-spacing:-.01em}
+p{margin:0;max-width:68ch}
+a{color:var(--accent)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);margin:0}
+.muted{color:var(--ink-2)}
+.mast{background:var(--surface);border-bottom:1px solid var(--line);padding-block:26px}
+.mast__in{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+.mast strong{font-size:17px;letter-spacing:-.02em}
+.hero{padding-block:76px 50px}
+.hero .label{margin-bottom:18px}
+.hero h1{max-width:18ch;margin-bottom:28px}
+.hero .lead{font-size:clamp(19px,2.1vw,25px);line-height:1.38;letter-spacing:-.014em;max-width:58ch}
+.band{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);margin-top:44px}
+.band div{background:var(--surface);padding:22px 20px 24px}
+.band .k{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:12px}
+.band .v{font-size:clamp(24px,2.6vw,32px);font-weight:700;letter-spacing:-.03em;line-height:1.05;display:block}
+.band .n{font-size:13.5px;color:var(--ink-2);line-height:1.45;margin-top:9px;display:block}
+section.sec{border-top:1px solid var(--accent);padding-block:40px 64px}
+.sec__h{display:flex;gap:16px;align-items:baseline;margin-bottom:26px;flex-wrap:wrap}
+.sec__h .num{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+  background:var(--accent);color:#fff;padding:4px 9px;border-radius:2px}
+.sec p + p{margin-top:14px}
+.tablewrap{overflow-x:auto;margin-top:20px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:11px 16px 11px 0;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:400;border-bottom:1px solid var(--ink)}
+td:first-child{font-weight:700;padding-right:24px}
+td.num,th.num{font-family:var(--mono);font-size:13px;white-space:nowrap}
+caption{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-2);padding-bottom:10px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:34px 36px;margin-top:8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px 44px;margin-top:8px}
+.card{border-top:1px solid var(--ink);padding-top:16px}
+.card h3{margin-bottom:10px}
+.card p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.card p + p{margin-top:10px}
+.flag{border-left:2px solid var(--warn);padding:4px 0 4px 18px;margin-top:22px}
+.flag h4{color:var(--warn);margin-bottom:7px}
+.flag p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+.flag p + p{margin-top:10px}
+.note{border-left:2px solid var(--accent);padding:4px 0 4px 18px;margin-top:22px}
+.note h4{margin-bottom:7px}
+.note p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+ol.ex{counter-reset:d;list-style:none;padding:0;margin:22px 0 0}
+ol.ex > li{counter-increment:d;border-top:1px solid var(--line);padding:22px 0 26px;
+  display:grid;grid-template-columns:38px minmax(0,1fr);gap:16px}
+ol.ex > li > div{min-width:0}
+ol.ex > li::before{content:counter(d,decimal-leading-zero);font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;color:var(--accent);padding-top:4px}
+ol.ex h4{margin-bottom:4px;font-size:17px}
+ol.ex .when{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:10px}
+ol.ex p{font-size:14.5px;line-height:1.55;color:var(--ink-2)}
+ol.ex p + p, ol.ex pre + p{margin-top:10px}
+ol.ex p strong{color:var(--ink)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;margin-left:8px;vertical-align:2px}
+.tag.yes{color:var(--ok)} .tag.cond{color:var(--accent)} .tag.no{color:var(--warn)}
+ul.plain{padding-left:19px;max-width:70ch}
+ul.plain li{margin-bottom:9px}
+pre{background:var(--surface);border:1px solid var(--line);padding:16px 18px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.7;margin:12px 0 0;max-width:100%}
+code{font-family:var(--mono);font-size:13px}
+.verdict{background:var(--surface);border:1px solid var(--accent);padding:34px 36px 38px;margin-top:8px}
+.verdict h3{margin-bottom:14px;max-width:40ch}
+.verdict p + p{margin-top:13px}
+.src{font-size:13.5px;line-height:1.6;padding-left:22px}
+.src li{margin-bottom:7px;color:var(--ink-2)}
+.lc{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--warn);white-space:nowrap}
+.nav{display:flex;gap:22px;flex-wrap:wrap;border-top:1px solid var(--line);
+  padding-block:30px 60px;font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+@media (max-width:900px){
+  .band{grid-template-columns:1fr 1fr}
+  .three{grid-template-columns:1fr;gap:26px}
+  .two{grid-template-columns:1fr;gap:26px}
+}
+@media (max-width:620px){
+  :root{--gutter:16px}
+  .band{grid-template-columns:1fr}
+  table{font-size:13.5px}
+  th,td{padding-right:10px}
+  pre{font-size:11px;white-space:pre-wrap;word-break:break-word}
+  .verdict{padding:24px 20px 28px}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="page mast__in">
+    <strong>Aaron Streets</strong>
+    <span class="label">ARIA &middot; Higgsfield CLI across the whole plan &middot; 9 Oct 2026</span>
+  </div>
+</header>
+
+<div class="page">
+
+  <section class="hero">
+    <p class="label">What the tool is for, phase by phase, October to March</p>
+    <h1>Three jobs, one rule, and a monthly allowance that expires.</h1>
+    <p class="lead">For a design-led Shopify developer, Higgsfield does three jobs: it makes
+      images of things that can't be photographed, it makes prospecting visual, and it adds a
+      service line to client work. It touches every phase of the plan. The one thing it can never
+      do is stand in as evidence of your work.</p>
+
+    <div class="band">
+      <div><span class="k">Allowance</span><span class="v">1,200 / mo</span>
+        <span class="n">Granted today at 14:45. Monthly credits do not roll over, and cancelling forfeited 508 in July.</span></div>
+      <div><span class="k">Surface</span><span class="v">94 models</span>
+        <span class="n">Plus 22 workflows: image, video, 3D, audio and data, from one command line.</span></div>
+      <div><span class="k">Cheapest useful frame</span><span class="v">2 cr</span>
+        <span class="n">Nano Banana Pro at 2k. The prompt-enhanced photoshoot finish costs 6.5.</span></div>
+      <div><span class="k">Vendor risk</span><span class="v">Real</span>
+        <span class="n">A February 2026 backlash over its marketing and billing. Use the outputs, but don't put the brand name in client work.</span></div>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">01</span><h2>Executive summary</h2></div>
+
+    <p><strong>The deleted report covered one use: a bottle for Demo 01.</strong> The CLI does far
+      more than product photos. It also does 3D models, vector graphics, video loops, cleanup,
+      upscaling, text detection, and two importers that read any website's brand and products from
+      its URL. Set against the roadmap, those features map onto all five offers and all six phases,
+      not just October.</p>
+
+    <div class="three" style="margin-top:28px">
+      <div class="card">
+        <p class="label" style="margin-bottom:10px">Job 1 &middot; Oct&ndash;Nov</p>
+        <h3>A studio for what can't be shot</h3>
+        <p>Afterglow is fictional, so every image of it has to be made: hero, catalogue, hover
+          states, a 3D model for product media, spec icons, and the drop page. This job blocks the
+          build if it isn't done. The fold goes up tomorrow.</p>
+      </div>
+      <div class="card">
+        <p class="label" style="margin-bottom:10px">Job 2 &middot; Dec&ndash;Mar</p>
+        <h3>A visual &ldquo;one thing I'd change&rdquo;</h3>
+        <p>Every touch-one email makes one design observation, about 113 times. The brand-kit and
+          product importers turn that observation into a picture of the change. Keep it out of the
+          first email and offer it in the reply, so attachments don't hurt deliverability.</p>
+      </div>
+      <div class="card">
+        <p class="label" style="margin-bottom:10px">Job 3 &middot; Jan onward</p>
+        <h3>A service line inside the offers</h3>
+        <p>An imagery audit inside the $1.5k&ndash;$3k roadmap, with compliance points a merchant
+          can check. Photo cleanup and 3D media inside a build. One art-directed drop a month
+          inside the care plan, made from the client's own real photos.</p>
+      </div>
+    </div>
+
+    <div class="flag">
+      <h4>The rule that sorts every use</h4>
+      <p>A generated frame can be art direction. It can never be evidence. The plan's whole claim
+        is &ldquo;most stores get assembled, yours gets decided,&rdquo; proved by measurement. So the
+        tool is safe where the image is openly a design proposal or a fictional subject. It's unsafe
+        wherever it would pose as proof: a weekly build clip, a testimonial, a review, a before and
+        after, a face. Section 06 lists those cases.</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">02</span><h2>What the CLI actually contains</h2></div>
+    <p>Read from <code>higgsfield</code> 1.1.26 on 9 October. Credits come from
+      <code>generate cost</code> and were re-measured today, not taken from a price page. The skill
+      names are the eight Higgsfield skills installed in your Claude setup, which wrap these
+      commands.</p>
+
+    <div class="tablewrap"><table>
+      <caption>Capability families, translated into Shopify work</caption>
+      <thead><tr><th>Family</th><th>Commands &middot; models</th><th>The Shopify job it does</th><th class="num">Credits</th></tr></thead>
+      <tbody>
+        <tr><td>Prompt-enhanced photography</td><td><code>product-photoshoot</code>, 10 modes: product_shot, lifestyle_scene, hero_banner, restyle, conceptual_product, social_carousel and more</td><td>Hero banners, catalogue frames, seasonal restyles. <code>--enhance-only</code> returns a full photo brief for free</td><td class="num">6.5 / frame &middot; brief free</td></tr>
+        <tr><td>General image</td><td>Nano Banana Pro, GPT Image 2 and 2.5, Seedream 5, FLUX.2, Ideogram 4.5</td><td>Exploration, edits with up to 14 references, inpainting with a mask (GPT Image 2), transparent backgrounds</td><td class="num">0.25&ndash;6.5</td></tr>
+        <tr><td>Seeded image</td><td>Ideogram 4.5 (<code>seed</code>), the only image model with one</td><td>Repeatable typographic posters and drop graphics, where the same seed gives the same layout</td><td class="num">6.25</td></tr>
+        <tr><td>Vector</td><td>Recraft V4.1, <code>--model_type vector</code>, <code>colors</code> array</td><td>SVG icons and spot illustrations locked to brand hex values, for spec blocks, badges and empty states</td><td class="num">1.25 &middot; vector 2.5</td></tr>
+        <tr><td>Cleanup</td><td>Background remover, Bytedance upscale, Topaz, FLUX.2 Pro outpaint, relight</td><td>Rescue merchant photos: cut out, upscale, extend a square to a 21:9 banner crop</td><td class="num">1 &middot; 2 &middot; ?</td></tr>
+        <tr><td>3D</td><td>Tripo H3.1, Hunyuan3D v3, Meshy, multiview to 3D</td><td>A product model for Shopify's 3D media type and AR viewing</td><td class="num">9 std &middot; 18 detailed</td></tr>
+        <tr><td>Video</td><td>Kling 3.0 (<code>start_image</code>, <code>end_image</code>), Veo 3.1, Gemini Omni, Reframe</td><td>A seamless hover loop (the same first and last frame), a drop hero clip, reframing real captures to 9:16</td><td class="num">10 / 5s &middot; 12&ndash;32</td></tr>
+        <tr><td>Importers</td><td><code>marketing-studio brand-kits fetch --url</code>, <code>webproducts fetch --url</code></td><td>Pull a prospect's palette, type and product from their storefront URL</td><td class="num">not priced <span class="lc">[unverified]</span></td></tr>
+        <tr><td>Ads engine</td><td><code>dtc-ads</code>, 39+ <code>ad-formats</code> such as Hero Statement, Comparison Table, Customer Quote</td><td>Paid-social statics for a drop launch. Several formats invite fabricated reviews (see 06)</td><td class="num">not priced</td></tr>
+        <tr><td>Data</td><td>Image text detection, speech to text, clip transcriber, Virality Predictor</td><td>Find garbled text in a store's existing AI images. Caption your real build clips</td><td class="num">not priced</td></tr>
+        <tr><td>Sites</td><td><code>website</code>: React and TanStack on Higgsfield's Cloudflare hosting</td><td>None. It's off-platform for a Shopify studio</td><td class="num">&mdash;</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="note">
+      <h4>A correction to the deleted report</h4>
+      <p>It said no image model on the platform accepts a seed. Ideogram 4.5 does, and so does
+        Tripo's 3D texture step. Consistency across a catalogue still comes mostly from reference
+        images, but typographic work can be made repeatable.</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">03</span><h2>Mapped against the 27 weeks</h2></div>
+    <p>Every week in the roadmap where the tool can do real work, and what that work is. Weeks left
+      out (pricing, the app build, the review) have no imagery job.</p>
+
+    <div class="tablewrap"><table>
+      <caption>Phase by phase</caption>
+      <thead><tr><th>Week</th><th>Roadmap task</th><th>What Higgsfield does</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>W2 &middot; Oct 10</td><td>Homepage above the fold</td><td>Design the bottle on paper, then render one canonical frame and one hero banner</td><td>01, 02</td></tr>
+        <tr><td>W3 &middot; Oct 16&ndash;17</td><td>Seed inventory, card system with hover state</td><td>Catalogue frames from the canonical reference. Two crops per product. Optional 5-second hover loop</td><td>02, 03</td></tr>
+        <tr><td>W4 &middot; Oct 24</td><td>Recommendation slots from structured data</td><td>Supporting products (box, refill, candle) in the same light, so the recommendation slots aren't empty</td><td>02</td></tr>
+        <tr><td>W5 &middot; Oct 31</td><td>Metafields, spec blocks, product JSON-LD</td><td>A 3D model as product media, and vector spec icons in the brand's hex values</td><td>04, 05</td></tr>
+        <tr><td>W6 &middot; Nov 2&ndash;5</td><td>Checkout cross-sell from metafields</td><td>Thumbnails for the cross-sell products. Transparent PNGs, kept small for a 64KB bundle that loads images by URL</td><td>02</td></tr>
+        <tr><td>W7 &middot; Nov 6&ndash;9</td><td>Studio site, CSS cube</td><td>Afterglow imagery only, on the storefront face. Nothing generated about you or your process</td><td>&mdash;</td></tr>
+        <tr><td>W8 &middot; Nov 13&ndash;15</td><td>Refinement pass, case study, 60-second captures</td><td>Audit the image treatment against the ramp. Reframe the real captures to 9:16 for LinkedIn, and make a cover frame</td><td>08, 09</td></tr>
+        <tr><td>Nov &middot; the drop</td><td>The interactive piece inside the store</td><td>Conceptual product frames, a seeded typographic poster, and one video hero if it passes the performance budget</td><td>06</td></tr>
+        <tr><td>W11&ndash;14 &middot; Dec</td><td>Touch one: one observation, one change</td><td>A visual of the change, made from the prospect's own brand kit and product. Offered in the reply, not attached</td><td>07</td></tr>
+        <tr><td>W16 &middot; Jan 10</td><td>Write the roadmap offer</td><td>Add an imagery section: coverage gaps, AI-label compliance, garbled-text check</td><td>10</td></tr>
+        <tr><td>W18 &middot; Jan 22&ndash;24</td><td>Build the first paid job</td><td>Rescue their photos: cutouts, upscales, banner outpaints, all with consent in the contract</td><td>11</td></tr>
+        <tr><td>Feb &middot; care plan</td><td>One shipped thing a month</td><td>Seasonal art direction for the month's drop page, restyled from the client's real photographs</td><td>12</td></tr>
+        <tr><td>W24&ndash;25 &middot; Mar sprint</td><td>Eight touch-ones before noon</td><td>Skip it. A visual per prospect doesn't fit in that time. Keep it for replies</td><td>07</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 04 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">04</span><h2>Twelve worked examples</h2></div>
+    <p>Each one gives the job, the command, and what makes it defensible. Commands use flags
+      verified against <code>--help</code> and <code>model get</code> today. A local path passed to
+      <code>--image</code> uploads automatically.</p>
+
+    <ol class="ex">
+      <li><div>
+        <h4>Get the photo brief for free, then render it cheaply <span class="tag yes">Use</span></h4>
+        <span class="when">Demo 01 &middot; W2, tomorrow</span>
+        <p>The photoshoot enhancer writes a ten-part photography brief (lighting, lens, materials,
+          and a long list of things to avoid) and then renders it at 6.5 credits. Ask for the brief
+          alone, then render it on the 2-credit model.</p>
+<pre>higgsfield product-photoshoot create --mode hero_banner \
+  --prompt "Afterglow eau de parfum, the bottle alone on a void ground" \
+  --brand_context "Void ground #080808. Light only deepens. No logo in sight" \
+  --enhance-only
+
+higgsfield generate create nano_banana_pro --prompt "&lt;the brief&gt;" \
+  --aspect_ratio 21:9 --resolution 2k --wait</pre>
+        <p><strong>Before any of this:</strong> write the bottle down in <code>brand/</code>
+          (form, glass, closure, how the brand shows without a mark) with a reason for each. A
+          generated bottle with no decision behind it can't answer &ldquo;why this.&rdquo;</p>
+      </div></li>
+
+      <li><div>
+        <h4>One canonical frame, and everything references it <span class="tag yes">Use</span></h4>
+        <span class="when">Demo 01 &middot; W3&ndash;W6</span>
+        <p>Text prompts give you a different bottle every time. Pick one frame, save it as
+          <code>brand/resources/afterglow-canonical.png</code>, and pass it as a reference for every
+          catalogue frame, recommendation product and checkout thumbnail. Ask for a transparent
+          background, so the cards sit on your exact <code>#080808</code> rather than a generated
+          near-black.</p>
+<pre>higgsfield generate create gpt_image_2 --prompt "&lt;brief&gt;, three-quarter view, tighter crop" \
+  --image brand/resources/afterglow-canonical.png \
+  --quality high --resolution 2k --background transparent --aspect_ratio 4:5 --wait</pre>
+      </div></li>
+
+      <li><div>
+        <h4>A hover loop with no visible seam <span class="tag cond">Measure first</span></h4>
+        <span class="when">Card system &middot; W3</span>
+        <p>Kling 3.0 accepts both a <code>start_image</code> and an <code>end_image</code>. Pass
+          the same frame as both and the clip loops cleanly: a slow turn, or light moving across the
+          glass. With sound off it costs 7.5 credits for 5 seconds. Load it only on hover, behind a poster image, so it
+          costs nothing at page load. Check INP and CLS before keeping it, since those are the
+          numbers you'll be quoting to merchants.</p>
+<pre>higgsfield generate create kling3_0 --prompt "slow light sweep across the glass, camera locked" \
+  --start_image brand/resources/afterglow-canonical.png \
+  --end_image brand/resources/afterglow-canonical.png \
+  --duration 5 --sound off --aspect_ratio 1:1 --wait</pre>
+      </div></li>
+
+      <li><div>
+        <h4>A 3D model as Shopify product media <span class="tag yes">Use</span></h4>
+        <span class="when">Spec blocks &middot; W5</span>
+        <p>Shopify product media supports 3D models: GLB for the web viewer, USDZ for iOS AR Quick
+          Look. Partner standards ask for about 4MB, 2K textures, PBR maps and real-world scale.
+          Most agency-built themes never touch the model viewer, so rendering one well, with a
+          poster and lazy loading, is front-end skill you can show and generic themes can't.</p>
+<pre>higgsfield generate create tripo_h3_1_image_to_3d \
+  --image brand/resources/afterglow-canonical.png \
+  --pbr true --texture_quality detailed --orientation align_image --wait</pre>
+        <p><span class="lc">[Low Confidence]</span> that the output is a GLB within the 4MB target.
+          The output format wasn't verified, and a USDZ conversion step will probably be needed for
+          AR.</p>
+      </div></li>
+
+      <li><div>
+        <h4>Vector icons locked to the palette <span class="tag yes">Use</span></h4>
+        <span class="when">Spec blocks &middot; W5</span>
+        <p>Recraft takes a <code>colors</code> array and a vector mode, so spec-block icons
+          (concentration, volume, notes, longevity) come out as SVG in the brand's measured hex
+          values. That's 2.5 credits each. Clean them up and commit them to <code>/assets</code>
+          like any other code.</p>
+<pre>higgsfield generate create recraft_v4_1 --model_type vector \
+  --prompt "single-line icon, a falling droplet, 2px stroke, no fill" \
+  --colors '["#D8B260"]' --background_color "#080808" --wait</pre>
+      </div></li>
+
+      <li><div>
+        <h4>The drop page: concept frames and a repeatable poster <span class="tag yes">Use</span></h4>
+        <span class="when">November &middot; the interactive piece</span>
+        <p>The drop is where art direction is the product. Conceptual mode handles the sculptural
+          and levitating frames. Ideogram's <code>seed</code> keeps a typographic launch poster
+          reproducible while you iterate the copy. Seventeen October is Afterglow's fictional launch
+          night: use it on the page, but don't let it reorder the build.</p>
+<pre>higgsfield product-photoshoot create --mode conceptual_product --count 4 \
+  --prompt "the bottle suspended in a falling sheet of amber light" \
+  --image brand/resources/afterglow-canonical.png
+
+higgsfield generate create ideogram_4_5 --seed 1710 \
+  --prompt "AFTERGLOW 17.10 set in a condensed grotesk, gold on void" --aspect_ratio 4:5 --wait</pre>
+      </div></li>
+
+      <li><div>
+        <h4>The prospect visual: their brand, one change <span class="tag cond">In the reply, not touch one</span></h4>
+        <span class="when">Outreach &middot; Dec&ndash;Mar</span>
+        <p>Import the prospect's palette and type from their URL, import one product, then restyle
+          only the element your observation is about (usually the hero). The result is a picture of
+          the one change, in their own brand. Send touch one as plain text with the observation, and
+          offer the visual (&ldquo;want to see it?&rdquo;) when they reply. That keeps image
+          attachments off a young sending domain. Expect roughly 10&ndash;15 credits per prospect,
+          or about 200 a month at five a week.</p>
+<pre>higgsfield marketing-studio brand-kits fetch --url https://&lt;prospect&gt;.com --wait
+higgsfield marketing-studio webproducts fetch --url https://&lt;prospect&gt;.com/products/&lt;hero-sku&gt; --wait
+higgsfield product-photoshoot create --mode restyle --image &lt;their-hero.jpg&gt; \
+  --prompt "same product, the hero recomposed: &lt;your one change&gt;" \
+  --brand_context "&lt;palette and type from the kit&gt;"</pre>
+        <p><strong>Label it a concept sketch, not their store.</strong> Their photos are their
+          copyright. Under section 4.4 of Higgsfield's terms, the platform can train on what you
+          upload unless you're on Enterprise. Use it in private correspondence only, never in a
+          portfolio. <span class="lc">[unverified]</span> how well the importers read a Shopify
+          storefront. They aren't priced, and running them creates records on your account, so try
+          one on a store you'd happily write to.</p>
+      </div></li>
+
+      <li><div>
+        <h4>Audit generated frames against the ramp <span class="tag yes">Use</span></h4>
+        <span class="when">Refinement pass &middot; W8</span>
+        <p>Generated light doesn't follow &ldquo;light only deepens.&rdquo; The guideline audit
+          already computes OKLCH lightness and WCAG contrast, so extend it: sample each frame's
+          dominant colours and check that the lightness falls on the stage the frame claims. That's
+          a measured image treatment, which is exactly the kind of sentence the case study is made
+          of.</p>
+      </div></li>
+
+      <li><div>
+        <h4>Edit the evidence, don't generate it <span class="tag yes">Use</span></h4>
+        <span class="when">Weekly clips &middot; every week, W8 captures</span>
+        <p>The weekly clip has to be real screen capture. But the Reframe workflow can reformat that
+          real footage to 9:16 for LinkedIn, and speech to text can caption a narrated walkthrough.
+          The footage stays proof and only the format changes. A generated cover frame for a
+          60-second capture is fine. A generated clip is not.</p>
+<pre>higgsfield generate workflow reframe --video ./captures/w4-cart-drawer.mp4 --aspect-ratio 9:16</pre>
+      </div></li>
+
+      <li><div>
+        <h4>An imagery section in the $1.5k&ndash;$3k roadmap <span class="tag yes">Sell it</span></h4>
+        <span class="when">Roadmap offer &middot; written W16</span>
+        <p>This fits section 06's rule: offer facts a merchant can check, not percentages. Three of
+          them are already in the market:</p>
+        <ul class="plain" style="margin-top:8px;font-size:14.5px;color:var(--ink-2)">
+          <li><strong style="color:var(--ink)">Google Merchant Center</strong> requires AI-generated
+            product images to carry the IPTC <code>trainedAlgorithmicMedia</code> tag, and treats
+            stripping it as a violation that can get products disapproved. Image compression often
+            removes metadata. Run <code>exiftool</code> over their feed images.</li>
+          <li><strong style="color:var(--ink)">EU AI Act Article 50</strong> labelling duties have
+            applied since 2 August 2026, with penalties up to &euro;15M or 3%.
+            <span class="lc">[Low Confidence]</span> on whether a generated product image counts as
+            a &ldquo;deepfake&rdquo; under it. Flag it and refer them to counsel, don't rule on it.</li>
+          <li><strong style="color:var(--ink)">Garbled packaging text</strong> in images they've
+            already generated. Text detection finds it, and it's the one thing shoppers notice. 49%
+            of shoppers in one survey said AI product imagery lowers their trust in a brand.</li>
+        </ul>
+        <p style="margin-top:10px">Add coverage gaps (no lifestyle shots, no 3D model, wrong banner
+          crops) and the section ends holding a scoped fix, which is what the roadmap is for.</p>
+      </div></li>
+
+      <li><div>
+        <h4>Rescue the merchant's own photos during a build <span class="tag yes">Use</span></h4>
+        <span class="when">First paid job &middot; W18</span>
+        <p>A new section almost always needs a crop the merchant doesn't have. Cut-outs cost 1
+          credit, upscales 2, and outpainting extends a square packshot into a 21:9 banner. The
+          product stays real, and only the canvas or background is made, which is the most
+          defensible kind of generation. Add a line to the contract consenting to third-party AI
+          processing of their images.</p>
+<pre>higgsfield generate create image_background_remover --image ./client/sku-0142.jpg --wait
+higgsfield generate create bytedance_image_upscale --image ./client/sku-0142.jpg --wait</pre>
+      </div></li>
+
+      <li><div>
+        <h4>A monthly drop, art directed from their real photos <span class="tag yes">Use</span></h4>
+        <span class="when">Care plan &middot; Feb onward</span>
+        <p>&ldquo;One shipped thing a month&rdquo; is usually a drop page tied to their calendar.
+          Restyle mode takes the client's real product photo and moves it into the season's world:
+          a Valentine's palette, a spring set. You art direct and build the page, the product is
+          genuine, and the page of numbers reports what the drop measured. Don't let it become
+          volume asset production. That's content work the care plan excludes.</p>
+<pre>higgsfield product-photoshoot create --mode restyle --count 3 \
+  --image ./client/hero-sku.jpg --prompt "same product, late-winter light, frost on linen" \
+  --brand_context "&lt;their tokens&gt;"</pre>
+      </div></li>
+    </ol>
+  </section>
+
+  <!-- 05 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">05</span><h2>The money: an allowance, not a balance</h2></div>
+    <p>The ledger settles a question the deleted report guessed wrong. Credits arrive as a
+      subscription grant (1,200 today), they reset each billing month, and cancelling wipes them out
+      (508.2 were deducted when the plan was cancelled on 17 July). So the question isn't how to
+      stretch 1,198 credits. It's which months are worth $47&ndash;$59 against the $1,400 of monthly
+      slack in the roadmap.</p>
+
+    <div class="tablewrap"><table>
+      <caption>Forecast spend per month against 1,200</caption>
+      <thead><tr><th>Month</th><th>Work</th><th class="num">Credits</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>October</td><td>Demo 01: about 200 exploration frames at 2, 25 finishes at 6.5, icons, one 3D model, one loop</td><td class="num">~620</td><td>Keep. This is the month the build depends on</td></tr>
+        <tr><td>November</td><td>Drop page frames, a poster, maybe one video hero, the case study cover</td><td class="num">~250</td><td>Keep</td></tr>
+        <tr><td>December</td><td>Visuals for replies only, at about 15 a reply</td><td class="num">~50&ndash;100</td><td>Pause or drop to a smaller plan. Spend down before the cycle ends</td></tr>
+        <tr><td>January</td><td>The first job's photo rescue, and audit checks</td><td class="num">~50&ndash;150</td><td>Bill it to the job, or pause</td></tr>
+        <tr><td>Feb&ndash;Mar</td><td>One care-plan drop a month, plus replies</td><td class="num">~150 / client</td><td>Keep only once a retainer pays for it</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="flag">
+      <h4>The month-end trap</h4>
+      <p>Cancelling mid-cycle forfeits whatever is left. If you pause for December, spend down in
+        the last week of November (drop-page variants, spare catalogue angles) and let the plan
+        lapse at the cycle boundary. <span class="lc">[Low Confidence]</span> on the exact price:
+        third-party pages quote $59 billed monthly or $47 billed annually for 1,200 credits. Annual
+        billing is what most of the complaints were about, so check which one you're on.</p>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">06</span><h2>Where not to use it</h2></div>
+    <div class="two">
+      <div class="card"><h3>Generated build clips <span class="tag no">No</span></h3>
+        <p>Twenty-seven weeks of clips exist to show you built something. A generated clip costs
+          less to make and is worth nothing for that purpose.</p></div>
+      <div class="card"><h3>Reviews, quotes, UGC avatars <span class="tag no">No</span></h3>
+        <p>The ads engine ships formats called Customer Quote, Star Review, Trusted Review and UGC
+          Side-by-Side, and Marketing Studio has stock avatars. The FTC rule in force since October
+          2024 bans fake reviews and testimonials, including AI-generated ones. Never build these
+          for a client, and never for Afterglow's case study either.</p></div>
+      <div class="card"><h3>The <code>website</code> command <span class="tag no">No</span></h3>
+        <p>It deploys a React app to Higgsfield's hosting on its own subdomain. A Shopify studio
+          shipping client work there is off-platform and off-strategy.</p></div>
+      <div class="card"><h3>Soul ID on anyone but you <span class="tag no">No</span></h3>
+        <p>It trains an identity model on a real face. A real likeness in a fictional brand's
+          campaign is consent you don't hold. A generated headshot of you on the studio site is
+          also a claim, and probably not one worth making.</p></div>
+      <div class="card"><h3>Brandkit for the guideline <span class="tag cond">Applications only</span></h3>
+        <p>The Afterglow guideline is a portfolio piece because 37 measured checks hold it
+          together. A generated brandbook has nothing to audit. Use brandkit for packaging, signage
+          and case-study mockups.</p></div>
+      <div class="card"><h3>Virality scores and marketplace cards <span class="tag no">No</span></h3>
+        <p>A Virality Predictor number is exactly the kind of percentage section 06 of the roadmap
+          bans from pitches. Marketplace cards encode Amazon listing rules, and there's no Shopify
+          job for them.</p></div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">07</span><h2>The devil's advocate</h2></div>
+    <ol class="ex">
+      <li><div><h4>Shopify already gives merchants this for free</h4>
+        <p>Shopify Magic in the admin media editor removes backgrounds, generates scenes and expands
+          canvases at no cost. Selling generated backgrounds as a service competes with a free
+          button. <strong>Answer:</strong> don't sell the images. Sell the decision (the canonical
+          frame, the ramp audit, the compliance check) and the build that uses them.</p></div></li>
+      <li><div><h4>It's a wrapper</h4>
+        <p>Critics say Higgsfield adds little over the models it resells, and the model list bears
+          that out: GPT Image, Nano Banana, Kling, Veo. <strong>Answer:</strong> true. What you're
+          paying for is one CLI an agent can drive, plus the prompt enhancers. If a single model
+          becomes the whole workflow, going to its provider directly may be cheaper.
+          <span class="lc">[Low Confidence]</span> on that comparison, since direct pricing wasn't
+          checked.</p></div></li>
+      <li><div><h4>The vendor's reputation can rub off on you</h4>
+        <p>In February 2026 Higgsfield deleted a post boasting that its tool had ended over 20
+          creative jobs. Reporting at the time also covered complaints about billing, astroturfed
+          reviews and marketing content containing racist language. You sell to creative-led brands
+          and to agencies full of designers. <strong>Answer:</strong> the outputs are yours (section
+          4.4), so use them, but keep the vendor's name out of proposals, case studies and the
+          weekly clips. Say &ldquo;art-directed generated imagery,&rdquo; which is accurate and
+          names no vendor.</p></div></li>
+      <li><div><h4>Shoppers say they distrust it</h4>
+        <p>Surveys report that 49% say AI product imagery lowers trust, and 31% trust brands less
+          when AI marketing is visible. Those are survey answers, not purchase data, and in a
+          separate test 57% couldn't spot AI photos. Either way, it argues for real products and
+          generated settings, not generated products, on any real store. It's another reason the
+          fictional storefront is the safe place for fully generated work.</p></div></li>
+      <li><div><h4>It pulls against the one claim the studio makes</h4>
+        <p>&ldquo;Most stores get assembled, yours gets decided&rdquo; is harder to believe if the
+          pictures came from a prompt. <strong>Answer:</strong> only if the case study hides it.
+          Write the bottle decision, the canonical-reference method and the ramp audit into the case
+          study as decisions. Then the generation becomes evidence of the method, not a gap in
+          it.</p></div></li>
+    </ol>
+  </section>
+
+  <!-- 08 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">08</span><h2>Data table</h2></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Variable</th><th>Value</th><th class="num">Confidence</th></tr></thead>
+      <tbody>
+        <tr><td>Monthly allowance</td><td>1,200 credits, granted 9 Oct 14:45</td><td class="num">10</td></tr>
+        <tr><td>Rollover on cancel</td><td>None. 508.2 deducted on 17 Jul</td><td class="num">10</td></tr>
+        <tr><td>Nano Banana Pro 2k / 4k</td><td>2 / 4 credits</td><td class="num">10</td></tr>
+        <tr><td>GPT Image 2, high, 2k</td><td>6.5 credits (what product-photoshoot renders on)</td><td class="num">9</td></tr>
+        <tr><td>GPT Image 2.5, low 1k / high 2k</td><td>0.25 / 2.75 credits</td><td class="num">10</td></tr>
+        <tr><td>Recraft standard / vector</td><td>1.25 / 2.5 credits</td><td class="num">10</td></tr>
+        <tr><td>Ideogram 4.5 (seeded)</td><td>6.25 credits</td><td class="num">10</td></tr>
+        <tr><td>Background remover / upscale</td><td>1 / 2 credits</td><td class="num">10</td></tr>
+        <tr><td>Tripo 3D std / detailed &middot; Hunyuan3D</td><td>9 / 18 (12 with only texture detailed) &middot; 11 credits</td><td class="num">10</td></tr>
+        <tr><td>Kling 3.0, 5s std / pro / 10s</td><td>10 / 12.5 / 20 credits, or 7.5 for 5s with sound off</td><td class="num">10</td></tr>
+        <tr><td>Veo 3.1 Lite &middot; Gemini Omni</td><td>12 &middot; 24 credits</td><td class="num">10</td></tr>
+        <tr><td>Output ownership, commercial and client use</td><td>Yours, transferable, survives cancellation (ToS 4.4)</td><td class="num">8</td></tr>
+        <tr><td>Training on your uploads</td><td>Permitted unless Enterprise (ToS 4.4)</td><td class="num">7</td></tr>
+        <tr><td>Merchant Center AI tag</td><td>IPTC trainedAlgorithmicMedia required, must not be stripped</td><td class="num">8</td></tr>
+        <tr><td>EU Art. 50 applies to product imagery</td><td>Applies from 2 Aug 2026. Scope for product shots unclear</td><td class="num">5</td></tr>
+        <tr><td>Shopify 3D target</td><td>GLB, about 4MB, 2K textures, PBR, real scale</td><td class="num">8</td></tr>
+        <tr><td>Plan price</td><td>$59 monthly or $47 annual (third party)</td><td class="num">5</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 09 -->
+  <section class="sec">
+    <div class="sec__h"><span class="num">09</span><h2>Gaps, and sources</h2></div>
+    <h3 style="margin-bottom:12px">Not verified</h3>
+    <ul class="plain">
+      <li>Cost and output quality of the two importers (<code>brand-kits fetch</code>,
+        <code>webproducts fetch</code>) on a real Shopify store. Not run, because each run creates
+        records on your account.</li>
+      <li>The Tripo output format, and whether it fits Shopify's 4MB target without a decimation
+        pass. Insufficient data available.</li>
+      <li>Whether a transparent background survives at 2k in practice.</li>
+      <li>Whether a hover loop or video hero holds INP at or under 200ms and CLS at zero on the
+        demo. That's a measurement, not a judgment.</li>
+      <li>Whether Higgsfield outputs already carry C2PA or IPTC provenance metadata (relevant to the
+        Merchant Center rule). Providers have until 2 December 2026 under the EU timeline.</li>
+      <li>Cost of Topaz, outpaint, text detection and the ads engine. The estimator either refuses
+        them or needs extra inputs.</li>
+    </ul>
+
+    <h3 style="margin:30px 0 12px">Sources</h3>
+    <ol class="src">
+      <li>higgsfield CLI 1.1.26 (69f3a33), run locally 9 Oct 2026: <code>--help</code> for every
+        command group, <code>model list</code>, <code>workflow list</code>, <code>model get</code>
+        for 10 models, <code>generate cost</code> for 25 configurations, <code>account
+        transactions</code>, <code>marketing-studio ad-formats list</code>.</li>
+      <li>Installed Higgsfield skills v0.13.0 in <code>~/.claude/skills/higgsfield-*</code>: modes,
+        scopes and routing.</li>
+      <li><a href="https://higgsfield.ai/creator-hub/help-center/account-and-privacy/who-owns-my-generations-and-can-i-use-them-commercially">Higgsfield help centre: who owns my generations</a> (ToS 4.3, 4.4, 5.1, 5.2).</li>
+      <li><a href="https://www.theregister.com/2026/02/06/higgsfield_ai_job_loss/">The Register, 6 Feb 2026: the jobs post and the backlash</a> &middot; <a href="https://timesca.com/kazakh-startup-higgsfield-ai-from-unicorn-to-racism-and-sexism-scandal/">Times of Central Asia</a> &middot; <a href="https://dealroom.co/news/125907-higgsfields-rapid-growth-draws-scrutiny-over-racist-ai-videos-and-billin/">Dealroom</a>.</li>
+      <li><a href="https://www.blotato.com/blog/higgsfield-pricing">Blotato</a> and <a href="https://www.layer3labs.io/guides/higgsfield-ai-pricing">Layer3 Labs</a>: plan pricing and rollover. Third party, used only where the ledger agrees.</li>
+      <li><a href="https://help.shopify.com/partners/resources/creating-3d-models/3d-model-standards-checklist">Shopify Partners: 3D model standards checklist</a>.</li>
+      <li><a href="https://help.shopify.com/en/manual/shopify-admin/productivity-tools/shopify-magic/media-generation">Shopify Help: media generation powered by Shopify Magic</a>.</li>
+      <li><a href="https://searchengineland.com/google-wants-you-to-label-ai-generated-images-used-in-merchant-center-437645">Search Engine Land: Merchant Center AI image labelling</a> &middot; <a href="https://iptc.org/news/google-reminds-publishers-and-merchants-not-to-strip-metadata-from-images/">IPTC</a>.</li>
+      <li><a href="https://www.artificialintelligence-news.com/news/eu-ai-act-article-50-transparency-rules-enter-force/">AI News: Article 50 enters force</a> &middot; <a href="https://www.harpermacleod.co.uk/?p=61277">Harper Macleod</a>.</li>
+      <li><a href="https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials">FTC: final rule banning fake reviews and testimonials</a>.</li>
+      <li><a href="https://itbrief.co.uk/story/uk-shoppers-wary-of-ai-product-images-survey-finds">IT Brief: UK shoppers wary of AI product images</a> &middot; <a href="https://www.businesswire.com/news/home/20250918110362/en/Clutch-Report-57-of-Consumers-Cant-Spot-AI-Photos-What-That-Means-for-Brands">Clutch: 57% can't spot AI photos</a>. Vendor and survey data, directional only.</li>
+      <li><a href="../2026-10-02-shopify-roadmap.html">The roadmap</a>, sections 03 to 06 and weeks 2 to 25.</li>
+    </ol>
+    <p class="muted" style="margin-top:22px;font-size:13.5px">Credit figures are first-hand from the
+      CLI and can be reproduced with <code>generate cost</code>. The judgments in sections 04, 06
+      and 07 are mine, argued rather than sourced. Research run 9 October 2026.</p>
+  </section>
+
+  <nav class="nav">
+    <a href="../2026-10-02-shopify-roadmap.html">The roadmap</a>
+    <a href="2026-10-03-aria-entry-point.html">Entry point</a>
+    <a href="2026-10-03-aria-shopify-skills.html">Skill stack</a>
+    <a href="2026-10-02-aria-shopify-market.html">Market report</a>
+  </nav>
+
+</div>
+</body>
+</html>

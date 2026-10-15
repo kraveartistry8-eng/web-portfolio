@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = (ROOT / "brand/2026-10-09-afterglow-brand-guide.html").read_text()
+SRC = (ROOT / "brand/guide-sources/2026-10-09-afterglow-brand-guide.html").read_text()
 CSS = re.search(r"<style>(.*?)</style>", SRC, re.S).group(1)
 HEAD = SRC.split("<style>")[0]
 
@@ -450,6 +450,6 @@ def build_c():
 
 if __name__ == "__main__":
     for name, fn in (("a-light-first", build_a), ("b-carried-stage", build_b), ("c-contact-sheet", build_c)):
-        p = ROOT / f"brand/2026-10-10-density-{name}.html"
+        p = ROOT / f"archive/afterglow-explorations/2026-10-10-density-{name}.html"   # explorations, archived 15 Oct
         p.write_text(fn())
         print(p.relative_to(ROOT))

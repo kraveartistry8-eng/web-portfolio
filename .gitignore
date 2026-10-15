@@ -18,3 +18,7 @@ __pycache__/
 
 # SDD scratch workspace — the git history is the record
 .superpowers/
+
+# Large local source material, kept on disk, never committed
+brand/moodboard-source/
+references/ember/
