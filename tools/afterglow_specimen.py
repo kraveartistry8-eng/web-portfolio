@@ -480,6 +480,52 @@ LITE_CSS = """
 """
 
 
+# Aaron, 15 Oct: every photograph credits its artist, underneath it. Names come from each Savee save's own source; where
+# the save leads only to an anonymous repost (Pinterest, Tumblr, Reddit) the maker is unknown and the credit says so.
+UNKNOWN = "Photographer unknown"
+CREDITS = {
+    "ZY6XxOv": UNKNOWN, "7BF3FrZ": "Film still, via Cinegrams", "gE_ypMW": "Parker Studio, Sanctuary",
+    "OOqXr-G": "Glasfurd &amp; Walker, Ama", "USalI5W": UNKNOWN, "R6euaYP": UNKNOWN, "CbRaZoU": "Emelia Hellman",
+    "qNdZUES": "Daniil Lavrovski", "Eje8BSd": UNKNOWN, "wRU1tGM": UNKNOWN, "0x4Ubi2": UNKNOWN, "_SNh4mJ": UNKNOWN,
+    "GVEgivk": UNKNOWN, "p-PXFnN": "Nicholas Alan Cope", "tLwiMVf": UNKNOWN, "udQHGQp": UNKNOWN, "6pLfDFq": UNKNOWN,
+    "f3MgZ_1": "Zhong Lin", "Zul1TsA": UNKNOWN, "QfZU9JX": UNKNOWN, "HNrkkNB": "InnoDesign Studio",
+    "eXM8fJo": "Cinco S&oacute;lidos, Casa Aire", "Y1VfHK4": UNKNOWN, "0M3EBK4": "Charles Lopez", "GU1xDFf": "Martin Naumann",
+    "fC3QclQ": "Till the light separates us", "r-0SzGb": UNKNOWN, "5HaWaX_": "Samuel Regan, Moments",
+    "3ASXlcU-trim": "Adam Fuss", "bNQYoLz": UNKNOWN, "PNTk-Dh-bottle": "Viktor&amp;Rolf, Spicebomb Infrared",
+}
+CREDIT_CSS = """
+/* the credit sits on its own strip under the photograph: the frame keeps its size and the photograph gives up the strip */
+.deck :has(> .credit){--cr:1.5rem}
+.deck :has(> .credit) > img{inset:0 0 var(--cr) 0!important;height:calc(100% - var(--cr))!important}
+.deck .credit{position:absolute;left:0;right:0;bottom:0;height:var(--cr);line-height:var(--cr);margin:0;padding:0;
+  font-size:.62rem;letter-spacing:.04em;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+/* the small stage frames take two lines rather than cut a name short */
+.deck .stamps :has(> .credit),.deck .seqrow :has(> .credit){--cr:2.1rem}
+.deck .stamps .credit,.deck .seqrow .credit{white-space:normal;line-height:1.25;padding-top:.3rem;height:auto;top:calc(100% - var(--cr))}
+/* the art direction photograph bleeds off the left edge, so its credit steps back in to the page margin */
+.deck .adhero .credit{left:var(--pad)}
+/* the product card's image well is tinted rose; its credit sits on the card itself */
+.deck .appimg .credit{background:#141414}
+/* the cover is full bleed, so its credit sits on the photograph, in the corner */
+.deck .hcover .hpanel{--cr:0px}
+.deck .hcover .credit{left:auto;right:var(--sp-md);bottom:var(--sp-sm);height:auto;line-height:1.3;z-index:2;color:#EEECEA}
+/* on a phone the hour numeral crosses the foot of the stage photograph, so its credit moves to the top corner */
+@media (max-width:576px){
+  .deck .hsheet .hpanel{--cr:0px}
+  .deck .hsheet .hpanel .credit{top:var(--sp-sm);bottom:auto;left:auto;right:var(--sp-md);height:auto;line-height:1.3;color:#EEECEA;z-index:2}
+}
+"""
+
+
+def credit(html):
+    def one(m):
+        key = re.sub(r"^posters/|\.jpg$", "", m.group(1))
+        return m.group(0) + f'<span class="credit">{CREDITS[key]}</span>'
+    html, n = re.subn(r'<img[^>]+src="moodboard-media/([^"]+)"[^>]*>', one, html)
+    assert n == len(re.findall(r"<img\b", html)), "every photograph carries a credit"
+    return html.replace("</style>", CREDIT_CSS + "</style>", 1)
+
+
 def build_lite():
     """Big numbers, less text (Aaron, 12 Oct): each sheet keeps the part of its detail that fits its open ground;
     what does not fit waits at the back, spaced out."""
@@ -564,7 +610,8 @@ def build_lite():
     # Aaron, 15 Oct: "there should be no links on this guide". The two that point at internal documents keep their words
     html, n_links = re.subn(r"<a\b[^>]*>(.*?)</a>", r"\1", html, flags=re.S)
     assert n_links == 2, f"expected the two document links, found {n_links}"
-    satin = (D.ROOT / "brand/ember/satin/ember-satin.bundle.js").read_text().replace("</script", "<\\/script")
+    html = credit(html)
+    satin =(D.ROOT / "brand/ember/satin/ember-satin.bundle.js").read_text().replace("</script", "<\\/script")
     # over file:// the browser blocks the image and font reads the rasteriser needs (the photographs would draw blank), so
     # the engine stays off there and the native page shows, without the ember
     # Aaron, 15 Oct: the ember is for the desktop experience only; phones and tablets (no hover, coarse pointer) get the plain guide
