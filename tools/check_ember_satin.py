@@ -452,6 +452,13 @@ def check_no_flash(p):
             if dev > 6:
                 fail(f"no-flash frame {k} (offset {o}): brightness change differs from the native page's by {dev:.2f}/255")
         prev = cur
+    # the swap back from the deck to the canvas once the scroll has stopped must not be seen: every frame at the final
+    # offset (the deck alone, the canvas fading in over it, the canvas alone) matches the native page
+    final = shots[-1][0]
+    swap = max((mean_diff(im, ref[o]) for o, im in shots[n_load:] if o == final), default=0.0)
+    print(f"no-flash: the swap at the scroll's end, worst frame vs the native page {swap:.3f}/255 (limit 0.5)")
+    if swap >= .5:
+        fail(f"no-flash: the swap at the scroll's end is visible ({swap:.3f}/255)")
     print(f"no-flash: {n_load} frames from the engine's start, {len(shots) - n_load} through the fast scroll; "
           f"worst #080808 share {worst_black:.2%} (limit 5%), worst brightness deviation {worst_lum:.2f}/255 (limit 6)")
 

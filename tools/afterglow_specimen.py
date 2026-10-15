@@ -567,7 +567,8 @@ def build_lite():
     satin = (D.ROOT / "brand/ember/satin/ember-satin.bundle.js").read_text().replace("</script", "<\\/script")
     # over file:// the browser blocks the image and font reads the rasteriser needs (the photographs would draw blank), so
     # the engine stays off there and the native page shows, without the ember
-    boot = ('(async function () { if (!window.EmberSatin || location.protocol === "file:") return; await document.fonts.ready; '
+    # Aaron, 15 Oct: the ember is for the desktop experience only; phones and tablets (no hover, coarse pointer) get the plain guide
+    boot = ('(async function () { if (!window.EmberSatin || location.protocol === "file:" || !matchMedia("(hover: hover) and (pointer: fine)").matches) return; await document.fonts.ready; '
             'await Promise.all([].map.call(document.images, function (i) { return i.decode().catch(function () {}); })); '
             'EmberSatin.start(document.querySelector("main.deck")); })();')
     assert html.count("</body>") == 1

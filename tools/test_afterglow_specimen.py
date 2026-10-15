@@ -171,6 +171,11 @@ def test_lite_has_no_links():
     assert "voice-tone.md" in deck and "the brief" in deck, "the linked words stay"
 
 
+def test_lite_ember_is_desktop_only():
+    html = A.build_lite()[0]
+    assert 'matchMedia("(hover: hover) and (pointer: fine)")' in html, "Aaron, 15 Oct: no ember on phones and tablets"
+
+
 def test_lite_runs_the_satin_not_v23():
     html = A.build_lite()[0]
     assert "window.EmberSatin=" in html, "the satin bundle is not inlined"

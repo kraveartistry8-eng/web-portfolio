@@ -11,7 +11,7 @@ import { near } from "./satin-math.js";
 export function createViews(deck, { onError = e => { throw e; } } = {}) {
   const img = document.createElement("canvas"), gimg = document.createElement("canvas");
   const shot = new Map();   // sheet -> { page, ground, gen, cw, ch } at the current width
-  let W = 1, H = 1, DPR = 1, gen = 0, busy = false, stopped = false;
+  let W = 1, H = 1, DPR = 1, gen = 0, busy = false, stopped = false, held = false;
   const sheets = () => [...deck.querySelectorAll(".sheet")];
   const box = el => { const r = el.getBoundingClientRect(); return { r, cw: Math.ceil(r.width), ch: Math.ceil(r.height) }; };
   const valid = (s, b) => !!(s && s.page && s.gen === gen && s.cw === b.cw && s.ch === b.ch);
@@ -30,10 +30,10 @@ export function createViews(deck, { onError = e => { throw e; } } = {}) {
     return best;
   }
   async function pump() {
-    if (busy || stopped) return;
+    if (busy || stopped || held) return;
     busy = true;
     try {
-      for (let el; !stopped && (el = next());) {
+      for (let el; !stopped && !held && (el = next());) {   // (held: a scroll began; the rest wait until it ends)
         const g = gen, { cw, ch } = box(el);
         const [page, ground] = await Promise.all([rasterSheet(el, { dpr: DPR }), rasterSheet(el, { dpr: DPR, ground: true })]);
         api.rasters++;
@@ -66,6 +66,9 @@ export function createViews(deck, { onError = e => { throw e; } } = {}) {
     // the fonts finished loading: the styles are read again and everything re-rasterised
     reset() { resetStyles(); clear(); pump(); },
     scrolled() { api.dirty = true; pump(); },
+    // while the page scrolls nothing is rasterised: the queue waits, and is worked through once scrolling has stopped
+    hold() { held = true; },
+    release() { held = false; api.dirty = true; pump(); },
     draw: drawViews, complete, pump,
     stop() { stopped = true; shot.clear(); },
   });

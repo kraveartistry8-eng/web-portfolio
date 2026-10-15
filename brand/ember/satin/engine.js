@@ -37,7 +37,7 @@ function start(deck, opts = {}) {
   const stableH = () => Math.round(vh.getBoundingClientRect().height) || innerHeight;   // the large viewport: the mobile bar never changes it
   let W = root.clientWidth, H = stableH(), T = tierOf(W, coarse), DPR = Math.min(T.dprCap, devicePixelRatio || 1);
   const rm = matchMedia("(prefers-reduced-motion: reduce)");
-  let fresh = true, lastMode = -1, lastRasters = 0;
+  let fresh = true, lastMode = -1, lastRasters = 0, scrolling = false, tScroll = 0;
   let reduced = rm.matches, level = 0, raf = 0, lastNow = 0, focused = false, state = "deck", tShow = 0, tSize = 0;
   const budget = createBudget(), stats = { shown: false, frames: 0, skipped: 0, wake: { fresh: 0, light: 0, cloth: 0 }, clothFrames: 0, level: 0, tier: T.name, failed: null, mode: "" };
 
@@ -116,6 +116,9 @@ function start(deck, opts = {}) {
     raf = requestAnimationFrame(frame);
     const dt = now - (lastNow || now); lastNow = now; const t0 = prof.mark();
     try {
+      // while the page scrolls, the deck itself is what is seen (the compositor scrolls it smoothly); nothing is drawn or
+      // rasterised until the scroll has been still for 150 ms, and the satin owes nothing for the time skipped
+      if (scrolling) { if (cloth) cloth.rest(); return; }
       let t = prof.mark(); if (views.dirty) { refresh(now); fresh = true; } prof.add('views.refresh', t);
       t = prof.mark(); const done = views.complete(); prof.add('views.complete', t);
       if (!done || focused) { toDeck(); fresh = true; return; }   // a sheet in the window is not rasterised yet (a fast scroll), or keyboard focus is in the deck (the deck shows its focus ring)
@@ -147,7 +150,7 @@ function start(deck, opts = {}) {
 
   function fail(e) { stats.failed = String(e && e.message || e); console.warn("ember satin stopped:", e); stop(); }
   function stop() {
-    pause(); clearTimeout(tShow); clearTimeout(tSize);
+    pause(); clearTimeout(tShow); clearTimeout(tSize); clearTimeout(tScroll);
     for (const f of off) f(); off.length = 0;
     if (views) views.stop();
     root.classList.remove("satin-on", "satin-peek");
@@ -159,10 +162,15 @@ function start(deck, opts = {}) {
 
   function safeSize() { try { sizeAll(); } catch (e) { fail(e); } }
   function listen() {
-  on(window, "scroll", () => views.scrolled(), { passive: true });
+  function scrolled() {
+    if (!scrolling) { scrolling = true; views.hold(); toDeck(); }   // the deck at once, the canvas gone at once (a fade over the moving deck ghosts)
+    clearTimeout(tScroll);
+    tScroll = setTimeout(() => { scrolling = false; fresh = true; views.release(); }, 150);
+  }
+  on(window, "scroll", scrolled, { passive: true });
   on(window, "resize", () => {
     if (root.clientWidth !== W || stableH() !== H) { clearTimeout(tSize); tSize = setTimeout(safeSize, 150); }   // width (or the window itself) changed
-    views.scrolled();   // a height-only change only redraws
+    if (scrolling) views.dirty = true; else views.scrolled();   // a height-only change only redraws
   });
   on(window, "orientationchange", () => { clearTimeout(tSize); tSize = setTimeout(safeSize, 150); });
   // keyboard focus inside the deck (WCAG 2.4.7): the deck shows, with its focus ring, until focus leaves it

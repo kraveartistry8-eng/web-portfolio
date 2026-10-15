@@ -237,3 +237,9 @@ Off-the-shelf libraries failed. html2canvas made body text bold. html-to-image l
 - **Strength:** lift 0.4, picked by eye. A URL parameter `lift` overrides it, for comparisons.
 - **Unchanged:** the light pages. Page 11's darker lower half takes some of the lift.
 - **Result:** on page 17 a stroke changes the screen by 1.11 (it was 0.53; the gold page is 2.19).
+
+## 11. Changes after publishing (15 Oct 2026)
+
+**Scrolling.** While the page scrolls, the real page shows and scrolls natively. The effect fades back in 150 ms after scrolling stops, and nothing is rasterised mid-scroll. The reason: Aaron found mobile scrolling choppy.
+
+**Desktop only.** Aaron: "not have the ember for the mobile version and only for the desktop experience". The ember starts only on devices that hover with a fine pointer. Phones and tablets get the plain guide, so §6's touch and phone-tier behaviour now applies only to touch-capable desktops.
