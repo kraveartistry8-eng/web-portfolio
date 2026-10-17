@@ -22,3 +22,13 @@ __pycache__/
 # Large local source material, kept on disk, never committed
 brand/moodboard-source/
 references/ember/
+
+# Private: contacts and personal finances
+outreach/
+2026-10-02-shopify-roadmap.*
+
+# Third-party screenshots
+references/
+
+# The Afterglow theme has its own repo
+afterglow/
