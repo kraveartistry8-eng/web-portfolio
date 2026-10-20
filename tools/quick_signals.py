@@ -48,13 +48,16 @@ def lighthouse(url):
         if not out.exists():
             return {"psi_note": "Lighthouse failed"}
         d = json.loads(out.read_text())
-    a = d["audits"]
+    # an audit can come back without a value (no LCP recorded, page errored mid-trace); a blank beats a crash
+    # that loses the whole run, which is what happened to all three runs on 20 Oct
+    num = lambda k: d["audits"].get(k, {}).get("numericValue")
+    lcp, cls, tbt = num("largest-contentful-paint"), num("cumulative-layout-shift"), num("total-blocking-time")
     return {
         "perf": round((d["categories"]["performance"]["score"] or 0) * 100),
-        "lcp_s": round(a["largest-contentful-paint"]["numericValue"] / 1000, 1),
-        "cls": round(a["cumulative-layout-shift"]["numericValue"], 3),
-        "tbt_ms": round(a["total-blocking-time"]["numericValue"]),
-        "psi_note": "local Lighthouse (lab only, no real-user data)",
+        "lcp_s": round(lcp / 1000, 1) if lcp is not None else "",
+        "cls": round(cls, 3) if cls is not None else "",
+        "tbt_ms": round(tbt) if tbt is not None else "",
+        "psi_note": "local Lighthouse (lab only, no real-user data)" + ("" if lcp is not None else "; no LCP recorded"),
     }
 
 
@@ -133,7 +136,12 @@ def browse(browser, domain, shots):
     base = re.match(r"https?://[^/]+", pg.url).group(0)
     clear_popups(pg)
     pg.screenshot(path=str(shots / f"{domain}-1-desktop.png"))
-    product = hero_product(base)
+    # the feed is refused (429) when Shopify is already throttling this address: 9 of 10 on 20 Oct.
+    # Fall back to the first product the home page links to, so the reviewer always has a product page
+    product = hero_product(base) or pg.evaluate(
+        # skip gift cards, appointments and order forms: 5 of 40 fallbacks landed on one (20 Oct)
+        "() => { const a = [...document.querySelectorAll('a[href*=\"/products/\"]')].find(a =>"
+        " !/gift|card|appointment|booking|consult|order-form|sample/i.test(a.href)); return a ? a.href : null }")
     if product:
         out["product_url"] = product
         pg.goto(product, wait_until="domcontentloaded", timeout=60000)
@@ -160,26 +168,30 @@ def main():
                if l.strip() and not l.startswith("#")]
     shots = lst.with_name(f"{lst.stem}-shots")
     shots.mkdir(exist_ok=True)
-    rows = []
+    fields = ["domain", "perf", "lcp_s", "cls", "tbt_ms", "field_lcp", "field_inp", "js_errors", "broken",
+              "product_url", "psi_note", "browse_note"]
+    path = lst.with_name(f"{lst.stem}-signals.csv")
+    # written a row at a time, so a crash late in a long list keeps everything measured before it
+    f = path.open("w", newline="")
+    w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+    w.writeheader()
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--disable-blink-features=AutomationControlled"])
         for d in domains:
             row = {"domain": d}
-            row.update(pagespeed(f"https://{d}"))
+            try:
+                row.update(pagespeed(f"https://{d}"))
+            except Exception as e:
+                row["psi_note"] = f"speed test failed: {type(e).__name__}"
             try:
                 row.update(browse(browser, d, shots))
             except Exception as e:
                 row["browse_note"] = f"browser load failed: {type(e).__name__}"
-            rows.append(row)
-            print(d, {k: v for k, v in row.items() if k != "domain"})
+            w.writerow(row)
+            f.flush()
+            print(d, {k: v for k, v in row.items() if k != "domain"}, flush=True)
         browser.close()
-    fields = ["domain", "perf", "lcp_s", "cls", "tbt_ms", "field_lcp", "field_inp", "js_errors", "broken",
-              "product_url", "psi_note", "browse_note"]
-    path = lst.with_name(f"{lst.stem}-signals.csv")
-    with path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
+    f.close()
     print(path, shots, sep="\n")
 
 

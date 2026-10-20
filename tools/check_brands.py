@@ -33,11 +33,12 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outreach/brand-checks"
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128 Safari/537.36"
 WINDOW_DAYS = 90
-MAX_PAGES = 20  # 250 products a page; enough for any store in the band
+MAX_PAGES = 20
+PACE = 3  # seconds between stores, so a long list does not trip Shopify's rate limit  # 250 products a page; enough for any store in the band
 
 
-def get(url, timeout=25):
-    for _ in range(5):
+def get(url, timeout=25, patient=True):
+    for _ in range(8):
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/json;q=0.9,*/*;q=0.8"})
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -46,6 +47,11 @@ def get(url, timeout=25):
             # Python 3.9's opener does not follow 308, which Vercel-hosted stores use for their locale redirect
             if e.code in (307, 308) and e.headers.get("location"):
                 url = urllib.parse.urljoin(url, e.headers["location"])
+                continue
+            if e.code == 429 and patient:
+                # Shopify throttles one address that reads many stores in a row (91 of 126 on 20 Oct).
+                # Wait as long as it asks, or half a minute, and try the same page again
+                time.sleep(min(float(e.headers.get("retry-after") or 30), 120))
                 continue
             raise
     raise urllib.error.URLError("too many redirects")
@@ -84,7 +90,9 @@ def launches(base):
     total, recent, newest = 0, 0, None
     for page in range(1, MAX_PAGES + 1):
         try:
-            _, body, _ = get(f"{base}/products.json?limit=250&page={page}")
+            # impatient: waiting out 429s on every feed page stalled one run for over an hour (20 Oct).
+            # Launch cadence is a nice-to-have, so a refused feed is recorded and the run moves on
+            _, body, _ = get(f"{base}/products.json?limit=250&page={page}", patient=False)
             items = json.loads(body).get("products", [])
         except (urllib.error.URLError, json.JSONDecodeError, TimeoutError):
             return (total or None), (recent if total else None), newest
@@ -153,10 +161,11 @@ def main():
     for d in domains:
         d = re.sub(r"^https?://|/.*$", "", d.strip())
         rows.append(check(d))
+        time.sleep(PACE)
         r = rows[-1]
         print(f"{r['domain']:<28} shopify={r['shopify']:<3} theme={r['theme'][:22]:<22} from={r['built_from'][:12]:<12} "
               f"store={r['theme_store']:<3} products={str(r['products']):<5} new90={str(r['launched_90d']):<4} "
-              f"newest={r['newest']:<10} {r['note']}")
+              f"newest={r['newest']:<10} {r['note']}", flush=True)
     OUT.mkdir(parents=True, exist_ok=True)
     # one file per list, so checking a second list the same day does not overwrite the first
     path = OUT / (f"{Path(a.file).stem}-results.csv" if a.file else f"{dt.date.today().isoformat()}.csv")
