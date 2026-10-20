@@ -5,7 +5,8 @@ alongside. This script does the part neither of them can see by eye, and prepare
 
 Per site:
   perf, lcp_s, cls, tbt_ms   Google PageSpeed Insights, mobile: the numbers a founder can check themselves
-  field_lcp, field_inp       real-user data from Chrome, when the site has enough traffic to report it
+  field_lcp, field_lcp_s     real visitors' load (Chrome, 75th percentile), when the site has enough traffic
+  field_inp                  real visitors' responsiveness. Field data needs PageSpeed, so PSI_KEY in .env matters
   js_errors, broken          console errors, and images, scripts, styles or fonts that failed to load
   screenshots                home page on phone and desktop, plus one product page, for the reviewer
 
@@ -61,10 +62,21 @@ def lighthouse(url):
     }
 
 
+def psi_key():
+    """PSI_KEY from the environment or from .env (git ignores it). Without one, PageSpeed's shared keyless quota
+    ran out on 19 and 20 Oct and every site fell back to local Lighthouse."""
+    if os.environ.get("PSI_KEY"):
+        return os.environ["PSI_KEY"]
+    env = ROOT / ".env"
+    for line in env.read_text().splitlines() if env.exists() else []:
+        if line.startswith("PSI_KEY="):
+            return line.split("=", 1)[1].strip().strip("\"'")
+
+
 def pagespeed(url):
     q = {"url": url, "strategy": "mobile", "category": "performance"}
-    if os.environ.get("PSI_KEY"):
-        q["key"] = os.environ["PSI_KEY"]
+    if psi_key():
+        q["key"] = psi_key()
     api = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + urllib.parse.urlencode(q)
     for attempt in range(3):
         try:
@@ -83,7 +95,11 @@ def pagespeed(url):
         "lcp_s": round(num("largest-contentful-paint") / 1000, 1) if num("largest-contentful-paint") else "",
         "cls": round(num("cumulative-layout-shift"), 3) if num("cumulative-layout-shift") is not None else "",
         "tbt_ms": round(num("total-blocking-time")) if num("total-blocking-time") is not None else "",
+        # real visitors, 75th percentile: the number that decides check 2's speed signal. The lab numbers above
+        # simulate a slow phone and flagged 11 of 14 sites whose real customers load in under 2.5 s (20 Oct)
         "field_lcp": field.get("LARGEST_CONTENTFUL_PAINT_MS", {}).get("category", ""),
+        "field_lcp_s": round(field["LARGEST_CONTENTFUL_PAINT_MS"]["percentile"] / 1000, 1)
+        if field.get("LARGEST_CONTENTFUL_PAINT_MS", {}).get("percentile") else "",
         "field_inp": field.get("INTERACTION_TO_NEXT_PAINT", {}).get("category", ""),
     }
 
@@ -168,7 +184,7 @@ def main():
                if l.strip() and not l.startswith("#")]
     shots = lst.with_name(f"{lst.stem}-shots")
     shots.mkdir(exist_ok=True)
-    fields = ["domain", "perf", "lcp_s", "cls", "tbt_ms", "field_lcp", "field_inp", "js_errors", "broken",
+    fields = ["domain", "perf", "lcp_s", "cls", "tbt_ms", "field_lcp", "field_lcp_s", "field_inp", "js_errors", "broken",
               "product_url", "psi_note", "browse_note"]
     path = lst.with_name(f"{lst.stem}-signals.csv")
     # written a row at a time, so a crash late in a long list keeps everything measured before it
